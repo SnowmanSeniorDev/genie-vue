@@ -41,7 +41,7 @@
               <a href="">Forgot Password?</a>
             </div>
             <div class="intro-x mt-5 xl:mt-8 text-center xl:text-left">
-              <button class="btn btn-primary py-3 px-4 w-full xl:w-32 xl:mr-3 align-top" @click="login">Login</button>
+              <button class="btn btn-primary py-3 px-4 w-full xl:w-32 xl:mr-3 align-top" @click="login({userName: userName, secret: password})">Login</button>
               <button class="btn btn-outline-secondary py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top" @click="gotoSignUp">Sign up</button>
             </div>
             <div class="intro-x mt-10 xl:mt-24 text-gray-700 dark:text-gray-600 text-center xl:text-left">
@@ -60,6 +60,7 @@
 
 <script>
 import { defineComponent, onMounted } from "vue";
+import { mapActions } from "vuex"
 import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
 
 export default defineComponent({
@@ -81,15 +82,12 @@ export default defineComponent({
     }
   },
   methods: {
+    ...mapActions({
+      login: "auth/login"
+    }),
     gotoSignUp() {
       this.$router.push({path: 'register'})
     },
-    login() {
-      const api = 'api/vi/user/login';
-      this.$http.post(api, {userName: this.userName, password: this.password}).then((response) => {
-        console.log(response.data)
-      })
-    }
   }
 });
 </script>

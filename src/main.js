@@ -16,6 +16,8 @@ const app = createApp(App)
   .use(router)
   .use(VueAxios, axios);
 
+app.config.performance = true;
+app.config.devtools = true;
 globalComponents(app);
 utils(app);
 

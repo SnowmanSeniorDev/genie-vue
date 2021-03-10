@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
 import SideMenu from "../layouts/Main.vue";
-import Login from "../views/login/Main.vue";
-import Register from "../views/register/Main.vue";
+import Login from "../views/auth/Login.vue";
+import Register from "../views/auth/Register.vue";
 import ErrorPage from "../views/error-page/Main.vue";
-import DashboardOverview1 from "../views/dashboard-overview-1/Main.vue";
+import DashboardOverview1 from "../views/dashboard/index.vue";
 import { auth } from "../middleware/auth"
 import { log } from "../middleware/log"
 

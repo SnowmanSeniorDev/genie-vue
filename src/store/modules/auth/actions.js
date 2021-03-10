@@ -6,9 +6,10 @@
  * auth module.
  */
 
-import Vue from 'vue';
+import Vue from "vue";
 //import store from '@/store';
-import * as types from './mutation-types';
+import * as types from "./mutation-types";
+import axios from "@/plugins/axios";
 
 export const check = ({
 	commit
@@ -24,12 +25,13 @@ export const register = ({commit}) => {
 };
 
 export const login = ({commit}, payload) => {
-	return new Promise(() => {
-		commit(types.LOGIN, {
-			token: payload.token,
-			userRole: payload.userRole,
+	console.log(axios.defaults.baseURL)
+	const api = '/user/v1/auth';
+	axios.post(api, payload).then(response => {
+		return new Promise(() => {
+			commit(types.LOGIN, {token: response.token, userRole: response.userRole});
 		});
-	});
+	})
 };
 
 export const logout = ({commit}) => {
@@ -50,7 +52,7 @@ export const setMyProfile = ({commit}, payload) => {
 export default {
 	check,
 	register,
-	// login,
+	login,
 	logout,
 	setMyProfile
 };
