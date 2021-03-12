@@ -4,6 +4,7 @@ const { styles } = require("@ckeditor/ckeditor5-dev-utils");
 
 module.exports = {
   parallel: false,
+
   configureWebpack: {
     plugins: [
       new webpack.ProvidePlugin({
@@ -12,7 +13,9 @@ module.exports = {
       })
     ]
   },
+
   transpileDependencies: [/ckeditor5-[^/\\]+[/\\]src[/\\].+\.js$/],
+
   chainWebpack: config => {
     const svgRule = config.module.rule("svg");
     svgRule.exclude.add(path.join(__dirname, "node_modules", "@ckeditor"));
@@ -37,5 +40,17 @@ module.exports = {
           })
         };
       });
+  },
+
+  pluginOptions: {
+    i18n: {
+      locale: 'en',
+      fallbackLocale: 'en',
+      localeDir: 'locales',
+      enableLegacy: true,
+      runtimeOnly: false,
+      compositionOnly: true,
+      fullInstall: true
+    }
   }
 };
