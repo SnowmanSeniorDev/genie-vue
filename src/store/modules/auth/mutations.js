@@ -12,7 +12,8 @@ import {
   REGISTER,
   LOGIN,
   LOGOUT,
-  SET_PROFILE
+  SET_PROFILE,
+  SET_USER_ID
 } from "./mutation-types";
 
 /* eslint-disable no-param-reassign */
@@ -33,7 +34,10 @@ export default {
     state.loginSuccess = true;
     localStorage.setItem('id_token', payload.token);
     state.token = payload.token;
-    state.userRole = payload.userRole;
+  },
+
+  [SET_USER_ID](state, payload) {
+    state.user_id = payload.user_id
   },
 
   [LOGOUT](state) {

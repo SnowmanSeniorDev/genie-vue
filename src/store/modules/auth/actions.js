@@ -7,9 +7,9 @@
  */
 
 import Vue from "vue";
-//import store from '@/store';
 import * as types from "./mutation-types";
 import axios from "@/plugins/axios";
+import router from "@/router";
 
 export const check = ({
 	commit
@@ -25,20 +25,29 @@ export const register = ({commit}) => {
 };
 
 export const login = ({commit}, payload) => {
-	console.log(axios.defaults.baseURL)
-	const api = '/user/v1/auth';
+	const api = 'user/v1/auth';
 	axios.post(api, payload).then(response => {
 		return new Promise(() => {
-			commit(types.LOGIN, {token: response.token, userRole: response.userRole});
+			commit(types.LOGIN, {token: response.data.token});
+			router.push({
+				name: 'dashboard'
+			})
 		});
 	})
 };
 
+export const getuserid = ({commit}, payload) => {
+	const api = 'user/v1/auth';
+	axios.post(api, payload).then(response => {
+		console.log(response)
+		return new Promise(() => {
+			commit(types.SET_SUER_ID, {user_id: response.user_id})
+		})
+	})
+}
+
 export const logout = ({commit}) => {
 	commit(types.LOGOUT);
-	Vue.router.push({
-		name: 'login',
-	});
 };
 
 export const setMyProfile = ({commit}, payload) => {

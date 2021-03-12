@@ -14,7 +14,7 @@ const routes = [
     children: [
       {
         path: "/",
-        name: "side-menu-dashboard-overview-1",
+        name: "dashboard",
         component: DashboardOverview1
       }
     ],

@@ -6,7 +6,7 @@
       <!-- BEGIN: Side Menu -->
       <nav class="side-nav">
         <!-- BEGIN: Logo -->
-        <router-link :to="{ name: 'side-menu-dashboard-overview-1' }" tag="a" class="intro-x flex items-center pl-5 pt-4">
+        <router-link :to="{ name: 'dashboard' }" tag="a" class="intro-x flex items-center pl-5 pt-4">
           <img alt="Midone Tailwind HTML Admin Template" class="w-6" src="@/assets/images/logo.svg"/>
           <span class="hidden xl:block text-white text-lg ml-3">
             Mid<span class="font-medium">one</span>
@@ -137,7 +137,6 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const store = useStore();
-    console.log(store.state);
     const formattedMenu = ref([]);
     const sideMenu = computed(() => nestedMenu(store.state.main.menu, route));
 

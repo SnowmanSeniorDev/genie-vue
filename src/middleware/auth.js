@@ -1,5 +1,6 @@
 export const auth = ({ next, router }) => {
-  if (!localStorage.getItem("jwt")) {
+  console.log(localStorage.getItem("id_token"))
+  if (!localStorage.getItem("id_token")) {
     return router.push({ name: "login" });
   }
 
