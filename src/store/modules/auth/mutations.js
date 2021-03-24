@@ -5,26 +5,18 @@
  * The mutations that are available on the
  * account module.
  */
-
-import Vue from "vue";
 import {
-  CHECK,
   REGISTER,
   LOGIN,
   LOGOUT,
+  CHECK,
   SET_PROFILE,
   SET_USER_ID
 } from "./mutation-types";
+import Https from "@/plugins/axios";
 
 /* eslint-disable no-param-reassign */
 export default {
-  [CHECK](state) {
-    state.authenticated = !!localStorage.getItem('id_token');
-    if (state.authenticated) {
-      Vue.$http.defaults.headers.common.Authorization = `Bearer ${localStorage.getItem('id_token')}`;
-    }
-  },
-
   [REGISTER]() {
     //
   },
@@ -33,6 +25,16 @@ export default {
     state.authenticated = true;
     state.loginSuccess = true;
     localStorage.setItem('id_token', payload.token);
+    state.token = payload.token;
+    state.user_id = payload.userId;
+    state.user_role = payload.roles[0];
+    state.display_name = payload.displayName;
+    Https.defaults.headers.common.Authorization = `Bearer ${payload.token}`;
+  },
+
+  [CHECK](state, payload) {
+    state.authenticated = true;
+    state.loginSuccess = true;
     state.token = payload.token;
   },
 
@@ -48,7 +50,7 @@ export default {
     localStorage.removeItem('user_role');
     localStorage.removeItem('profile');
     state.token = null;
-    Vue.$http.defaults.headers.common.Authorization = '';
+    Https.defaults.headers.common.Authorization = '';
   },
 
   [SET_PROFILE](state, payload) {

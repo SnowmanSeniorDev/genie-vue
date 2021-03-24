@@ -4,7 +4,7 @@ export const initSession = () => {
   return new Promise(() => {
     let token = localStorage.getItem('id_token');
     if(token) {
-      Store.commit('auth/LOGIN', {token: token})
+      Store.commit('auth/CHECK', {token: token})
     }
     else Router.push('/login')
   })

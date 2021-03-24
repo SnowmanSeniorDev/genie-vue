@@ -61,10 +61,10 @@
 </template>
 
 <script>
-import { defineComponent, onMounted } from "vue";
+import { onMounted } from "vue";
 import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
 
-export default defineComponent({
+export default {
   components: {
     DarkModeSwitcher
   },
@@ -81,5 +81,5 @@ export default defineComponent({
       this.$router.push({path: "login"})
     }
   }
-});
+};
 </script>

@@ -182,10 +182,10 @@
               <EditIcon class="w-4 h-4 mr-2" /> Add Account
             </a>
             <a
-              href=""
+              @click="gotoUpdatePassword"
               class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md"
             >
-              <LockIcon class="w-4 h-4 mr-2" /> Reset Password
+              <LockIcon class="w-4 h-4 mr-2" /> Update Password
             </a>
             <a
               href=""
@@ -232,7 +232,10 @@ export default defineComponent({
   methods: {
     ...mapActions({
       logout: "auth/logout"
-    })
+    }),
+    gotoUpdatePassword() {
+      this.$router.push({path: "/update_password"});
+    }
   }
 });
 </script>

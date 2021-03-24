@@ -38,10 +38,11 @@
                 <input id="remember-me" type="checkbox" class="form-check-input border mr-2"/>
                 <label class="cursor-pointer select-none" for="remember-me">Remember me</label>
               </div>
-              <a href="">Forgot Password?</a>
+              <a @click="gotoForgotPassword">Forgot Password?</a>
             </div>
             <div class="intro-x mt-5 xl:mt-8 text-center xl:text-left">
               <button class="btn btn-primary py-3 px-4 w-full xl:w-32 xl:mr-3 align-top" @click="login({userName: userName, secret: password})">{{ $t('auth.login') }}</button>
+              <!-- <button class="btn btn-primary py-3 px-4 w-full xl:w-32 xl:mr-3 align-top" @click="recaptcha">{{ $t('auth.login') }}</button> -->
               <button class="btn btn-outline-secondary py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top" @click="gotoSignUp">Sign up</button>
             </div>
             <div class="intro-x mt-10 xl:mt-24 text-gray-700 dark:text-gray-600 text-center xl:text-left">
@@ -59,26 +60,44 @@
 </template>
 
 <script>
-import { defineComponent, onMounted } from "vue";
+import { onMounted } from "vue";
 import { mapActions } from "vuex"
+// import { useRecaptcha } from "vue-recaptcha-v3";
 import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
 
-export default defineComponent({
+export default {
   components: {
-    DarkModeSwitcher
+    DarkModeSwitcher,
   },
   setup() {
+    // const { executeRecaptcha, recaptchaLoaded } = useRecaptcha();
+ 
+    const recaptcha = async () => {
+      // (optional) Wait until recaptcha has been loaded.
+      // await recaptchaLoaded()
+ 
+      // // Execute reCAPTCHA with action "login".
+      // const token = await executeRecaptcha('login')
+      // console.log(token)
+      // Do stuff with the received token.
+    }
+ 
+    
     onMounted(() => {
       cash("body")
         .removeClass("main")
         .removeClass("error-page")
         .addClass("login");
     });
+    return {
+      recaptcha
+    }
   },
   data() {
     return {
       userName: '',
-      password: ''
+      password: '',
+      recaptchSiteKey: process.env.VUE_APP_RECAPTCHA_SITE_KEY
     }
   },
   methods: {
@@ -88,6 +107,9 @@ export default defineComponent({
     gotoSignUp() {
       this.$router.push({path: 'register'})
     },
+    gotoForgotPassword() {
+      this.$router.push({path: 'forgot_password'})
+    }
   }
-});
+};
 </script>

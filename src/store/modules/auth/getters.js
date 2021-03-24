@@ -11,4 +11,5 @@
     getToken: state => state.token,
     getUserRole: state => state.userRole,
     getMyProfile: state => state.profile,
+    getUserId: state => state.getUserId
 };

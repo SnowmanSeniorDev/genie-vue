@@ -35,11 +35,7 @@
                 </div>
                 <div class="side-menu__title">
                   {{ menu.title }}
-                  <div
-                    v-if="menu.subMenu"
-                    class="side-menu__sub-icon"
-                    :class="{ 'transform rotate-180': menu.activeDropdown }"
-                  >
+                  <div v-if="menu.subMenu" class="side-menu__sub-icon" :class="{ 'transform rotate-180': menu.activeDropdown }">
                     <ChevronDownIcon />
                   </div>
                 </div>
@@ -61,9 +57,7 @@
                       </div>
                       <div class="side-menu__title">
                         {{ subMenu.title }}
-                        <div
-                          v-if="subMenu.subMenu"
-                          class="side-menu__sub-icon"
+                        <div v-if="subMenu.subMenu" class="side-menu__sub-icon"
                           :class="{
                             'transform rotate-180': subMenu.activeDropdown
                           }"
@@ -125,6 +119,9 @@ import MobileMenu from "@/components/mobile-menu/Main.vue";
 import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
 import SideMenuTooltip from "@/components/side-menu-tooltip/Main.vue";
 import { linkTo, nestedMenu, enter, leave } from "./index";
+// import Https from "@/plugins/axios";
+// import { mapActions } from "vuex"
+
 
 export default defineComponent({
   components: {
