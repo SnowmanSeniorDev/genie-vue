@@ -22,7 +22,7 @@ export const login = ({commit}, payload) => {
 				router.push({
 					name: 'dashboard'
 				})
-			})
+			})	
 		});
 	})
 };

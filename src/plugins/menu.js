@@ -86,7 +86,7 @@ const menu = [{
         permission: "GENIE_SECURITY_USER_MANAGEMENT"
       },{
         icon: "LayoutIcon",
-        pageName: "side-menu-layout",
+        pageName: "roles",
         title: "User Group",
         permission: "GENIE_SECURITY_ROLES"
       }

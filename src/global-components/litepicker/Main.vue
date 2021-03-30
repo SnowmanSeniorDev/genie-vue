@@ -3,10 +3,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
 import { setValue, init, reInit } from "./index";
 
-export default defineComponent({
+export default {
   directives: {
     picker: {
       mounted(el, { value }) {
@@ -38,7 +37,7 @@ export default defineComponent({
       ...context
     };
   }
-});
+};
 </script>
 
 <style scoped>

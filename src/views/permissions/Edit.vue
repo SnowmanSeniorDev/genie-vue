@@ -127,8 +127,8 @@
               <div id="success-notification-content" class="toastify-content hidden flex">
                 <CheckCircleIcon class="text-theme-9" />
                 <div class="ml-4 mr-4">
-                  <div class="font-medium">Create success!</div>
-                  <div class="text-gray-600 mt-1">Successfully create new permission</div>
+                  <div class="font-medium">Update success!</div>
+                  <div class="text-gray-600 mt-1">Successfully Update the permission</div>
                 </div>
               </div>
               <!-- END: Success Notification Content -->
@@ -136,7 +136,7 @@
               <div id="failed-notification-content" class="toastify-content hidden flex">
                 <XCircleIcon class="text-theme-6" />
                 <div class="ml-4 mr-4">
-                  <div class="font-medium">Create failed!</div>
+                  <div class="font-medium">Update failed!</div>
                   <div class="text-gray-600 mt-1">Please check the fileld form.</div>
                 </div>
               </div>
@@ -152,14 +152,33 @@
 
 <script>
 import { reactive, toRefs, ref } from "vue";
+import { useRoute } from "vue-router";
+import Https from "@/plugins/axios";
 import { required, minLength } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
-import Https from "@/plugins/axios";
 import { helper } from "@/utils/helper";
 import Toastify from "toastify-js";
 
 export default {
   setup() {
+    const route = useRoute();
+    const formData = reactive({
+      permissionName: route.params.permissionName,
+      resourceURI: route.params.resourceURI,
+      accessVerbs: route.params.accessVerbs,
+      validUntil: route.params.validUntil,
+      unExpired: route.params.validuntil ? false : true,
+      type: route.params.tye
+    });
+    const rules = {
+      permissionName: { required, minLength: minLength(2) },
+      resourceUrl: { required, minLength: minLength(2)},
+      accessVerb: { required },
+      validUntil: { required },
+      unExpired: {  },
+      type: { required }
+    };
+    const validate = useVuelidate(rules, toRefs(formData));
     const litePicker = ref({
       autoApply: false,
       showWeekNumbers: true,
@@ -180,25 +199,7 @@ export default {
         });
       },
     });
-    
-    const formData = reactive({
-      permissionName: "",
-      resourceUrl: "",
-      accessVerb: "",
-      validUntil: "",
-      unExpired: false,
-      type: "Menu"
-    });
-    const rules = {
-      permissionName: { required, minLength: minLength(2) },
-      resourceUrl: { required, minLength: minLength(2)},
-      accessVerb: { required },
-      validUntil: { required },
-      unExpired: {  },
-      type: { required }
-    };
-    const validate = useVuelidate(rules, toRefs(formData));
-    const create = () => {
+    const save = () => {
       console.log(formData);
       validate.value.$touch();
       if (validate.value.$invalid) {
@@ -212,8 +213,8 @@ export default {
           stopOnFocus: true
         }).showToast();
       } else {
-        const api = "/access/v1/permission";
-        Https.post(api, {
+        const api = `/access/v1/permission/${route.params.permissionId}`;
+        Https.put(api, {
           permissionName: formData.permissionName,
           resourceURI: formData.resourceUrl,
           accessVerbs: formData.accessVerb,
@@ -240,7 +241,7 @@ export default {
       litePicker,
       validate,
       formData,
-      create
+      save
     };
   }
 };

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="intro-y text-lg font-medium mt-10">Data List Layout</h2>
+    <h2 class="intro-y text-lg font-medium mt-10">Permissions</h2>
     <div class="grid grid-cols-12 gap-6 mt-5">
       <div class="intro-y col-span-12 flex flex-wrap sm:flex-nowrap items-center mt-2">
         <button class="btn btn-primary shadow-md mr-2" @click="gotoCreatePermission">Add New Permission</button>
@@ -60,7 +60,7 @@
               </td>
               <td class="table-report__action w-56">
                 <div class="flex justify-center items-center">
-                  <a class="flex items-center mr-3" href="javascript:;">
+                  <a class="flex items-center mr-3" @click="gotoEditPermission(permission.permissionId)">
                     <CheckSquareIcon class="w-4 h-4 mr-1" />
                     Edit
                   </a>
@@ -143,6 +143,9 @@ export default {
   methods: {
     gotoCreatePermission(){
       this.$router.push("/permission/add")
+    },
+    gotoEditPermission(permission) {
+      this.$router.push("/permission/edit", {...permission})
     }
   }
 }

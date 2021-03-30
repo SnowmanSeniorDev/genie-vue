@@ -11,6 +11,9 @@ import UpdateUser from "../views/users/Edit.vue";
 import Permission from "../views/permissions/index.vue";
 import PermissionList from "../views/permissions/PermissionList.vue";
 import CreatePermission from "../views/permissions/Add.vue";
+import EditPermission from "../views/permissions/Edit.vue";
+import RolesIndex from "../views/roles/index.vue";
+import GrantAccess from "../views/roles/GrantAccess.vue";
 import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Main.vue";
 import { auth } from "../middleware/auth"
@@ -26,6 +29,10 @@ const routes = [
         name: "dashboard",
         component: DashboardOverview1
       }, {
+        path: "/update_password",
+        name: "updatePassword",
+        component: UpdatePassword
+      }, {
         path: "users",
         name: "users",
         component: Users,
@@ -37,12 +44,8 @@ const routes = [
           component: CreatUser
         }, {
           path: "edit/:id",
-          component: UpdateUser
+          component: UpdateUser,
         }]
-      }, {
-        path: "/update_password",
-        name: "updatePassword",
-        component: UpdatePassword
       }, {
         path: "permission",
         name: "permission",
@@ -53,6 +56,17 @@ const routes = [
         }, {
           path: "add",
           component: CreatePermission
+        }, {
+          path: "edit/:id",
+          component: EditPermission
+        }]
+      }, {
+        path: "roles",
+        name: "roles",
+        component: RolesIndex,
+        children: [{
+          path: "",
+          component: GrantAccess
         }]
       }
     ],
