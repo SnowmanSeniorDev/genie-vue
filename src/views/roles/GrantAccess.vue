@@ -9,7 +9,12 @@
         <RoleList v-if="roles" :roles="roles" :selectRole="selectRole" :addRole="addRole" :deleteRole="deleteRole"/>
       </div>
       <div class="box mt-5 px-5 pb-5">
-        <AccessList v-if="roles" :rolePermissions="rolePermissions" :grantPermissions="grantPermissions" :permissionList="permissionList"/>
+        <AccessList v-if="roles" 
+          :rolePermissions="rolePermissions" 
+          :grantPermissionsDelete="grantPermissionsDelete" 
+          :grantPermissionsAdd="grantPermissionsAdd" 
+          :permissionList="permissionList"
+        />
       </div>
     </div>
   </div>
@@ -50,18 +55,18 @@ export default {
     getRoles();
 
     const selectRole = (roleId) => {
-      console.log(roleId)
       rolePermissions.value = _.find(roles.value, {roleId: roleId});
     }
+
     const addRole = (role) => {
       Https.post(rolesAPI, role).then(res => {
         if(res.status === 201) getRoles();
       })
     }
+
     const deleteRole = (role) => {
       Https.delete(`${rolesAPI}/${role.roleId}`).then((res) => {
         if(res.status === 200) {
-          console.log("11111")
           roles.value = _.remove(roles.value, function(item){
             return item.roleId != role.roleId;
           });
@@ -69,19 +74,32 @@ export default {
         }
       })
     }
-    const grantPermissions = (role) => {
+
+    const grantPermissionsDelete = (role) => {
       rolePermissions.value.permissions = _.remove(rolePermissions.value.permissions, function(item) {
-        return item.permissionId != role.permissionId
+        return item.permissionId != role.permissionId;
       });
       const reqBody = {
-        roleName: "different role name",
+        roleName: rolePermissions.value.roleName,
         permissionsIds: _.toArray(rolePermissions.value.permissions).map(function(item){
           return item.permissionId
         }),
         validUntil: rolePermissions.value.validUntil
       }
-      Https.put(`${rolesAPI}/${rolePermissions.value.roleId}`, reqBody)
+      Https.put(`${rolesAPI}/${rolePermissions.value.roleId}`, reqBody);
     }
+
+    const grantPermissionsAdd = (addedPermission) => {
+      const reqBody = {
+        roleName: rolePermissions.value.roleName,
+        permissionsIds: _.map([...rolePermissions.value.permissions, ...addedPermission], "permissionId"),
+        validUntil: rolePermissions.value.validUntil
+      }
+      Https.put(`${rolesAPI}/${rolePermissions.value.roleId}`, reqBody).then(res => {
+        if(res.status === 200) rolePermissions.value.permissions = [...rolePermissions.value.permissions, ...addedPermission]
+      });
+    }
+
     return {
       roles,
       permissionList,
@@ -89,7 +107,8 @@ export default {
       selectRole,
       addRole,
       deleteRole,
-      grantPermissions
+      grantPermissionsDelete,
+      grantPermissionsAdd
     }
   },
 }

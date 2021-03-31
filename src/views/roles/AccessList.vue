@@ -19,7 +19,7 @@
       </div>
     </div>
     <div id="grant-permissions-modal" class="modal" tabindex="-1" aria-hidden="true">
-     <div class="modal-dialog">
+     <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <!-- BEGIN: Modal Header -->
           <div class="modal-header">
@@ -27,47 +27,41 @@
           </div> <!-- END: Modal Header -->
           <div class="m-8">
             <label for="role-name" class="form-label">Available permission list</label>
-            <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
-            <table class="table table-report -mt-2">
-              <thead>
-                <tr>
-                  <th class="whitespace-nowrap">PERMISSION NAME</th>
-                  <th class="whitespace-nowrap">URL</th>
-                  <th class="text-center whitespace-nowrap">EXPIRE DATE</th>
-                  <th class="text-center whitespace-nowrap">TYPE</th>
-                  <th class="text-center whitespace-nowrap">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(permission, permissionKey) in availablePermissions" :key="permissionKey" class="intro-x">
-                  <td>
-                    <a href="" class="font-medium whitespace-nowrap">{{permission.permissionName}}</a>
-                  </td>
-                  <td>
-                    <div class="text-gray-600 text-xs whitespace-nowrap mt-0.5"> {{ permission.resourceURI }}</div>
-                  </td>
-                  <td class="text-center">{{ !permission.validUntil ? "never expired" : "permission.validUntil" }}</td>
-                  <td class="w-40">
-                    <div class="flex items-center justify-center">
-                      {{ permission.type }}
-                    </div>
-                  </td>
-                  <td class="table-report__action w-56">
-                    <div class="flex justify-center items-center">
-                      <a class="flex items-center mr-3">
-                        <CheckSquareIcon class="w-4 h-4 mr-1" />
-                        Edit
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+            <div class="intro-y col-span-12 h-96 overflow-y-auto overflow-x-invisible bg-gray-200 p-1">
+              <table class="table table-report">
+                <thead>
+                  <tr>
+                    <th class="text-center"></th>
+                    <th class="whitespace-nowrap">PERMISSION NAME</th>
+                    <th class="whitespace-nowrap">URL</th>
+                    <th class="text-center whitespace-nowrap">EXPIRE DATE</th>
+                    <th class="text-center whitespace-nowrap">TYPE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(permission, permissionKey) in availablePermissions" :key="permissionKey" class="intro-x">
+                    <td class="">
+                      <input class="form-check-input" type="checkbox" :value="permission" v-model="checkedPermissions"/>
+                    </td>
+                    <td>{{permission.permissionName}}</td>
+                    <td>
+                      <div class="text-gray-600 text-xs whitespace-nowrap mt-0.5"> {{ permission.resourceURI }}</div>
+                    </td>
+                    <td class="text-center">{{ !permission.validUntil ? "never expired" : "permission.validUntil" }}</td>
+                    <td class="w-40">
+                      <div class="flex items-center justify-center">
+                        {{ permission.type }}
+                      </div>
+                    </td>
+                    
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           <div class="modal-footer text-right">
             <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20 mr-1"> Cancel </button>
-            <button type="button" data-dismiss="modal" class="btn btn-primary w-20"> OK </button>
+            <button type="button" data-dismiss="modal" class="btn btn-primary w-20" @click="grantPermissionsAdd(checkedPermissions)"> OK </button>
           </div> <!-- END: Modal Footer -->
         </div>
      </div>
@@ -83,9 +77,10 @@
 import { ref, reactive, onMounted, watch } from "vue";
 import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
+import _ from "lodash";
 
 export default {
-  props: ['rolePermissions', 'grantPermissions', 'permissionList'],
+  props: ['rolePermissions', 'permissionList', 'grantPermissionsDelete', 'grantPermissionsAdd'],
   setup(props) {
     
     const userPermission = ref(props.rolePermissions);
@@ -95,17 +90,24 @@ export default {
     const filter = reactive({
       value: ""
     });
+    const checkedPermissions = ref([]);
 
     watch(
       () => [props.rolePermissions, props.rolePermissions.permissions],
       () => {
-        console.log("rolePermissions was updated", props.rolePermissions)
-        userPermission.value = props.rolePermissions
-        tabulator.value.setData(userPermission.value.permissions)
+        userPermission.value = props.rolePermissions;
+        tabulator.value.setData(userPermission.value.permissions);
+        const notAvailbleKey = _.map(props.rolePermissions.permissions, "permissionId");
+        availablePermissions.value = props.permissionList.filter(item => !notAvailbleKey.includes(item.permissionId));
+        checkedPermissions.value = [];
       }
     )
 
-    availablePermissions.value = props.permissionList;
+    const notAvailbleKey = _.map(props.rolePermissions.permissions, "permissionId");
+    console.log("notAvailableKey = ", notAvailbleKey);
+    console.log("props.rolePermissions.permissions = ", props.rolePermissions.permissions);
+    availablePermissions.value = props.permissionList.filter(item => !notAvailbleKey.includes(item.permissionId));
+    console.log("available permissions = ", availablePermissions.value);
 
     const initTabulator = () => {
       tabulator.value = new Tabulator(tableRef.value, {
@@ -164,7 +166,7 @@ export default {
                 </a>
               </div>`);
               cash(a).on("click", function() {
-                props.grantPermissions(cell.getData());
+                props.grantPermissionsDelete(cell.getData());
               });
 
               return a[0];
@@ -204,7 +206,8 @@ export default {
       filter,
       onFilter,
       userPermission,
-      availablePermissions
+      availablePermissions,
+      checkedPermissions
     };
   },
 

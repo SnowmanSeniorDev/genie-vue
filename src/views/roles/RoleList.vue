@@ -63,12 +63,10 @@ export default {
     watch(
       () => props.roles,
       () => {
-        console.log("roles", props.roles)
         tabulator.value.setData(props.roles)
       }
     )
     const initTabulator = () => {
-      console.log(props.roles)
       tabulator.value = new Tabulator(tableRef.value, {
         data: props.roles,
         pagination: "local",
