@@ -20,7 +20,7 @@ export const login = ({commit}, payload) => {
 			commit(types.LOGIN, response.data);
 			store.dispatch('main/updateMenu', {userId: response.data.userId}).then(() => {
 				router.push({
-					name: 'dashboard'
+					name: 'GENIE_DASHBOARD'
 				})
 			})	
 		});

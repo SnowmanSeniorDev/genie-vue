@@ -1,4 +1,4 @@
 export const log = ({ next, to }) => {
-  console.log(to.name);
+  console.log("navigation data in log.js = ", to);
   return next();
 }

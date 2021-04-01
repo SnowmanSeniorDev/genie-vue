@@ -1,4 +1,4 @@
-import { SET_DARK_MODE, SET_MENU } from "./mutation-types";
+import { SET_DARK_MODE, SET_MENU, SET_PERMISSIONS } from "./mutation-types";
 
 export default {
   [SET_DARK_MODE](state, { darkMode }) {
@@ -6,5 +6,8 @@ export default {
   },
   [SET_MENU](state, menu) {
     state.menu = menu;
+  },
+  [SET_PERMISSIONS](state, permissions) {
+    state.permissions = permissions
   }
 };

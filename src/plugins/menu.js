@@ -5,7 +5,7 @@ const menu = [{
     subMenu: [{
       icon: "HomeIcon",
       title: "Dashboard",
-      pageName: "side-menu-dashboard",
+      pageName: "GENIE_DASHBOARD",
       permission: "GENIE_DASHBOARD"
     }]
   },{
@@ -81,12 +81,12 @@ const menu = [{
     title: "Security",
     subMenu: [{
         icon: "LayoutIcon",
-        pageName: "users",
+        pageName: "GENIE_SECURITY_USER_MANAGEMENT",
         title: "User Management",
         permission: "GENIE_SECURITY_USER_MANAGEMENT"
       },{
         icon: "LayoutIcon",
-        pageName: "roles",
+        pageName: "GENIE_SECURITY_ROLES",
         title: "User Group",
         permission: "GENIE_SECURITY_ROLES"
       }

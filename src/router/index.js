@@ -15,7 +15,8 @@ import EditPermission from "../views/permissions/Edit.vue";
 import RolesIndex from "../views/roles/index.vue";
 import GrantAccess from "../views/roles/GrantAccess.vue";
 import DashboardOverview1 from "../views/dashboard/index.vue";
-import ErrorPage from "../views/error-page/Main.vue";
+import ErrorPage from "../views/error-page/Error.vue";
+import AccessDenied from "../views/error-page/AccessDenied.vue";
 import { auth } from "../middleware/auth"
 import { log } from "../middleware/log"
 
@@ -26,7 +27,7 @@ const routes = [
     children: [
       {
         path: "/",
-        name: "dashboard",
+        name: "GENIE_DASHBOARD",
         component: DashboardOverview1
       }, {
         path: "/update_password",
@@ -34,10 +35,10 @@ const routes = [
         component: UpdatePassword
       }, {
         path: "users",
-        name: "users",
         component: Users,
         children: [{
           path: "",
+          name: "GENIE_SECURITY_USER_MANAGEMENT",
           component: UsersList
         }, {
           path: "creat",
@@ -62,10 +63,10 @@ const routes = [
         }]
       }, {
         path: "roles",
-        name: "roles",
         component: RolesIndex,
         children: [{
           path: "",
+          name: "GENIE_SECURITY_ROLES",
           component: GrantAccess
         }]
       }
@@ -101,12 +102,16 @@ const routes = [
     meta: {
       middleware: log,
     }
-  }, {
-    path: "/:pathMatch(.*)*",
-    component: ErrorPage,
+  },  {
+    path: "/access-denide",
+    name: "GENIE_ACCESS_DENIED",
+    component: AccessDenied,
     meta: {
       middleware: log,
     }
+  }, {
+    path: "/:pathMatch(.*)*",
+    component: ErrorPage,
   }
 ];
 

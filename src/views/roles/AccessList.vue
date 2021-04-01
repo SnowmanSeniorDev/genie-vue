@@ -104,10 +104,7 @@ export default {
     )
 
     const notAvailbleKey = _.map(props.rolePermissions.permissions, "permissionId");
-    console.log("notAvailableKey = ", notAvailbleKey);
-    console.log("props.rolePermissions.permissions = ", props.rolePermissions.permissions);
     availablePermissions.value = props.permissionList.filter(item => !notAvailbleKey.includes(item.permissionId));
-    console.log("available permissions = ", availablePermissions.value);
 
     const initTabulator = () => {
       tabulator.value = new Tabulator(tableRef.value, {
