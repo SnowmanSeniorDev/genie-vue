@@ -29,6 +29,7 @@ export const login = ({commit}, payload) => {
 
 export const logout = ({commit}) => {
 	commit(types.LOGOUT);
+	router.push({name: 'login'})
 };
 
 export default {

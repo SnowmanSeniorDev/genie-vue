@@ -130,6 +130,28 @@
                   </template>
                 </div>
                 <div class="input-form mt-3">
+                  <label for="validation-form-5" class="form-label w-full flex flex-col sm:flex-row">
+                    User Role
+                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Required</span>
+                  </label>
+                  <TailSelect v-model="select" :options="{ search: true, classNames: 'w-full' }">
+                      <option value="1">Leonardo DiCaprio</option>
+                      <option value="2">Johnny Deep</option>
+                      <option value="3">Robert Downey, Jr</option>
+                      <option value="4">Samuel L. Jackson</option>
+                      <option value="5">Morgan Freeman</option>
+                  </TailSelect>
+                  <template v-if="validate.displayName.$error">
+                    <div
+                      v-for="(error, index) in validate.displayName.$errors"
+                      :key="index"
+                      class="text-theme-6 mt-2"
+                    >
+                      {{ error.$message }}
+                    </div>
+                  </template>
+                </div>
+                <div class="input-form mt-3">
                   <label for="validation-form-6" class="form-label w-full flex flex-col sm:flex-row">
                     Password
                     <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Required</span>

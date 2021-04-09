@@ -43,7 +43,7 @@
                     <td class="">
                       <input class="form-check-input" type="checkbox" :value="permission" v-model="checkedPermissions"/>
                     </td>
-                    <td>{{permission.permissionName}}</td>
+                    <td>{{$h.convertSnakeToString(permission.permissionName)}}</td>
                     <td>
                       <div class="text-gray-600 text-xs whitespace-nowrap mt-0.5"> {{ permission.resourceURI }}</div>
                     </td>
@@ -64,8 +64,28 @@
             <button type="button" data-dismiss="modal" class="btn btn-primary w-20" @click="grantPermissionsAdd(checkedPermissions)"> OK </button>
           </div> <!-- END: Modal Footer -->
         </div>
+
      </div>
     </div>
+    <!-- BEGIN: Delete Role Confirm Modal Content -->
+    <div id="remove-permission-confirm-modal" class="modal" tabindex="-1" aria-hidden="true">
+     <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body p-0">
+            <div class="p-5 text-center">
+              <XCircleIcon class="w-16 h-16 text-theme-6 mx-auto mt-3" />
+              <div class="text-3xl mt-5">Are you sure?</div>
+              <div class="text-gray-600 mt-2"> Do you really want to Remove <span class="text-base font-bold text-red-900">{{preRemovePermission ? $h.convertSnakeToString(preRemovePermission.permissionName) : ''}}</span> Permission? <br />This process cannot be undone. </div>
+            </div>
+            <div class="px-5 pb-8 text-center">
+              <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-24 dark:border-dark-5 dark:text-gray-300 mr-1"> Cancel </button>
+              <button type="button" class="btn btn-danger w-24" @click="removePermission"> Remove </button>
+            </div>
+          </div>
+        </div>
+     </div>
+    </div>
+    <!-- END Delete Role Confirm Modal Content-->
     <div class="overflow-x-auto scrollbar-hidden">
       <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
     </div>
@@ -77,6 +97,7 @@
 import { ref, reactive, onMounted, watch } from "vue";
 import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
+import { helper as $h } from "@/utils/helper";
 import _ from "lodash";
 
 export default {
@@ -85,6 +106,7 @@ export default {
     
     const userPermission = ref(props.rolePermissions);
     const availablePermissions = ref(null);
+    const preRemovePermission = ref(null);
     const tableRef = ref();
     const tabulator = ref();
     const filter = reactive({
@@ -129,7 +151,7 @@ export default {
             vertAlign: "middle",
             formatter(cell) {
               return `<div>
-                <div class="font-medium whitespace-nowrap">${cell.getData().permissionName}</div>
+                <div class="font-medium whitespace-nowrap">${$h.convertSnakeToString(cell.getData().permissionName)}</div>
               </div>`;
             }
           },
@@ -158,12 +180,12 @@ export default {
             download: false,
             formatter(cell) {
               const a = cash(`<div class="flex lg:justify-center items-center">
-                <a class="flex items-center text-theme-6" href="javascript:;">
+                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#remove-permission-confirm-modal">
                   <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> remove
                 </a>
               </div>`);
               cash(a).on("click", function() {
-                props.grantPermissionsDelete(cell.getData());
+                preRemovePermission.value = cell.getData();
               });
 
               return a[0];
@@ -193,18 +215,25 @@ export default {
       tabulator.value.setFilter("permissionName", "like", filter.value);
     };
 
+    const removePermission = () => {
+      props.grantPermissionsDelete(preRemovePermission.value);
+      cash("#remove-permission-confirm-modal").modal("hide")
+    }
+
     onMounted(() => {
       initTabulator();
       reInitOnResizeWindow();
     });
 
     return {
+      userPermission,
+      preRemovePermission,
+      availablePermissions,
+      checkedPermissions,
       tableRef,
       filter,
       onFilter,
-      userPermission,
-      availablePermissions,
-      checkedPermissions
+      removePermission
     };
   },
 

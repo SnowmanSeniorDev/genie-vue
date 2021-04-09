@@ -4,6 +4,7 @@ import Login from "../views/auth/Login.vue";
 import Register from "../views/auth/Register.vue";
 import ForgotPassword from "../views/auth/ForgotPassword.vue";
 import UpdatePassword from "../views/auth/UpdatePassword.vue";
+import ResetPassword from "../views/auth/ResetPassword.vue";
 import Users from "../views/users/index.vue";
 import UsersList from "../views/users/UsersList.vue";
 import CreatUser from "../views/users/Add.vue";
@@ -14,6 +15,13 @@ import CreatePermission from "../views/permissions/Add.vue";
 import EditPermission from "../views/permissions/Edit.vue";
 import RolesIndex from "../views/roles/index.vue";
 import GrantAccess from "../views/roles/GrantAccess.vue";
+import SettingsIndex from "../views/settings/index.vue";
+import SystemConfigure from "../views/settings/SystemConfigure.vue";
+import Account from "../views/account/index.vue";
+import CompanyInformation from "../views/account/CompanyInformation.vue";
+import BankInformation from "../views/account/BankInformation.vue";
+import CurrencySettings from "../views/account/CurrencySettings.vue";
+import Kyc from "../views/account/Kyc.vue"
 import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Error.vue";
 import AccessDenied from "../views/error-page/AccessDenied.vue";
@@ -22,13 +30,16 @@ import { log } from "../middleware/log"
 
 const routes = [
   {
-    path: "/",
+    path: "",
     component: SideMenu,
     children: [
       {
         path: "/",
         name: "GENIE_DASHBOARD",
-        component: DashboardOverview1
+        component: DashboardOverview1,
+        meta: {
+          permission: "GENIE_DASHBOARD"
+        }
       }, {
         path: "/update_password",
         name: "updatePassword",
@@ -42,11 +53,14 @@ const routes = [
           component: UsersList
         }, {
           path: "creat",
-          component: CreatUser
+          component: CreatUser,
         }, {
           path: "edit/:id",
           component: UpdateUser,
-        }]
+        }],
+        meta: {
+          permission: "GENIE_SECURITY_USER_MANAGEMENT"
+        }
       }, {
         path: "permission",
         name: "permission",
@@ -68,7 +82,40 @@ const routes = [
           path: "",
           name: "GENIE_SECURITY_ROLES",
           component: GrantAccess
-        }]
+        }],
+        meta: {
+          permission: "GENIE_SECURITY_ROLES"
+        }
+      }, {
+        path: "settings",
+        component: SettingsIndex,
+        children: [{
+          path: "",
+          name: "GENIE_SYSTEM_CONFIGURATION",
+          component: SystemConfigure
+        }],
+        meta: {
+          permission: "GENIE_SYSTEM_CONFIGURATION"
+        }
+      }, {
+        path: "account",
+        component: Account,
+        children: [{
+          path: "",
+          component: CompanyInformation
+        }, {
+          path: "bank-information",
+          component: BankInformation
+        }, {
+          path: "currency-settings",
+          component: CurrencySettings
+        }, {
+          path: "kyc",
+          component: Kyc
+        }],
+        meta: {
+          permission: "GENIE_COMPANY_CREATE"
+        }
       }
     ],
     meta: {
@@ -78,37 +125,26 @@ const routes = [
     path: "/login",
     name: "login",
     component: Login,
-    meta: {
-      middleware: log,
-    }
   }, {
     path: "/register",
     name: "register",
     component: Register,
-    meta: {
-      middleware: log,
-    }
   }, {
     path: "/forgot_password",
     name: "forgotPassword",
     component: ForgotPassword,
-    meta: {
-      middleware: log,
-    }
+  }, {
+    path: "/reset_password/:checkValidity",
+    name: "resetPassword",
+    component: ResetPassword,
   }, {
     path: "/error-page",
     name: "error-page",
     component: ErrorPage,
-    meta: {
-      middleware: log,
-    }
-  },  {
+  }, {
     path: "/access-denide",
     name: "GENIE_ACCESS_DENIED",
     component: AccessDenied,
-    meta: {
-      middleware: log,
-    }
   }, {
     path: "/:pathMatch(.*)*",
     component: ErrorPage,

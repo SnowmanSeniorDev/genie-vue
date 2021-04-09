@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Https from "@/plugins/axios";
 import Toastify from "toastify-js";
 import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
@@ -55,7 +55,8 @@ export default {
       const api = `user/v1/${emailAddress.value}/resetpassword`;
       Https.post(api).then(res => {
         if(res.status === 200) {
-          if(res.status === 201){
+          console.log(res)
+          if(res.status === 200){
             Toastify({
               node: cash("#success-notification-sent-password-reset").clone().removeClass("hidden")[0],
               duration: 3000,
@@ -69,6 +70,13 @@ export default {
         }
       })
     }
+
+    onMounted(() => {
+      cash("body")
+        .removeClass("main")
+        .removeClass("error-page")
+        .addClass("login");
+    });
     
     return {
       emailAddress,

@@ -126,8 +126,26 @@ const helpers = {
     }
 
     return numbers;
+  },
+  convertSnakeToString(str) {
+    var temp = str.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => {
+      return " " + chr.toUpperCase()}
+    );
+    return this.capitalizeFirstLetter(temp);
+  },
+  removeObjectValues(obj) {
+    var temp = {}
+    if(obj !== null && obj !== undefined){
+      for (const prop in obj) {
+        temp[prop] = null
+      }
+      return temp
+    }
+    return {};
   }
 };
+
+
 
 const install = app => {
   app.config.globalProperties.$h = helpers;

@@ -55,28 +55,11 @@
 
 <script>
 import { onMounted } from "vue";
-import { mapActions } from "vuex"
-// import { useRecaptcha } from "vue-recaptcha-v3";
-import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
-
+import { useRoute } from "vue-router";
 export default {
-  components: {
-    DarkModeSwitcher,
-  },
   setup() {
-    // const { executeRecaptcha, recaptchaLoaded } = useRecaptcha();
- 
-    const recaptcha = async () => {
-      // (optional) Wait until recaptcha has been loaded.
-      // await recaptchaLoaded()
- 
-      // // Execute reCAPTCHA with action "login".
-      // const token = await executeRecaptcha('login')
-      // console.log(token)
-      // Do stuff with the received token.
-    }
- 
-    
+    const route = useRoute();
+    console.log(route.params.checkValidity)
     onMounted(() => {
       cash("body")
         .removeClass("main")
@@ -84,26 +67,7 @@ export default {
         .addClass("login");
     });
     return {
-      recaptcha
     }
   },
-  data() {
-    return {
-      userName: '',
-      password: '',
-      recaptchSiteKey: process.env.VUE_APP_RECAPTCHA_SITE_KEY
-    }
-  },
-  methods: {
-    ...mapActions({
-      login: "auth/login"
-    }),
-    gotoSignUp() {
-      this.$router.push({path: 'register'})
-    },
-    gotoForgotPassword() {
-      this.$router.push({path: 'forgot_password'})
-    }
-  }
 };
 </script>

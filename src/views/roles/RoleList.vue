@@ -9,16 +9,16 @@
         <div class="sm:flex items-center sm:mr-4 mt-2 xl:mt-0">
           <input
             id="tabulator-html-filter-value"
-            @input="onFilter"
             v-model="filter.value"
             type="text"
             class="form-control sm:w-40 xxl:w-full mt-2 sm:mt-0"
             placeholder="Search..."
+            @input="onFilter"
           />
         </div>
       </div>
     </div>
-    <!-- BEGIN: Modal Content -->
+    <!-- BEGIN: Add Role Modal Content -->
     <div id="add-new-role-modal" class="modal" tabindex="-1" aria-hidden="true">
      <div class="modal-dialog">
         <div class="modal-content">
@@ -37,6 +37,26 @@
         </div>
      </div>
     </div>
+    <!-- END: Add Role Modal Content -->
+    <!-- BEGIN: Delete Role Confirm Modal Content -->
+    <div id="delete-role-confirm-modal" class="modal" tabindex="-1" aria-hidden="true">
+     <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body p-0">
+            <div class="p-5 text-center">
+              <XCircleIcon class="w-16 h-16 text-theme-6 mx-auto mt-3" />
+              <div class="text-3xl mt-5">Are you sure?</div>
+              <div class="text-gray-600 mt-2"> Do you really want to delete <span class="text-base font-bold text-red-900">{{preDeleteRole ? preDeleteRole.roleName : ''}}</span> Role? <br />This process cannot be undone. </div>
+            </div>
+            <div class="px-5 pb-8 text-center">
+              <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-24 dark:border-dark-5 dark:text-gray-300 mr-1"> Cancel </button>
+              <button type="button" class="btn btn-danger w-24" @click="thisDeleteRole"> Delete </button>
+            </div>
+          </div>
+        </div>
+     </div>
+    </div>
+    <!-- END Delete Role Confirm Modal Content-->
     <div class="overflow-x-auto scrollbar-hidden">
       <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
     </div>
@@ -48,7 +68,6 @@
 import { ref, reactive, onMounted, watch } from "vue";
 import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
-// import Https from "@/plugins/axios";
 
 export default {
   props: ['roles', 'selectRole', 'addRole', 'deleteRole'],
@@ -59,6 +78,7 @@ export default {
     const filter = reactive({
       value: ""
     });
+    const preDeleteRole = ref(null);
 
     watch(
       () => props.roles,
@@ -86,14 +106,11 @@ export default {
             title: "Role Name",
             field: "roleName",
             vertAlign: "middle",
+            cellClick: (e, cell) => props.selectRole(cell.getData().roleId),
             formatter(cell) {
               const a = cash(`<div>
                 <div class="font-medium whitespace-nowrap">${cell.getData().roleName}</div>
               </div>`);
-              cash(a).on("click", function() {
-                props.selectRole(cell.getData().roleId);
-              });
-
               return a[0]
             }
           },
@@ -109,12 +126,12 @@ export default {
             download: false,
             formatter(cell) {
               const a = cash(`<div class="flex lg:justify-center items-center">
-                <a class="flex items-center text-theme-6" href="javascript:;">
+                <a class="flex items-center text-theme-6" href="javascript:;" data-toggle="modal" data-target="#delete-role-confirm-modal">
                   <i data-feather="trash-2" class="w-4 h-4 mr-1"></i> Delete
                 </a>
               </div>`);
               cash(a).on("click", function() {
-                props.deleteRole(cell.getData())
+                preDeleteRole.value = cell.getData();
               });
 
               return a[0];
@@ -150,6 +167,11 @@ export default {
       }
       props.addRole(data)
     }
+
+    const thisDeleteRole = () => {
+      props.deleteRole(preDeleteRole.value);
+      cash("#delete-role-confirm-modal").modal("hide")
+    }
     onMounted(() => {
       initTabulator();
       reInitOnResizeWindow();
@@ -157,10 +179,12 @@ export default {
 
     return {
       tableRef,
+      newUserRole,
+      preDeleteRole,
       filter,
       onFilter,
       addUserRole,
-      newUserRole
+      thisDeleteRole
     };
   },
 };
