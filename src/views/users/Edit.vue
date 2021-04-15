@@ -107,6 +107,28 @@
                     </div>
                   </template>
                 </div>
+                <div class="input-form mt-3" v-if="selectedRoles">
+                  <label for="validation-form-5" class="form-label w-full flex flex-col sm:flex-row">
+                    User Role
+                    <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Required</span>
+                  </label>
+                  <TailSelect 
+                    v-model="selectedRoles"
+                    :options="{
+                      search: true,
+                      descriptions: true,
+                      hideSelected: true,
+                      hideDisabled: true,
+                      multiLimit: 15,
+                      multiShowCount: false,
+                      multiContainer: true,
+                      classNames: 'w-full' 
+                    }"
+                    multiple
+                    >
+                    <option v-for="role in roles" :key="role.roleId" :value="role.roleId">{{role.roleName}}</option>
+                  </TailSelect>
+                </div>
                 <button type="submit" class="btn btn-primary mt-5">Update User</button>
               </form>
               <!-- END: Validation Form -->
@@ -138,7 +160,7 @@
 </template>
 
 <script>
-import { reactive, toRefs } from "vue";
+import { reactive, toRefs, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import Https from "@/plugins/axios";
 import { required, minLength, email } from "@vuelidate/validators";
@@ -148,19 +170,38 @@ import Toastify from "toastify-js";
 export default {
   setup() {
     const route = useRoute();
-    console.log(route.params.id)
-    const api = "/user/v1/" + route.params.id;
+    const roles = ref([]);
+    // const selectedRoles = ref(["d286270d-6cb3-4d35-6eeb-08d8e37d3cba", "93cf00f1-0fb5-40a1-f68b-08d8e9b63a35", "661dfade-2b95-48b3-e4c3-08d8eab473f8"]);
+    const selectedRoles = ref([]);
+    const authorizationId = ref('');
     const formData = reactive({
       firstName: "",
       lastName: "",
       email: "",
       displayName: "",
     });
-    Https.get(api).then((res) => {
-      formData.firstName = res.data.firstName,
-      formData.lastName = res.data.lastName,
-      formData.displayName = res.data.displayName,
-      formData.email = res.data.emailAddress
+    
+    onMounted(() => {
+      
+
+      const authorizationApi = `access/v1/authorization/user/${route.params.id}`;
+      Https.get(authorizationApi).then(res => {
+        authorizationId.value = res.data.authorizationId
+        res.data.roles.forEach(role => {
+          selectedRoles.value.push(role.roleId);
+        });
+
+        const rolesApi = "access/v1/role";
+        Https.get(rolesApi).then(res => {roles.value = res.data});
+      })
+
+      const userApi = "/user/v1/" + route.params.id;
+      Https.get(userApi).then((res) => {
+        formData.firstName = res.data.firstName,
+        formData.lastName = res.data.lastName,
+        formData.displayName = res.data.displayName,
+        formData.email = res.data.emailAddress
+      })
     })
     const rules = {
       firstName: { required, minLength: minLength(2) },
@@ -189,17 +230,22 @@ export default {
           lastName: formData.lastName,
           displayName: formData.displayName
         }).then(res => {
-          console.log(res);
           if(res.status === 200){
-            Toastify({
-              node: cash("#success-notification-content").clone().removeClass("hidden")[0],
-              duration: 3000,
-              newWindow: true,
-              close: true,
-              gravity: "top",
-              position: "right",
-              stopOnFocus: true
-            }).showToast();
+            const api = `access/v1/authorization/${authorizationId.value}`;
+            Https.put(api, {applicationDomain: "genie", roleIds: selectedRoles.value}).then(res => {
+              if(res.status === 200){
+                Toastify({
+                  node: cash("#success-notification-content").clone().removeClass("hidden")[0],
+                  duration: 3000,
+                  newWindow: true,
+                  close: true,
+                  gravity: "top",
+                  position: "right",
+                  stopOnFocus: true
+                }).showToast();
+              }
+            })
+            
           }
         })
       }
@@ -208,7 +254,9 @@ export default {
     return {
       validate,
       formData,
-      save
+      save,
+      selectedRoles,
+      roles
     };
   }
 };

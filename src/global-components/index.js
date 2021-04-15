@@ -12,6 +12,7 @@ import Dropzone from "./dropzone/Main.vue";
 import FullCalendar from "./calendar/Main.vue";
 import FullCalendarDraggable from "./calendar/Draggable.vue";
 import * as featherIcons from "@zhuowenli/vue-feather-icons";
+import ArrayInput from "./arrayInput/Main.vue";
 
 export default app => {
   app.component("Chart", Chart);
@@ -27,6 +28,7 @@ export default app => {
   app.component("CKEditor", CKEditor);
   app.component("FullCalendar", FullCalendar);
   app.component("FullCalendarDraggable", FullCalendarDraggable);
+  app.component('ArrayInput', ArrayInput)
 
   for (const [key, icon] of Object.entries(featherIcons)) {
     icon.props.size.default = "24";

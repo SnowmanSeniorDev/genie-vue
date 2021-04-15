@@ -134,22 +134,22 @@
                     User Role
                     <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Required</span>
                   </label>
-                  <TailSelect v-model="select" :options="{ search: true, classNames: 'w-full' }">
-                      <option value="1">Leonardo DiCaprio</option>
-                      <option value="2">Johnny Deep</option>
-                      <option value="3">Robert Downey, Jr</option>
-                      <option value="4">Samuel L. Jackson</option>
-                      <option value="5">Morgan Freeman</option>
-                  </TailSelect>
-                  <template v-if="validate.displayName.$error">
-                    <div
-                      v-for="(error, index) in validate.displayName.$errors"
-                      :key="index"
-                      class="text-theme-6 mt-2"
+                  <TailSelect 
+                    v-model="selectedRoles"
+                    :options="{
+                      search: true,
+                      descriptions: true,
+                      hideSelected: true,
+                      hideDisabled: true,
+                      multiLimit: 15,
+                      multiShowCount: false,
+                      multiContainer: true,
+                      classNames: 'w-full' 
+                    }"
+                    multiple
                     >
-                      {{ error.$message }}
-                    </div>
-                  </template>
+                    <option v-for="role in roles" :key="role.roleId" :value="role.roleId">{{role.roleName}}</option>
+                  </TailSelect>
                 </div>
                 <div class="input-form mt-3">
                   <label for="validation-form-6" class="form-label w-full flex flex-col sm:flex-row">
@@ -228,7 +228,7 @@
 </template>
 
 <script>
-import { reactive, toRefs } from "vue";
+import { reactive, toRefs, ref, onMounted } from "vue";
 import { required, minLength, email } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import Https from "@/plugins/axios";
@@ -236,6 +236,8 @@ import Toastify from "toastify-js";
 
 export default {
   setup() {
+    const roles = ref([]);
+    const selectedRoles = ref([]);
     const formData = reactive({
       firstName: "",
       lastName: "",
@@ -255,6 +257,10 @@ export default {
       confirmPassword: { required }
     };
     const validate = useVuelidate(rules, toRefs(formData));
+    onMounted(() => {
+      const api = "access/v1/role";
+      Https.get(api).then(res => {roles.value = res.data})
+    })
     const save = () => {
       validate.value.$touch();
       if (validate.value.$invalid) {
@@ -278,7 +284,12 @@ export default {
           displayName: formData.displayName
         }).then(res => {
           console.log(res);
+          console.log(selectedRoles);
+          const grantUserRoleAPI = "/access/v1/authorization";
           if(res.status === 201){
+            Https.post(grantUserRoleAPI, {userId: res.data, applicationDomain: "genie", roleIds: selectedRoles.value}).then(res => {
+              console.log("grant user role return = ", res)
+            })
             Toastify({
               node: cash("#success-notification-content").clone().removeClass("hidden")[0],
               duration: 3000,
@@ -294,6 +305,8 @@ export default {
     };
 
     return {
+      roles,
+      selectedRoles,
       validate,
       formData,
       save
