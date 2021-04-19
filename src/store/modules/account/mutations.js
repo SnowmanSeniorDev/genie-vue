@@ -7,7 +7,8 @@
  */
 import {
   SET_STEP,
-  SET_ACCOUNT
+  SET_ACCOUNT,
+  SET_COMPANYID
 } from "./mutation-types";
 
 /* eslint-disable no-param-reassign */
@@ -20,5 +21,8 @@ export default {
       ...state.account,
       ...payload
     }
+  },
+  [SET_COMPANYID](state, payload) {
+    state.company_uuid = payload.company_uuid
   }
 };

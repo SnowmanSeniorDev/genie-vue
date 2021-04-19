@@ -12,6 +12,11 @@ export const setStep = ({commit}, payload) => {
 	commit(types.SET_STEP, payload);
 };
 
+export const setCompanyId = ({commit}, payload) => {
+	commit(types.SET_COMPANYID, payload)
+}
+
 export default {
 	setStep,
+	setCompanyId
 };

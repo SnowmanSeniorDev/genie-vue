@@ -88,7 +88,6 @@
 <script>
 import { ref } from "vue";
 export default {
-  name: 'CompanyOnboard',
   setup() {
     const invitePayload = ref({
       userType: '',

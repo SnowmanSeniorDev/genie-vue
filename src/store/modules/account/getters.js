@@ -8,5 +8,6 @@
 
 export default{
     getStep: state => state.step,
-    getAccount: state => state.account
+    getAccount: state => state.account,
+    getCompanyId: state => state.company_uuid
 };

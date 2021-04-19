@@ -47,4 +47,6 @@ axios.interceptors.request.use(
   }
 );
 
+// export const companyRegister = axios;
+// companyRegister.defaults.baseURL = "https://companies.bsg-api.tk/api/genie/";
 export default axios;
