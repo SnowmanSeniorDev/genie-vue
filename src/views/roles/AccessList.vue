@@ -9,11 +9,11 @@
         <div class="sm:flex items-center sm:mr-4 mt-2 xl:mt-0">
           <input
             id="access-list-filter-value"
-            @input="onFilter"
             v-model="filter.value"
             type="text"
             class="form-control sm:w-40 xxl:w-full mt-2 sm:mt-0"
             placeholder="Search..."
+            @input="onFilter"
           />
         </div>
       </div>
@@ -41,7 +41,7 @@
                 <tbody>
                   <tr v-for="(permission, permissionKey) in availablePermissions" :key="permissionKey" class="intro-x">
                     <td class="">
-                      <input class="form-check-input" type="checkbox" :value="permission" v-model="checkedPermissions"/>
+                      <input v-model="checkedPermissions" type="checkbox" :value="permission" class="form-check-input"/>
                     </td>
                     <td>{{$h.convertSnakeToString(permission.permissionName)}}</td>
                     <td>

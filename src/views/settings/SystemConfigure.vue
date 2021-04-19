@@ -29,8 +29,8 @@
           <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
             <a
               v-for="(item, itemKey) in configurations"
-              :key="itemKey"
               :id="`configurations-tab` + itemKey"
+              :key="itemKey"
               href="javascript:;"
               data-toggle="tab"
               :data-target="`#configurations-tabpanel` + itemKey"
@@ -47,8 +47,8 @@
       <div class="nav nav-tabs hidden sm:flex" role="tablist">
         <a
           v-for="(item, itemKey) in configurations"
-          :key="itemKey"
           :id="`configurations-tab` + itemKey"
+          :key="itemKey"
           data-toggle="tab"
           :data-target="`#configurations-tabpanel` + itemKey"
           href="javascript:;"
@@ -68,8 +68,8 @@
       <div class="tab-content">
         <div
           v-for="(item, itemKey) in configurations"
-          :key="itemKey"
           :id="`configurations-tabpanel` + itemKey"
+          :key="itemKey"
           :class="itemKey === 0 ? 'tab-pane active' : 'tab-pane'"
           role="tabpanel"
           :aria-labelledby="`configurations-tab` + itemKey"
@@ -78,12 +78,12 @@
             <div v-for="(configuration, configKey) in item.configurations" :key="configKey" class="box intro-y col-span-12 md:col-span-6 lg:col-span-4 px-4">
               <div class="form-inline mt-5 last:mb-5">
                 <label :for="`input-name` + `-` + itemKey + `-` + configKey" class="form-label sm:w-20">name</label>
-                <input :id="`input-name` + `-` + itemKey + `-` + configKey" type="text" class="form-control" v-model="configurations[itemKey].configurations[configKey].name"/>
+                <input :id="`input-name` + `-` + itemKey + `-` + configKey" v-model="configurations[itemKey].configurations[configKey].name" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-value" class="form-label sm:w-20">value</label>
                 <ArrayInput v-if="configurations[itemKey].configurations[configKey].dataType === 'Array'" v-model="configurations[itemKey].configurations[configKey].value"/>
-                <input v-else id="add-input-value" type="text" class="form-control" v-model="configurations[itemKey].configurations[configKey].value"/>
+                <input v-else id="add-input-value" v-model="configurations[itemKey].configurations[configKey].value" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
                 <label :for="`input-dataType` + `-` + itemKey + `-` + configKey" class="form-label sm:w-20">data type</label>
@@ -144,12 +144,12 @@
             <div class="intro-y col-span-12 md:col-span-6 lg:col-span-4 px-4">
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-name" class="form-label sm:w-20">name</label>
-                <input id="add-input-name" type="text" class="form-control" v-model="addConfigurationData.name"/>
+                <input id="add-input-name" v-model="addConfigurationData.name" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-value" class="form-label sm:w-20">value</label>
                 <ArrayInput v-if="addConfigurationData.dataType === 'Array'" v-model="addConfigurationData.value"/>
-                <input v-else id="add-input-value" type="text" class="form-control" v-model="addConfigurationData.value"/>
+                <input v-else id="add-input-value" v-model="addConfigurationData.value" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-dataType" class="form-label sm:w-20">data type</label>
@@ -224,16 +224,16 @@
             <div class="intro-y col-span-12 md:col-span-6 lg:col-span-4 px-4">
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-name" class="form-label sm:w-20">Group Name</label>
-                <input id="add-input-name" type="text" class="form-control" v-model="addNewGroupName"/>
+                <input id="add-input-name" v-model="addNewGroupName" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-name" class="form-label sm:w-20">name</label>
-                <input id="add-input-name" type="text" class="form-control" v-model="addConfigurationData.name"/>
+                <input id="add-input-name" v-model="addConfigurationData.name" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-value" class="form-label sm:w-20">value</label>
                 <ArrayInput v-if="addConfigurationData.dataType === 'Array'" v-model="addConfigurationData.value"/>
-                <input v-else id="add-input-value" type="text" class="form-control" v-model="addConfigurationData.value"/>
+                <input v-else id="add-input-value" v-model="addConfigurationData.value" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-dataType" class="form-label sm:w-20">data type</label>

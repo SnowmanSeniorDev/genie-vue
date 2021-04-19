@@ -3,7 +3,8 @@ export default {
   name: "InputTag",
   props: {
     modelValue: {
-      type: Array
+      type: Array,
+      required: true
     },
     value: {
       type: Array,
@@ -40,7 +41,8 @@ export default {
       default: false
     },
     beforeAdding: {
-      type: Function
+      type: Function,
+      required: true
     }
   },
   data() {
@@ -59,6 +61,9 @@ export default {
     value() {
       this.innerTags = [...this.modelValue];
     }
+  },
+  mounted() {
+    console.log("asdfasfasdf = ", this.modelValue)
   },
   methods: {
     focusNewTag() {
@@ -98,21 +103,18 @@ export default {
       this.$emit("update:modelValue", this.innerTags);
       this.$emit("input", this.innerTags);
     }
-  },
-  mounted() {
-    console.log("asdfasfasdf = ", this.modelValue)
   }
 };
 </script>
 
 <template>
   <div
-    @click="focusNewTag()"
     :class="{ 'read-only': readOnly, 'vue-input-tag-wrapper--active': isInputActive}"
     class="form-control"
+    @click="focusNewTag()"
   >
     <span v-for="(tag, index) in innerTags" :key="index" class="input-tag">
-      <a v-if="!readOnly" @click.prevent.stop="remove(index)" class="remove">
+      <a v-if="!readOnly" class="remove" @click.prevent.stop="remove(index)">
         <slot name="remove-icon" />
       </a>
       <span>{{ tag }}</span>
@@ -120,14 +122,14 @@ export default {
     <input
       v-if="!readOnly && !isLimit"
       ref="inputtag"
+      v-model="newTag"
       :placeholder="placeholder"
       type="text"
-      v-model="newTag"
-      v-on:keydown.delete.stop="removeLastTag"
-      v-on:keydown="addNew"
-      v-on:blur="handleInputBlur"
-      v-on:focus="handleInputFocus"
       class="new-tag"
+      @keydown.delete.stop="removeLastTag"
+      @keydown="addNew"
+      @blur="handleInputBlur"
+      @focus="handleInputFocus"
     />
   </div>
 </template>

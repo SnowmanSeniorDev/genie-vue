@@ -107,7 +107,7 @@
                     </div>
                   </template>
                 </div>
-                <div class="input-form mt-3" v-if="selectedRoles">
+                <div v-if="selectedRoles" class="input-form mt-3">
                   <label for="validation-form-5" class="form-label w-full flex flex-col sm:flex-row">
                     User Role
                     <span class="sm:ml-auto mt-1 sm:mt-0 text-xs text-gray-600">Required</span>

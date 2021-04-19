@@ -1,7 +1,9 @@
 import store from "@/store"
 
 export const auth = ({ next, router, to }) => {
-  if (!localStorage.getItem("id_token")) return router.push({ name: "login" });
+  if (!localStorage.getItem("id_token")) {
+    return router.push({ name: "login" });
+  }
   else {
     console.log(to.meta.permission)
     console.log(store.state.main.permissions)

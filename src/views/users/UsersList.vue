@@ -41,7 +41,10 @@
                   >
                     <Edit2Icon class="w-4 h-4 mr-2" /> Edit
                   </a>
-                  <button @click="deleteUser(user.userId)" class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md">
+                  <button
+                    class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                    @click="deleteUser(user.userId)"
+                  >
                     <TrashIcon class="w-4 h-4 mr-2" /> Delete
                   </button>
                 </div>

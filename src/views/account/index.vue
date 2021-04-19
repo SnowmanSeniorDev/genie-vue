@@ -44,10 +44,10 @@
 						:class="step === `kyc` ? `w-12 h-12 rounded-full btn btn-primary` : `w-12 h-12 rounded-full btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
 						@click="gotoKyc"
 					>
-						<DollarSignIcon class="w-8 h-8"/>
+						<PaperclipIcon class="w-8 h-8"/>
 					</button>
 					<div :class="step === `currency-settings` ? `font-medium text-base lg:mt-3 ml-3 lg:mx-auto` : `text-base lg:mt-3 ml-3 lg:mx-auto text-gray-700 dark:text-gray-600`">
-            Currency Settings
+            KYC Documents
           </div>
         </div>
         <div class="wizard__line hidden lg:block w-2/3 bg-gray-200 dark:bg-dark-1 absolute mt-5"></div>

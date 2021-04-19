@@ -70,7 +70,7 @@ import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
 
 export default {
-  props: ['roles', 'selectRole', 'addRole', 'deleteRole'],
+  props: ['selectRole', 'addRole', 'deleteRole', 'roles'],
   setup(props) {
     const tableRef = ref();
     const tabulator = ref();

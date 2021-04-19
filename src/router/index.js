@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import SideMenu from "../layouts/Main.vue";
 import Login from "../views/auth/Login.vue";
 import Register from "../views/auth/Register.vue";
+import ValidatePhoneNumber from "../views/auth/ValidatePhoneNumber.vue";
 import ForgotPassword from "../views/auth/ForgotPassword.vue";
 import UpdatePassword from "../views/auth/UpdatePassword.vue";
 import ResetPassword from "../views/auth/ResetPassword.vue";
@@ -22,6 +23,7 @@ import CompanyInformation from "../views/account/CompanyInformation.vue";
 import BankInformation from "../views/account/BankInformation.vue";
 import CurrencySettings from "../views/account/CurrencySettings.vue";
 import Kyc from "../views/account/Kyc.vue"
+import CompanyOnboard from "../views/company/index.vue";
 import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Error.vue";
 import AccessDenied from "../views/error-page/AccessDenied.vue";
@@ -116,6 +118,9 @@ const routes = [
         meta: {
           permission: "GENIE_COMPANY_CREATE"
         }
+      }, {
+        path: "company-onboard",
+        component: CompanyOnboard
       }
     ],
     meta: {
@@ -129,6 +134,10 @@ const routes = [
     path: "/register",
     name: "register",
     component: Register,
+  }, {
+    path: "/validate-phone-number",
+    name: "validatePhoneNumber",
+    component: ValidatePhoneNumber,
   }, {
     path: "/forgot_password",
     name: "forgotPassword",

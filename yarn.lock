@@ -3535,10 +3535,20 @@ core-js-compat@^3.6.5, core-js-compat@^3.8.1, core-js-compat@^3.9.0:
     browserslist "^4.16.3"
     semver "7.0.0"
 
+core-js@^2.6.5:
+  version "2.6.12"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
+  integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
+
 core-js@^3.1.3, core-js@^3.6.5:
   version "3.9.1"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.9.1.tgz#cec8de593db8eb2a85ffb0dbdeb312cb6e5460ae"
   integrity sha512-gSjRvzkxQc1zjM/5paAmL4idJBFzuJoo+jDjF1tStYFMV2ERfD02HhahhCGXUyHxQRG4yFKVSdO6g62eoRMcDg==
+
+core-js@^3.3.2:
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.10.1.tgz#e683963978b6806dcc6c0a4a8bd4ab0bdaf3f21a"
+  integrity sha512-pwCxEXnj27XG47mu7SXAwhLP3L5CrlvCB91ANUkIz40P27kUcvNfSdvyZJ9CLHiVoKSp+TTChMQMSKQEH/IQxA==
 
 core-util-is@1.0.2, core-util-is@~1.0.0:
   version "1.0.2"
@@ -10446,6 +10456,13 @@ vue-loader@^15.9.2:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
+vue-pincode-input@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/vue-pincode-input/-/vue-pincode-input-0.4.0.tgz#9f4f162e2171ff268cd146570520f8d48d5e14fb"
+  integrity sha512-A1DtG9J+o5AhdxRcgmuW8xxh7w5+GGVd6Di1J3n12xI99qSyKm9kBNJx4AzrNDgzr2TwUbleAdw7YTy3B68ohQ==
+  dependencies:
+    core-js "^2.6.5"
+
 vue-recaptcha-v3@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/vue-recaptcha-v3/-/vue-recaptcha-v3-2.0.0.tgz#d8fd29d74d159895f3c68dd9bcfd0d9538e38f00"
@@ -10476,12 +10493,20 @@ vue-template-es2015-compiler@^1.9.0:
   resolved "https://registry.yarnpkg.com/vue-template-es2015-compiler/-/vue-template-es2015-compiler-1.9.1.tgz#1ee3bc9a16ecbf5118be334bb15f9c46f82f5825"
   integrity sha512-4gDntzrifFnCEvyoO8PqyJDmguXgVPxKiIxrBKjIowvL9l+N66196+72XVYR8BBf1Uv1Fgt3bGevJ+sEmxfZzw==
 
+vue-verification-code-input@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/vue-verification-code-input/-/vue-verification-code-input-1.0.0.tgz#41323a1b2acf61d0c35a182da126164aa86caa07"
+  integrity sha512-BY6YKCwBE+3Y3vO3/3ic0ycEabicmOTPdl9oZrLpx6PVdebVAOKCHs6s2taeHmg862AMaGWWBSnJ5z8m8dM10A==
+  dependencies:
+    core-js "^3.3.2"
+    vue "^2.6.10"
+
 vue3-recaptcha2@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/vue3-recaptcha2/-/vue3-recaptcha2-1.1.0.tgz#0d3f032b2002315235642c99505206fdb31c0bb0"
   integrity sha512-kHz9hzqY8bwtbzM2DUQGqThtdDiBU8j1cEkKP/cqbwmmsEc7JcQh62TopN8zy8tA4GvpdEs8TtBSUtk4UEvJBA==
 
-vue@^2.6.11:
+vue@^2.6.10, vue@^2.6.11:
   version "2.6.12"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.12.tgz#f5ebd4fa6bd2869403e29a896aed4904456c9123"
   integrity sha512-uhmLFETqPPNyuLLbsKz6ioJ4q7AZHzD8ZVFNATNyICSZouqP2Sz0rotWQC8UNBF6VGSCs5abnKJoStA6JbCbfg==
