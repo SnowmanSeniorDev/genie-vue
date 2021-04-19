@@ -60,6 +60,7 @@ import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
 import { ref, onMounted } from "vue";
 import https from "@/plugins/axios";
+import axios from "axios";
 import Toastify from "toastify-js";
 import _ from "lodash";
 export default {
@@ -84,7 +85,9 @@ export default {
 			})
 		})
     const gotoNext = () => {
-			const bankAccountRegister = "genie/company/v1/${company_uuid}/bankaccount";
+			const bankAccountRegister = "https://companies.bsg-api.tk/genie/company/v1/${company_uuid}/bankaccount";
+			axios.defaults.headers.common.Authorization = `Bearer ${localStorage.getItem('id_token')}`;
+
 			https.post(bankAccountRegister, bankInfo.value).then(res => {
 				if(res.status === 200) {
 					Toastify({

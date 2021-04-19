@@ -126,7 +126,17 @@ export default {
 					}).showToast();
 					store.commit('account/SET_STEP', {step: "bank-information"});
 					router.push({path: "/account/bank-information"})
-				}
+				} else {
+          Toastify({
+          node: cash("#success-notification-content").clone().removeClass("hidden")[0],
+						duration: 3000,
+						newWindow: true,
+						close: true,
+						gravity: "top",
+						position: "right",
+						stopOnFocus: true
+					}).showToast();
+        }
 			})
     }
 

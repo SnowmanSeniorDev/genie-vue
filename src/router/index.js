@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+// import { createRouter } from "vue-router";
 import SideMenu from "../layouts/Main.vue";
 import Login from "../views/auth/Login.vue";
 import Register from "../views/auth/Register.vue";
@@ -24,6 +25,7 @@ import BankInformation from "../views/account/BankInformation.vue";
 import CurrencySettings from "../views/account/CurrencySettings.vue";
 import Kyc from "../views/account/Kyc.vue"
 import CompanyOnboard from "../views/company/index.vue";
+import Invoice from "../views/invoice/index.vue";
 import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Error.vue";
 import AccessDenied from "../views/error-page/AccessDenied.vue";
@@ -121,6 +123,9 @@ const routes = [
       }, {
         path: "company-onboard",
         component: CompanyOnboard
+      }, {
+        path: "invoice",
+        component: Invoice
       }
     ],
     meta: {
