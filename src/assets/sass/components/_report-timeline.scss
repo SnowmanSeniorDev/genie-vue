@@ -2,7 +2,7 @@
     .report-timeline {
         &:before {
             content: "";
-            height: 85%;
+            height: 75%;
             @apply w-px bg-theme-5 absolute ml-5 mt-5 dark:bg-dark-5;
         }
         .report-timeline__image {
