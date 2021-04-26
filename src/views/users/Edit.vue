@@ -162,7 +162,7 @@
 <script>
 import { reactive, toRefs, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import { required, minLength, email } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import Toastify from "toastify-js";
@@ -185,18 +185,18 @@ export default {
       
 
       const authorizationApi = `access/v1/authorization/user/${route.params.id}`;
-      Https.get(authorizationApi).then(res => {
+      sysAxios.get(authorizationApi).then(res => {
         authorizationId.value = res.data.authorizationId
         res.data.roles.forEach(role => {
           selectedRoles.value.push(role.roleId);
         });
 
         const rolesApi = "access/v1/role";
-        Https.get(rolesApi).then(res => {roles.value = res.data});
+        sysAxios.get(rolesApi).then(res => {roles.value = res.data});
       })
 
       const userApi = "/user/v1/" + route.params.id;
-      Https.get(userApi).then((res) => {
+      sysAxios.get(userApi).then((res) => {
         formData.firstName = res.data.firstName,
         formData.lastName = res.data.lastName,
         formData.displayName = res.data.displayName,
@@ -224,7 +224,7 @@ export default {
         }).showToast();
       } else {
         const api = `/user/v1/${route.params.id}`;
-        Https.put(api, {
+        sysAxios.put(api, {
           emailAddress: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -232,7 +232,7 @@ export default {
         }).then(res => {
           if(res.status === 200){
             const api = `access/v1/authorization/${authorizationId.value}`;
-            Https.put(api, {applicationDomain: "genie", roleIds: selectedRoles.value}).then(res => {
+            sysAxios.put(api, {applicationDomain: "genie", roleIds: selectedRoles.value}).then(res => {
               if(res.status === 200){
                 Toastify({
                   node: cash("#success-notification-content").clone().removeClass("hidden")[0],

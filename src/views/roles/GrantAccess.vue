@@ -24,7 +24,7 @@
 import { ref } from "vue";
 import AccessList from "./AccessList.vue";
 import RoleList from "./RoleList.vue";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import _ from "lodash";
 
 export default {
@@ -40,12 +40,12 @@ export default {
     const permissionsAPI = "access/v1/permission";
     const rolesAPI = "access/v1/role";
     const getPermissions = () => {
-      Https.get(permissionsAPI).then(res => {
+      sysAxios.get(permissionsAPI).then(res => {
         permissionList.value = res.data;
       })
     }
     const getRoles = () => {
-      Https.get(rolesAPI).then(res => {
+      sysAxios.get(rolesAPI).then(res => {
         roles.value = res.data;
         rolePermissions.value = res.data[0];
       })
@@ -59,13 +59,13 @@ export default {
     }
 
     const addRole = (role) => {
-      Https.post(rolesAPI, role).then(res => {
+      sysAxios.post(rolesAPI, role).then(res => {
         if(res.status === 201) getRoles();
       })
     }
 
     const deleteRole = (role) => {
-      Https.delete(`${rolesAPI}/${role.roleId}`).then((res) => {
+      sysAxios.delete(`${rolesAPI}/${role.roleId}`).then((res) => {
         if(res.status === 200) {
           roles.value = _.remove(roles.value, function(item){
             return item.roleId != role.roleId;
@@ -86,7 +86,7 @@ export default {
         }),
         validUntil: rolePermissions.value.validUntil
       }
-      Https.put(`${rolesAPI}/${rolePermissions.value.roleId}`, reqBody);
+      sysAxios.put(`${rolesAPI}/${rolePermissions.value.roleId}`, reqBody);
     }
 
     const grantPermissionsAdd = (addedPermission) => {
@@ -95,7 +95,7 @@ export default {
         permissionsIds: _.map([...rolePermissions.value.permissions, ...addedPermission], "permissionId"),
         validUntil: rolePermissions.value.validUntil
       }
-      Https.put(`${rolesAPI}/${rolePermissions.value.roleId}`, reqBody).then(res => {
+      sysAxios.put(`${rolesAPI}/${rolePermissions.value.roleId}`, reqBody).then(res => {
         if(res.status === 200) rolePermissions.value.permissions = [...rolePermissions.value.permissions, ...addedPermission]
       });
     }

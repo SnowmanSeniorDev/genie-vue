@@ -56,7 +56,7 @@ import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import Toastify from "toastify-js";
 
-import https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import axios from "axios";
 
 export default {
@@ -69,7 +69,7 @@ export default {
     onMounted(() => {
       cash("body").removeClass("main").removeClass("error-page").addClass("login");
       const api = `user/v1/resetpassword/${route.params.checkValidity}/checkvalidity`;
-      https.post(api).then( res => {
+      sysAxios.post(api).then( res => {
         userId.value = res.data.userId
         axios.defaults.headers.common['Authorization'] = "Bearer " + res.data.token;
       })

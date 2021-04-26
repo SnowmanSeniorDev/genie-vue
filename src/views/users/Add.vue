@@ -231,7 +231,7 @@
 import { reactive, toRefs, ref, onMounted } from "vue";
 import { required, minLength, email } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import Toastify from "toastify-js";
 
 export default {
@@ -259,7 +259,7 @@ export default {
     const validate = useVuelidate(rules, toRefs(formData));
     onMounted(() => {
       const api = "access/v1/role";
-      Https.get(api).then(res => {roles.value = res.data})
+      sysAxios.get(api).then(res => {roles.value = res.data})
     })
     const save = () => {
       validate.value.$touch();
@@ -275,7 +275,7 @@ export default {
         }).showToast();
       } else {
         const api = "/user/v1";
-        Https.post(api, {
+        sysAxios.post(api, {
           userName: formData.userName,
           secret: formData.password,
           emailAddress: formData.email,
@@ -287,7 +287,7 @@ export default {
           console.log(selectedRoles);
           const grantUserRoleAPI = "/access/v1/authorization";
           if(res.status === 201){
-            Https.post(grantUserRoleAPI, {userId: res.data, applicationDomain: "genie", roleIds: selectedRoles.value}).then(res => {
+            sysAxios.post(grantUserRoleAPI, {userId: res.data, applicationDomain: "genie", roleIds: selectedRoles.value}).then(res => {
               console.log("grant user role return = ", res)
             })
             Toastify({

@@ -94,21 +94,21 @@
                       <a 
                         href="javascript:;"
                         class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                        @click="changeDataType(itemKey, configKey, 'string')"
+                        @click="changeDataType(itemKey, configKey, 'String')"
                       >
                         String
                       </a>
                       <a 
                         href="javascript:;"
                         class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                        @click="changeDataType(itemKey, configKey, 'numeric')"
+                        @click="changeDataType(itemKey, configKey, 'Numeric')"
                       >
                         Numeric
                       </a>
                       <a
                         href="javascript:;"
                         class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                        @click="changeDataType(itemKey, configKey, 'array')"
+                        @click="changeDataType(itemKey, configKey, 'Array')"
                       >
                         Array
                       </a>
@@ -281,7 +281,7 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 
 export default {
   setup() {
@@ -295,7 +295,7 @@ export default {
 
     const getConfigurations = () => {
       const api = "configuration/v1";
-      Https.get(api).then((res) => {
+      sysAxios.get(api).then((res) => {
         configurations.value = jsonDecodeArray(res.data);
       });
     };
@@ -321,7 +321,7 @@ export default {
     const addNewGroup = () => {
       const api = `configuration/v1/${addNewGroupName.value}`;
       console.log(addConfigurationData.value);
-      Https.post(api, jsonEncodeArray([addConfigurationData.value])).then((res) => {
+      sysAxios.post(api, jsonEncodeArray([addConfigurationData.value])).then((res) => {
         console.log(res)
         if(res.status === 201) getConfigurations();
       })
@@ -331,7 +331,7 @@ export default {
       console.log(itemKey);
       console.log(configurations.value[itemKey])
       const api = `configuration/v1/${configurations.value[itemKey].configurationGroupName}`;
-      Https.put(api, configurations.value[itemKey].configurations).then(res => {
+      sysAxios.put(api, configurations.value[itemKey].configurations).then(res => {
         if(res === 200) getConfigurations()
       })
     }
@@ -349,7 +349,7 @@ export default {
       const api = `configuration/v1/${addConfigurationGroupName.value}`;
       console.log(addConfigurationGroupName.value)
       console.log(addConfigurationItemKey.value);
-      Https.put(api, jsonEncodeArray([...configurations.value[addConfigurationItemKey.value].configurations, addConfigurationData.value])).then(res => {
+      sysAxios.put(api, jsonEncodeArray([...configurations.value[addConfigurationItemKey.value].configurations, addConfigurationData.value])).then(res => {
         if(res.status === 200) {
           getConfigurations();
           cash("#add-configuration-modal").modal("hide");
@@ -378,7 +378,7 @@ export default {
 
     const deleteConfiguration = () => {
       const api = `configuration/v1/${deleteConfigurationDataGroupName.value}`;
-      Https.put(api, deleteConfigurationData.value).then(res => {
+      sysAxios.put(api, deleteConfigurationData.value).then(res => {
         if(res.status === 200) {
           getConfigurations();
           cash("#delete-configuration-confirm-modal").modal("hide");

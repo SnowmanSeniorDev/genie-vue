@@ -7,7 +7,7 @@
  */
 
 import * as types from "./mutation-types";
-import https from "@/plugins/axios";
+import {sysAxios} from "@/plugins/axios";
 import router from "@/router";
 import { useStore } from "@/store";
 
@@ -15,7 +15,8 @@ import { useStore } from "@/store";
 export const login = ({commit}, payload) => {
 	const store = useStore();
 	const api = '/user/v1/auth';
-	https.post(api, payload).then(response => {
+	console.log(sysAxios.defaults)
+	sysAxios.post(api, payload).then(response => {
 		return new Promise(() => {
 			commit(types.LOGIN, response.data);
 			store.dispatch('main/updateMenu', {userId: response.data.userId}).then(() => {

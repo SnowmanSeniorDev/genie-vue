@@ -13,7 +13,6 @@ import {
   SET_PROFILE,
   SET_USER_ID
 } from "./mutation-types";
-import Https from "@/plugins/axios";
 
 /* eslint-disable no-param-reassign */
 export default {
@@ -29,7 +28,6 @@ export default {
     state.user_id = payload.userId;
     state.user_role = payload.roles[0];
     state.display_name = payload.displayName;
-    Https.defaults.headers.common.Authorization = `Bearer ${payload.token}`;
   },
 
   [CHECK](state, payload) {
@@ -50,7 +48,6 @@ export default {
     localStorage.removeItem('user_role');
     localStorage.removeItem('profile');
     state.token = null;
-    Https.defaults.headers.common.Authorization = '';
   },
 
   [SET_PROFILE](state, payload) {

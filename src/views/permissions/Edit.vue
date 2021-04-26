@@ -153,7 +153,7 @@
 <script>
 import { reactive, toRefs, ref } from "vue";
 import { useRoute } from "vue-router";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import { required, minLength } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import { helper } from "@/utils/helper";
@@ -214,7 +214,7 @@ export default {
         }).showToast();
       } else {
         const api = `/access/v1/permission/${route.params.permissionId}`;
-        Https.put(api, {
+        sysAxios.put(api, {
           permissionName: formData.permissionName,
           resourceURI: formData.resourceUrl,
           accessVerbs: formData.accessVerb,

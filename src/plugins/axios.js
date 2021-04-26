@@ -13,15 +13,39 @@
 import axios from "axios";
 import store from "@/store";  
 
-axios.defaults.baseURL=process.env.VUE_APP_API_URL;
-axios.defaults.headers.common.Accept = 'application/json';
+export const sysAxios = axios.create({
+  baseURL: process.env.VUE_APP_SYSTEM_API_URL,
+  headers: {
+    common: {
+      'Accept': 'application/json',
+    }
+  }
+})
 
-const token = localStorage.getItem('id_token');
-if (token) {
-  axios.defaults.headers.common['Authorization'] = "Bearer " + token;
-}
+export const appAxios = axios.create({
+  baseURL: process.env.VUE_APP_SERVICE_API_URL,
+  headers: {
+    common: {
+      'Accept': 'application/json',
+    }
+  }
+})
 
-axios.interceptors.response.use(
+sysAxios.interceptors.request.use(
+  config => {
+    // Do something before request is sent
+    if (localStorage.getItem('id_token') != null) {
+      config.headers['Authorization'] = `Bearer ${localStorage.getItem('id_token')}`;
+    }
+    return config;
+  },
+  error => {
+    // Do something with request error
+    return Promise.reject(error);
+  }
+);
+
+sysAxios.interceptors.response.use(
   response => response,
   error => {
     console.log(error)
@@ -33,11 +57,11 @@ axios.interceptors.response.use(
   }
 );
 
-axios.interceptors.request.use(
+appAxios.interceptors.request.use(
   config => {
     // Do something before request is sent
     if (localStorage.getItem('id_token') != null) {
-      axios.defaults.headers.common.Authorization = `Bearer ${localStorage.getItem('id_token')}`;
+      config.headers['Authorization'] = `Bearer ${localStorage.getItem('id_token')}`;
     }
     return config;
   },
@@ -47,6 +71,14 @@ axios.interceptors.request.use(
   }
 );
 
-// export const companyRegister = axios;
-// companyRegister.defaults.baseURL = "https://companies.bsg-api.tk/api/genie/";
-export default axios;
+appAxios.interceptors.response.use(
+  response => response,
+  error => {
+    console.log(error)
+    if (error.response.status === 401 || error.response.status === 403) {
+      store.dispatch('auth/logout');
+    }
+    
+    return Promise.reject(error);
+  }
+);

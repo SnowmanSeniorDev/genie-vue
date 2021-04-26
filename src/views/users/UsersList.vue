@@ -121,14 +121,14 @@
 
 <script>
 import { ref } from "vue";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import _ from "lodash";
 
 export default {
   setup() {
     const api = "user/v1/";
     const users = ref(null);
-    Https.get(api).then(res => {users.value = res.data});
+    sysAxios.get(api).then(res => {users.value = res.data});
     return {
       users
     }
@@ -146,7 +146,7 @@ export default {
     deleteUser(userId) {
       const api = `user/v1/${userId}`;
       console.log(api);
-      Https.delete(api).then(res => {
+      sysAxios.delete(api).then(res => {
         if(res.status === 200) {
           _.remove(this.users, {userId: userId});
           console.log(this.users);

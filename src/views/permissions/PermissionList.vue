@@ -107,7 +107,7 @@
 <script>
 
 import { ref } from "vue";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import _ from "lodash";
 
 export default {
@@ -116,7 +116,7 @@ export default {
     const permissions = ref(null);
     const deletePermissionId = ref(null);
     const modal = ref(false);
-    Https.get(api).then(res => {permissions.value = res.data});
+    sysAxios.get(api).then(res => {permissions.value = res.data});
 
     const setDeletePermissionId = (permissionId) => {
       // modal.value = true;
@@ -128,7 +128,7 @@ export default {
       _.remove(permissions.value, {permissionId: deletePermissionId.value})
       console.log(permissions.value)
       modal.value = false
-      // Https.delete(api).then(res => {
+      // sysAxios.delete(api).then(res => {
         // if(res.status === 200) {_.remove(permissions, {permissionId: permissionId})}
       // })
     }

@@ -91,7 +91,7 @@
 
 <script>
 import { reactive, toRefs } from "vue";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import { useStore } from "vuex";
 import { required, minLength } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
@@ -127,7 +127,7 @@ export default {
       } else {
         console.log(store.state.auth.user_id);
         const api = `/user/v1/${store.state.auth.user_id}/updatesecret`;
-        Https.put(api, {
+        sysAxios.put(api, {
           currentSecret: formData.currentPassword,
           newSecret: formData.newPassword,
         }).then(res => {

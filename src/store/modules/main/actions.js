@@ -8,7 +8,7 @@
 
 //import store from '@/store';
 import * as types from './mutation-types';
-import https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import { custom_menu } from "@/plugins/menu";
 // import _ from "lodash";
 
@@ -19,7 +19,7 @@ export const setDarkMode = ({ commit }, darkMode) => {
 export const updateMenu = ({ commit }, payload) => {
   return new Promise((resolve) => {
     const api = `/access/v1/permission/${payload.userId}`;
-    https.get(api).then((res) => {
+    sysAxios.get(api).then((res) => {
       commit(types.SET_PERMISSIONS, res.data.filter(item => {return item.type === "Menu"}));
       commit(types.SET_MENU, custom_menu(res.data.filter(item => {return item.type === "Menu"})));
       resolve();

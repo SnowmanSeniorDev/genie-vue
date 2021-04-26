@@ -41,7 +41,7 @@
 
 <script>
 import { ref, onMounted } from "vue";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import Toastify from "toastify-js";
 import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
 
@@ -53,7 +53,7 @@ export default {
     const emailAddress = ref('');
     const sendPasswordResetEmail = () => {
       const api = `user/v1/${emailAddress.value}/resetpassword`;
-      Https.post(api).then(res => {
+      sysAxios.post(api).then(res => {
         if(res.status === 200) {
           console.log(res)
           if(res.status === 200){

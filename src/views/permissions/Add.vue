@@ -154,7 +154,7 @@
 import { reactive, toRefs, ref } from "vue";
 import { required, minLength } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
-import Https from "@/plugins/axios";
+import { sysAxios } from "@/plugins/axios";
 import { helper } from "@/utils/helper";
 import Toastify from "toastify-js";
 
@@ -213,7 +213,7 @@ export default {
         }).showToast();
       } else {
         const api = "/access/v1/permission";
-        Https.post(api, {
+        sysAxios.post(api, {
           permissionName: formData.permissionName,
           resourceURI: formData.resourceUrl,
           accessVerbs: formData.accessVerb,

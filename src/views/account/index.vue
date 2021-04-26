@@ -59,15 +59,23 @@
 </template>
 
 <script>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import { appAxios } from "@/plugins/axios";
 
 export default {
 	setup() {
 		const store = useStore();
 		const router = useRouter();
 		const step = computed(() => store.getters['account/getStep']);
+
+		onMounted(async () => {
+			const companyIdApi = `genie/company/v1/user/${store.state.auth.user_id}`;
+			await appAxios.get(companyIdApi).then(res => {
+				store.commit('account/SET_COMPANYID', {company_uuid: res.data});
+			})
+		})
 
 		const gotoCompanyInformation = () => {
 			store.commit('account/SET_STEP', {step: "company-information"});
