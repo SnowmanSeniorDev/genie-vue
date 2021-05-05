@@ -10,38 +10,38 @@
 			<div v-for="(item, index) in bankInfos" :key="index" class="grid grid-cols-1 m-4 p-4 rounded-md border-2 gap-2">
 				<div class="intro-y col-span-12">
 					<div class="flex justify-between">
-						<label for="input-wizard-3-bank-name" class="flex self-end">Bank Name</label>
-						<a class="flex items-center text-theme-6" href="javascript:;" @click="removeBank(index)">
+						<label :for="'input-wizard-3-bank-name-' + index" class="flex self-end">Bank Name</label>
+						<a class="flex items-center text-theme-6" href="javascript:;" @click="removeBank(index, item)">
 							<Trash2Icon class="w-4 h-4 mr-1" /> Remove
 						</a>
 					</div>
-					<select id="input-wizard-3-bank-name" v-model="item.bankName" class="form-select">
+					<select :id="'input-wizard-3-bank-name-' + index" v-model="bankInfos[index].bankName" class="form-select">
 						<option v-for="(bank, bank_index) in banks" :key="bank_index">
 							{{bank}}
 						</option>
 					</select>
 				</div>
 				<div class="intro-y col-span-12">
-					<label for="input-wizard-3-bank-branch-name" class="">Bank Branch Name</label>
-					<input id="input-wizard-3-bank-branch-name" v-model="item.branchName" type="text" class="form-control" placeholder="Bank branch name"/>
+					<label :for="'input-wizard-3-bank-branch-name-' + index" class="">Bank Branch Name</label>
+					<input :id="'input-wizard-3-bank-branch-name-' + index" v-model="bankInfos[index].branchName" type="text" class="form-control" placeholder="Bank branch name"/>
 				</div>
 				<div class="intro-y col-span-12">
-					<label for="input-wizard-3-bank-address" class="">Bank Address</label>
-					<input id="input-wizard-3-bank-address" v-model="item.address" type="text" class="form-control" placeholder="Bank address"/>
+					<label :for="'input-wizard-3-bank-address-' + index" class="">Bank Address</label>
+					<input :id="'input-wizard-3-bank-address-' + index" v-model="bankInfos[index].address" type="text" class="form-control" placeholder="Bank address"/>
 				</div>
 				<div class="intro-y col-span-12">
-					<label for="input-wizard-3-bank-account-number" class="">Bank Account Number</label>
-					<input id="input-wizard-3-bank-account-number" v-model="item.accountNumber" type="text" class="form-control" placeholder="Bank account number"/>
+					<label :for="'input-wizard-3-bank-account-number-' + index" class="">Bank Account Number</label>
+					<input :id="'input-wizard-3-bank-account-number-' + index" v-model="bankInfos[index].accountNumber" type="text" class="form-control" placeholder="Bank account number"/>
 				</div>
 				<div class="intro-y col-span-12">
-					<label for="input-wizard-3-bank-swift-code" class="">Bank Swift Code</label>
-					<input id="input-wizard-3-bank-swift-code" v-model="item.swiftCode" type="text" class="form-control" placeholder="Bank swift code"/>
+					<label :for="'input-wizard-3-bank-swift-code-' + index" class="">Bank Swift Code</label>
+					<input :id="'input-wizard-3-bank-swift-code-' + index" v-model="bankInfos[index].swiftCode" type="text" class="form-control" placeholder="Bank swift code"/>
 				</div>
 				<div class="intro-y col-span-12">
-					<label for="input-wizard-3-bank-name" class="">Bank Currency</label>
-					<select id="input-wizard-3-bank-name" v-model="item.currency" class="form-select">
+					<label :for="'input-wizard-3-bank-name-' + index" class="">Bank Currency</label>
+					<select :id="'input-wizard-3-bank-name-' + index" v-model="bankInfos[index].currency" class="form-select">
 						<option v-for="(currency, currency_index) in currencies" :key="currency_index">
-							{{currency}}
+							{{currency.currencyCode}}
 						</option>
 					</select>
 				</div>
@@ -90,7 +90,8 @@ export default {
 				currency: '',
 			},
 		]);
-		const originBankInfo = ref(null);
+		const deletedBank = ref([]);
+		const originBankInfo = ref([]);
 
 		onMounted(async () => {
 			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
@@ -100,11 +101,11 @@ export default {
 				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
 			})
 			await appAxios.get(getAccountBankInfo).then(res => {
-				console.log(bankInfos.value.length)
 				if(res.data.length !== 0) {
-					console.log("11111")
-					bankInfos.value = {...res.data};
-					originBankInfo.value = {...res.data};
+					bankInfos.value = [...res.data];
+					res.data.forEach((item) => {
+						originBankInfo.value.push({...item})
+					})
 				}
 			})
 		})
@@ -120,8 +121,8 @@ export default {
 			})
 		}
 
-		const removeBank = (index) => {
-			console.log(index)
+		const removeBank = (index, item) => {
+			if(item.bankAccountId) deletedBank.value.push(item.bankAccountId);
 			_.pullAt(bankInfos.value, [index])
 		}
 
@@ -136,31 +137,88 @@ export default {
 				stopOnFocus: true
 			}).showToast();
 		}
+		
+		const registerBankRequest = async (banks) => {
+			console.log("I have to be after delete bank")
+			const registerBankApiUrl = `genie/company/v1/${store.state.account.company_uuid}/bankaccount`;
+			const res = await appAxios.post(registerBankApiUrl, [...banks]);
+			if(res.status === 201) return {result: true};
+			return {result: false, response: res.data};
+		}
 
-    const submitBanks = () => {
-			// const bankAccountRegister = `genie/company/v1/${store.state.account.company_uuid}/bankaccount`;
-			console.log(bankInfos.value)
-			showNotification(false)
-			// appAxios.post(bankAccountRegister, bankInfos.value).then(res => {
-			// 	if(res.status === 200) {
-			// 		Toastify({
-      //     node: cash("#success-notification-content").clone().removeClass("hidden")[0],
-			// 			duration: 3000,
-			// 			newWindow: true,
-			// 			close: true,
-			// 			gravity: "top",
-			// 			position: "right",
-			// 			stopOnFocus: true
-			// 		}).showToast();
-			// 		gotoNext();
-			// 	}
-			// })
-      
+		const updateBankRequest = async (bank) => {
+			console.log(bank)
+			const updateBankApiUrl = `genie/company/v1/${store.state.account.company_uuid}/bankaccount/${bank.bankAccountId}`;
+			delete bank['bankAccountId'];
+			console.log(bank)
+			const res = await appAxios.put(updateBankApiUrl, bank);
+			if(res.status === 200) return {result: true};
+			return {result: false, response: res.data};
+		}
+
+		const deleteBankRequest = async (bankId) => {
+			const deleteBankApiUrl = `genie/company/v1/${store.state.account.company_uuid}/bankaccount/${bankId}`;
+			const res = await appAxios.delete(deleteBankApiUrl);
+			console.log("I have to be before the registerbank");
+			if(res.status === 200 || res.status === 204) return {result: true};
+			return {result: false, response: res.data};
+		}
+
+    const submitBanks = async () => {
+			if(originBankInfo.value.length === 0) {
+				const status = await registerBankRequest(bankInfos.value)
+				if(status.result) {
+					showNotification(true)
+					gotoNext();
+				} else {
+					showNotification(false)
+					console.log(status.response);
+				}
+			} else {
+				for (const bankId of deletedBank.value) {
+					console.log(bankId)
+					var deleteRes = await deleteBankRequest(bankId)
+					if(!deleteRes.result) {
+						showNotification(false);
+						return;
+					}
+				}
+				// await deletedBank.value.forEach(async bankId => {
+				// 	var res = await deleteBankRequest(bankId)
+				// 	console.log("delete bank", res)
+				// 	if(!res.result) {
+				// 		showNotification(false);
+				// 		return;
+				// 	}
+				// });
+				
+				var res = await registerBankRequest(_.filter(bankInfos.value, (item) => {if(!item.bankAccountId) return item}));
+				if(!res.result) {
+					showNotification(false);
+					return;
+				}
+				_.filter(bankInfos.value, async (item) => {
+					if(item.bankAccountId) {
+						if (JSON.stringify(_.find(originBankInfo.value, {bankAccountId: item.bankAccountId})) !== JSON.stringify(item)){
+							var res = await updateBankRequest(item);
+							if(!res.result) {
+								showNotification(false);
+								return;
+							}
+						}
+					}
+				})
+				showNotification(true);
+				gotoNext();
+			}
+			
     }
+
     const gotoBack = () => {
       store.commit('account/SET_STEP', {step: "company-information"});
       router.go(-1);
     }
+
 		const gotoNext = () => {
 			store.commit('account/SET_STEP', {step: "currency-settings"});
 			router.push({path: "/account/currency-settings"});

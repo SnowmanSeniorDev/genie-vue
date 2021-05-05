@@ -14,16 +14,16 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="odd:bg-gray-200">
-              <td class="dark:border-dark-5">EUR</td>
-              <td class="dark:border-dark-5">Euro</td>
-              <td class="dark:border-dark-5">EUR</td>
+            <tr class="odd:bg-gray-200" v-for="(currency, index) in currencies" :key="index">
+              <td class="dark:border-dark-5">{{currency.currencyCode}}</td>
+              <td class="dark:border-dark-5">{{currency.currencyName}}</td>
+              <td class="dark:border-dark-5">{{currency.currencySymbol}}</td>
               <td class="dark:border-dark-5">
                 <input id="input-wizard-4-currency-eur"
                   v-model="support"
                   type="checkbox"
                   class="form-check-input"
-                  value="EUR" />
+                  :value="currency.currencyCode" />
               </td>
               <td class="dark:border-dark-5">
                 <input id="input-wizard-4-currency-eur-default"
@@ -31,87 +31,7 @@
                   type="radio"
                   class="form-check-input"
                   name="default-currency"
-                  value="EUR" />
-              </td>
-            </tr>
-            <tr>
-              <td class="dark:border-dark-5">MYR</td>
-              <td class="dark:border-dark-5">Riggit Malaysia</td>
-              <td class="dark:border-dark-5">MYR</td>
-              <td class="dark:border-dark-5">
-                <input id="input-wizard-4-currency-myr"
-                  v-model="support"
-                  type="checkbox"
-                  class="form-check-input"
-                  value="MYR" />
-              </td>
-              <td class="dark:border-dark-5">
-                <input id="input-wizard-4-currency-myr-default"
-                  v-model="defaultCurrency"
-                  type="radio"
-                  class="form-check-input"
-                  name="default-currency"
-                  value="MYR" />
-              </td>
-            </tr>
-            <tr class="odd:bg-gray-200">
-              <td class="dark:border-dark-5">RM</td>
-              <td class="dark:border-dark-5">Riggit Malaysia</td>
-              <td class="dark:border-dark-5">RM</td>
-              <td class="dark:border-dark-5">
-                <input id="input-wizard-4-currency-eur"
-                  v-model="support"
-                  type="checkbox"
-                  class="form-check-input"
-                  value="RM" />
-              </td>
-              <td class="dark:border-dark-5">
-                <input id="input-wizard-4-currency-eur-default"
-                  v-model="defaultCurrency"
-                  type="radio"
-                  class="form-check-input"
-                  name="default-currency"
-                  value="RM" />
-              </td>
-            </tr>
-            <tr>
-              <td class="dark:border-dark-5">SGD</td>
-              <td class="dark:border-dark-5">Singapore Dollar</td>
-              <td class="dark:border-dark-5">SGD</td>
-              <td class="dark:border-dark-5">
-                <input id="input-wizard-4-currency-eur"
-                  v-model="support"
-                  type="checkbox"
-                  class="form-check-input"
-                  value="SGD" />
-              </td>
-              <td class="dark:border-dark-5">
-                <input id="input-wizard-4-currency-eur-default"
-                  v-model="defaultCurrency"
-                  type="radio"
-                  class="form-check-input"
-                  name="default-currency"
-                  value="SGD" />
-              </td>
-            </tr>
-            <tr class="odd:bg-gray-200">
-              <td class="dark:border-dark-5">USD</td>
-              <td class="dark:border-dark-5">United State Dollar</td>
-              <td class="dark:border-dark-5">USD</td>
-              <td class="dark:border-dark-5">
-                <input id="input-wizard-4-currency-eur"
-                  v-model="support"
-                  type="checkbox"
-                  class="form-check-input"
-                  value="USD" />
-              </td>
-              <td class="dark:border-dark-5">
-                <input id="input-wizard-4-currency-eur-default"
-                 v-model="defaultCurrency"
-                 type="radio"
-                 class="form-check-input"
-                 name="default-currency"
-                 value="USD" />
+                  :value="currency.currencyCode" />
               </td>
             </tr>
           </tbody>
@@ -141,10 +61,11 @@
 <script>
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import _ from "lodash";
 import Toastify from "toastify-js";
-import axios from "axios";
+import { sysAxios, appAxios } from "@/plugins/axios";
+
 
 export default {
 	setup() {
@@ -152,36 +73,31 @@ export default {
     const store = useStore();
     const currencyInfo = ref([]);
     const support = ref([]);
-    const currencies = ref([
-      {
-        currencyCode: 'EUR',
-        currencyName: 'Euro',
-        currencySymbol: 'E$',
-        isDefault: false
-      }, {
-        currencyCode: 'MYR',
-        currencyName: 'Riggit Malaysia',
-        currencySymbol: 'm$',
-        isDefault: false
-      }, {
-        currencyCode: 'RM',
-        currencyName: 'Riggit Malaysia',
-        currencySymbol: 'r$',
-        isDefault: false
-      }, {
-        currencyCode: 'SGD',
-        currencyName: 'Singapore Dollar',
-        currencySymbol: 'S$',
-        isDefault: false
-      }, {
-        currencyCode: 'USD',
-        currencyName: 'United State Dollar',
-        currencySymbol: '$',
-        isDefault: false
-      }
-    ]);
+    const currencies = ref(null);
     const defaultCurrency = ref(null);
+    const requestMethod = ref('post');
 
+    onMounted(async () => {
+			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
+      const getCompanyCurrencies = `genie/company/v1/${store.state.account.company_uuid}/currencies`;
+      await sysAxios.get(companyProfileSystemConfig).then(res => {
+				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
+			})
+      await appAxios.get(getCompanyCurrencies).then(res => {
+        if(res.data.length) {
+          requestMethod.value = 'put';
+          res.data.forEach(item => {
+            if(item.isDefault) defaultCurrency.value = item.currencyCode;
+            support.value.push(item.currencyCode);
+          });
+          console.log(currencies.value)
+
+          currencies.value = {...res.data, ...currencies.value}
+          console.log(currencies.value)
+        }
+        
+      })
+    })
     const gotoBack = () => {
       store.commit('account/SET_STEP', {step: "bank-information"});
       router.go(-1)
@@ -192,12 +108,12 @@ export default {
         else currency.isDefault = false;
         return support.value.includes(currency.currencyCode);
       })
-			const currencyRegister = "https://companies.bsg-api.tk/api/genie/company/v1/register";
-			axios.defaults.headers.common.Authorization = `Bearer ${localStorage.getItem('id_token')}`;
-			axios.post(currencyRegister, currencyInfo.value).then(res => {
+      console.log(currencyInfo.value)
+			const currencyRegister = `genie/company/v1/${store.state.account.company_uuid}/currencies`;
+			appAxios[requestMethod.value](currencyRegister, currencyInfo.value).then(res => {
         if(res.status === 200) {
 					Toastify({
-          node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+          node: cash("#success-notification-content").clone().removeClass("hidden")[0],
 						duration: 3000,
 						newWindow: true,
 						close: true,
@@ -209,7 +125,7 @@ export default {
           router.push({path: "/account/kyc"})
         } else {
           Toastify({
-          node: cash("#success-notification-content").clone().removeClass("hidden")[0],
+          node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
 						duration: 3000,
 						newWindow: true,
 						close: true,
@@ -226,7 +142,7 @@ export default {
       currencies,
       support,
       defaultCurrency,
-      currencyInfo
+      currencyInfo,
     }
 	},
 }

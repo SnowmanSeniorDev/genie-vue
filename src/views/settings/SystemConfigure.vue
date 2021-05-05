@@ -83,6 +83,15 @@
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-value" class="form-label sm:w-20">value</label>
                 <ArrayInput v-if="configurations[itemKey].configurations[configKey].dataType === 'Array'" v-model="configurations[itemKey].configurations[configKey].value"/>
+                <div v-else-if="configurations[itemKey].configurations[configKey].dataType === 'Json'" class="json-editor">
+                  <JsonEditor
+                    v-model="configurations[itemKey].configurations[configKey].value"
+                    mode="code"
+                    :modes="['code', 'tree', 'view']"
+                    :show-btns="false"
+                    :exapndedOnStart="true"
+                  ></JsonEditor>
+                </div>
                 <input v-else id="add-input-value" v-model="configurations[itemKey].configurations[configKey].value" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
@@ -112,6 +121,13 @@
                       >
                         Array
                       </a>
+                      <a
+                        href="javascript:;"
+                        class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                        @click="changeDataType(itemKey, configKey, 'Json')"
+                      >
+                        JSON
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -133,7 +149,7 @@
     </div>
     <!-- BEGIN: Add Configuration Modal Content -->
     <div id="add-configuration-modal" class="modal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
+      <div :class="addConfigurationData.dataType === 'Json' ? 'modal-dialog modal-xl' : 'modal-dialog modal-lg'">
         <div class="modal-content">
           <!-- BEGIN: Modal Header -->
           <div class="modal-header">
@@ -149,6 +165,15 @@
               <div class="form-inline mt-5 last:mb-5">
                 <label for="add-input-value" class="form-label sm:w-20">value</label>
                 <ArrayInput v-if="addConfigurationData.dataType === 'Array'" v-model="addConfigurationData.value"/>
+                <div class="json-editor" v-else-if="addConfigurationData.dataType ==='Json'">
+                  <JsonEditor
+                    v-model="addConfigurationData.value"
+                    mode="code"
+                    :modes="['code', 'tree', 'view']"
+                    :show-btns="false"
+                    :exapndedOnStart="true"
+                  ></JsonEditor>
+                </div>
                 <input v-else id="add-input-value" v-model="addConfigurationData.value" type="text" class="form-control"/>
               </div>
               <div class="form-inline mt-5 last:mb-5">
@@ -177,6 +202,13 @@
                         @click="addChangeDataType('Array')"
                       >
                         Array
+                      </a>
+                      <a
+                        href="javascript:;"
+                        class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                        @click="addChangeDataType('Json')"
+                      >
+                        Json
                       </a>
                     </div>
                   </div>
@@ -286,24 +318,29 @@ import { sysAxios } from "@/plugins/axios";
 export default {
   setup() {
     const configurations = ref([]);
-    const addConfigurationData = ref({ name: '', value: [], dataType: 'String' });
+    const addConfigurationData = ref({ 
+      name: '',
+      value: null,
+      dataType: 'String',
+    });
     const addConfigurationGroupName = ref(null);
     const addConfigurationItemKey = ref(null);
     const deleteConfigurationData = ref(null);
     const addNewGroupName = ref('');
     const deleteConfigurationDataGroupName = ref("");
-
-    const getConfigurations = () => {
+    
+    const getConfigurations = async () => {
       const api = "configuration/v1";
-      sysAxios.get(api).then((res) => {
+      await sysAxios.get(api).then((res) => {
         configurations.value = jsonDecodeArray(res.data);
       });
+      console.log("configurations.value = ", configurations.value)
     };
 
     const jsonDecodeArray = (data) => {
       data.forEach((group, groupIndex) => {
         group.configurations.forEach((item, itemIndex) => {
-          if(item.dataType === "Array") data[groupIndex].configurations[itemIndex].value = JSON.parse(item.value);
+          if(item.dataType === "Array" || item.dataType === "Json") data[groupIndex].configurations[itemIndex].value = JSON.parse(item.value);
         })
       });
 
@@ -313,6 +350,7 @@ export default {
     const jsonEncodeArray = (configurations) => {
       configurations.forEach((item, index) => {
         if(item.dataType === "Array") configurations[index].value = JSON.stringify(item.value);
+        if(item.dataType === "Json") configurations[index].value = JSON.stringify(item.value);
       });
 
       return configurations
@@ -322,16 +360,13 @@ export default {
       const api = `configuration/v1/${addNewGroupName.value}`;
       console.log(addConfigurationData.value);
       sysAxios.post(api, jsonEncodeArray([addConfigurationData.value])).then((res) => {
-        console.log(res)
         if(res.status === 201) getConfigurations();
       })
     }
 
     const saveConfigurations = (itemKey) => {
-      console.log(itemKey);
-      console.log(configurations.value[itemKey])
       const api = `configuration/v1/${configurations.value[itemKey].configurationGroupName}`;
-      sysAxios.put(api, configurations.value[itemKey].configurations).then(res => {
+      sysAxios.put(api, jsonEncodeArray(configurations.value[itemKey].configurations)).then(res => {
         if(res === 200) getConfigurations()
       })
     }
@@ -347,8 +382,6 @@ export default {
     const addConfigurationSave = () => {
       console.log(addConfigurationData.value)
       const api = `configuration/v1/${addConfigurationGroupName.value}`;
-      console.log(addConfigurationGroupName.value)
-      console.log(addConfigurationItemKey.value);
       sysAxios.put(api, jsonEncodeArray([...configurations.value[addConfigurationItemKey.value].configurations, addConfigurationData.value])).then(res => {
         if(res.status === 200) {
           getConfigurations();
@@ -365,6 +398,7 @@ export default {
 
     const addChangeDataType = (dataType) => {
       addConfigurationData.value.dataType = dataType
+      if(dataType === 'Array') addConfigurationData.value.value = []
       cash(".dropdown-menu").dropdown("hide");
     }
 
@@ -378,7 +412,7 @@ export default {
 
     const deleteConfiguration = () => {
       const api = `configuration/v1/${deleteConfigurationDataGroupName.value}`;
-      sysAxios.put(api, deleteConfigurationData.value).then(res => {
+      sysAxios.put(api, jsonEncodeArray(deleteConfigurationData.value)).then(res => {
         if(res.status === 200) {
           getConfigurations();
           cash("#delete-configuration-confirm-modal").modal("hide");
@@ -394,6 +428,7 @@ export default {
     onMounted(() => {
       getConfigurations();
     });
+    
     return {
       configurations,
       openAddNewGroupModal,
@@ -412,3 +447,13 @@ export default {
   },
 };
 </script>
+
+<style >
+.json-editor {
+  width: 100% !important;
+  padding: 0 0 0 10px;
+}
+.json-editor .jsoneditor-vue {
+  height: 300px;
+}
+</style>

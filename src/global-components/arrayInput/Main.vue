@@ -42,7 +42,7 @@ export default {
     },
     beforeAdding: {
       type: Function,
-      required: true
+      required: false
     }
   },
   data() {
@@ -63,7 +63,6 @@ export default {
     }
   },
   mounted() {
-    console.log("asdfasfasdf = ", this.modelValue)
   },
   methods: {
     focusNewTag() {

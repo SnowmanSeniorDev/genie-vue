@@ -8,11 +8,11 @@ import TailSelect from "./tail-select/Main.vue";
 import LoadingIcon from "./loading-icon/Main.vue";
 import TinySlider from "./tiny-slider/Main.vue";
 import CKEditor from "./ckeditor/Main.vue";
-import Dropzone from "./dropzone/Main.vue";
 import FullCalendar from "./calendar/Main.vue";
 import FullCalendarDraggable from "./calendar/Draggable.vue";
 import * as featherIcons from "@zhuowenli/vue-feather-icons";
 import ArrayInput from "./arrayInput/Main.vue";
+import JsonEditor from "./jsonEditor/Main.vue";
 
 export default app => {
   app.component("Chart", Chart);
@@ -24,11 +24,11 @@ export default app => {
   app.component("TailSelect", TailSelect);
   app.component("LoadingIcon", LoadingIcon);
   app.component("TinySlider", TinySlider);
-  app.component("Dropzone", Dropzone);
   app.component("CKEditor", CKEditor);
   app.component("FullCalendar", FullCalendar);
   app.component("FullCalendarDraggable", FullCalendarDraggable);
-  app.component('ArrayInput', ArrayInput)
+  app.component('ArrayInput', ArrayInput);
+  app.component('JsonEditor', JsonEditor);
 
   for (const [key, icon] of Object.entries(featherIcons)) {
     icon.props.size.default = "24";

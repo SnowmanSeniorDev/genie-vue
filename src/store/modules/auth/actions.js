@@ -15,7 +15,6 @@ import { useStore } from "@/store";
 export const login = ({commit}, payload) => {
 	const store = useStore();
 	const api = '/user/v1/auth';
-	console.log(sysAxios.defaults)
 	sysAxios.post(api, payload).then(response => {
 		return new Promise(() => {
 			commit(types.LOGIN, response.data);
