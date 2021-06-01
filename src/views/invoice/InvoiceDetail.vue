@@ -21,12 +21,12 @@
             <th class="dark:border-dark-5 whitespace-nowrap"> ACTIONS </th>
           </tr>
         </thead>
-        <tbody>
-          <tr class="odd:bg-gray-200">
-            <td class="dark:border-dark-5">BAS555</td>
-            <td class="dark:border-dark-5">10,000.00</td>
-            <td class="dark:border-dark-5">20/06/2021</td>
-            <td class="dark:border-dark-5">20/04/2021</td>
+        <tbody v-for="(item, index) in journalBatchEntry" :key="index">
+          <tr>
+            <td class="dark:border-dark-5">{{item.vendorDocumentReferenceNumber}}</td>
+            <td class="dark:border-dark-5">{{item.amount.toFixed(2)}}</td>
+            <td class="dark:border-dark-5">{{moment(item.dueDate).format('DD/MM/YYYY')}}</td>
+            <td class="dark:border-dark-5">{{moment(item.createdTime).format('DD/MM/YYYY')}}</td>
             <td class="dark:border-dark-5">
               <div class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
                 pending
@@ -38,66 +38,9 @@
               </div>
             </td>
           </tr>
-          <tr class="odd:bg-gray-200 font-bold">
-            <td class="dark:border-dark-5">SUPPORTING DOCUMENTS</td>
-            <td class="dark:border-dark-5">DATE UPLOADED</td>
-            <td class="dark:border-dark-5">UPLOADED BY</td>
-            <td class="dark:border-dark-5"></td>
-            <td class="dark:border-dark-5"></td>
-            <td class="dark:border-dark-5"></td>
-          </tr>
-          <tr class="odd:bg-gray-200">
-            <td class="dark:border-dark-5 text-blue-500">01_SupportDocu01.pdf</td>
-            <td class="dark:border-dark-5">03/04/2021, 10:03</td>
-            <td class="dark:border-dark-5">Jane Levine</td>
-            <td class="dark:border-dark-5"></td>
-            <td class="dark:border-dark-5"></td>
-            <td class="dark:border-dark-5">
-              <div class="grid grid-cols-2 gap-2">
-                <div class="flex justify-end">
-                  <UploadIcon class="w-4 h-4"/>
-                </div>
-                <div class="flex justify-start">
-                  <MinusCircleIcon class="w-4 h-4" />
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr class="odd:bg-gray-200">
-            <td class="dark:border-dark-5">BAS555</td>
-            <td class="dark:border-dark-5">23,000.00</td>
-            <td class="dark:border-dark-5">20/06/2021</td>
-            <td class="dark:border-dark-5">20/04/2021</td>
-            <td class="dark:border-dark-5">
-              <div class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                pending
-              </div>
-            </td>
-            <td class="dark:border-dark-5">
-              <div class="alert show flex items-center h-5 p-3 text-sm justify-center text-blue-700 bg-blue-200" role="alert">
-                View Less
-              </div>
-            </td>
-          </tr>
-          <tr class="odd:bg-gray-200">
-            <td class="dark:border-dark-5">BAS555</td>
-            <td class="dark:border-dark-5">18,000.00</td>
-            <td class="dark:border-dark-5">20/06/2021</td>
-            <td class="dark:border-dark-5">20/04/2021</td>
-            <td class="dark:border-dark-5">
-              <div class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                pending
-              </div>
-            </td>
-            <td class="dark:border-dark-5">
-              <div class="alert show flex items-center h-5 p-3 text-sm justify-center text-blue-700 bg-blue-200" role="alert">
-                View Less
-              </div>
-            </td>
-          </tr>
+          <Docments :journal_batch_header_id="item.journalBatchHeaderId" :journal_batch_entry_id="item.journalBatchEntryId"/>
         </tbody>
       </table>
-      <button class="btn btn-primary mt-5 px-8">Submit</button>
     </div>
 
     <div class="grid grid-cols-2 gap-4 mt-6">
@@ -284,10 +227,40 @@
     </div>
   </div>
 </template>
+
 <script>
+import { ref, onMounted } from 'vue';
+import { sysAxios } from '@/plugins/axios';
+import moment from 'moment';
+import Docments from './Documents'
+
 export default {
-  setup() {
+  props: {
+    batchData: {
+      type: String,
+      required: true
+    }
+  },
+  components: {
+    Docments
+  },
+  setup(props) {
+    const journalBatchEntry = ref();
+    const batchData = JSON.parse(props.batchData)
+    console.log("batch Detail = ", JSON.parse(props.batchData))
     
+    onMounted(async () => {
+      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchData.journalBatchHeaderId}/entries`;
+      sysAxios.get(api).then(res => {
+        console.log(res.data)
+        journalBatchEntry.value = res.data
+      })
+    })
+
+    return {
+      journalBatchEntry,
+      moment,
+    }
   },
 }
 </script>

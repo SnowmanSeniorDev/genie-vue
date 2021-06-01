@@ -128,8 +128,10 @@ const routes = [
         path: "invoice",
         component: Invoice
       }, {
-        path: "invoice/detail",
-        component: InvoiceDetail
+        path: "invoice/detail/:batchData",
+        name: "batchDetail",
+        component: InvoiceDetail,
+        props: true
       }
     ],
     meta: {
