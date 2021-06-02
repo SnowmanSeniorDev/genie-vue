@@ -230,9 +230,11 @@
 
 <script>
 import { ref, onMounted } from 'vue';
+import { useStore } from 'vuex'
 import { sysAxios } from '@/plugins/axios';
 import moment from 'moment';
 import Docments from './Documents'
+import tempVue from '../../components/pincode-input/temp.vue';
 
 export default {
   props: {
@@ -247,6 +249,7 @@ export default {
   setup(props) {
     const journalBatchEntry = ref();
     const batchData = JSON.parse(props.batchData)
+    const store = useStore();
     console.log("batch Detail = ", JSON.parse(props.batchData))
     
     onMounted(async () => {
@@ -255,6 +258,17 @@ export default {
         console.log(res.data)
         journalBatchEntry.value = res.data
       })
+
+      const apiBank = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/bankaccounts`;
+      sysAxios.get(apiBank).then(res => {
+        console.log("apiBank = ", apiBank)
+        console.log("bankAPI = ", res.data)
+      })
+
+      const batchBuyer = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}`
+      sysAxios.get(batchBuyer).then(res => {
+        console.log("batch buyer", res.data)
+      })
     })
 
     return {
@@ -262,5 +276,9 @@ export default {
       moment,
     }
   },
+}
+
+const bankDetails = () => {
+  
 }
 </script>
