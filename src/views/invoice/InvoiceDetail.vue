@@ -38,7 +38,7 @@
               </div>
             </td>
           </tr>
-          <Docments :journal_batch_header_id="item.journalBatchHeaderId" :journal_batch_entry_id="item.journalBatchEntryId"/>
+          <Docments :journalBatchHeaderId="item.journalBatchHeaderId" :journalBatchEntryId="item.journalBatchEntryId"/>
         </tbody>
       </table>
     </div>

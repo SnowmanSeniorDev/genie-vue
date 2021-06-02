@@ -29,13 +29,14 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { sysAxios } from "@/plugins/axios"
+
 export default {
   props: {
-    journal_batch_header_id: {
+    journalBatchHeaderId: {
       type: String,
       required: true
     },
-    journal_batch_entry_id: {
+    journalBatchEntryId: {
       type: String,
       required: true
     }
@@ -43,9 +44,10 @@ export default {
   setup(props) {
     const documents = ref();
     onMounted(() => {
-      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${props.journal_batch_header_id }/entry/${props.journal_batch_entry_id }/supportingdocuments`;
+      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${props.journalBatchHeaderId }/entry/${props.journalBatchEntryId }/supportingdocuments`;
       sysAxios.get(api).then(res => {
         documents.value = res.data
+        console.log(res.data)
       })
     })
   }
