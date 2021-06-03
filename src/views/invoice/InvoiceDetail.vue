@@ -122,7 +122,7 @@
                   <span class="text-sm font-bold text-gray-800 ml-3">Support Document</span>
                 </div>
                 <div class="text-xs text-gray-500 ml-auto">
-                  <a href="javascript:;" class="text-pink-800 accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#provenance-1">View Less</a>
+                  <a href="javascript:" class="text-pink-800 accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#provenance-1">View Less</a>
                 </div>
               </div>
               <div id="provenance-1" class="accordion-collapse collapse show text-gray-600 pt-2">
@@ -144,7 +144,7 @@
                   <span class="text-sm font-bold text-gray-800 ml-3">Invoice Uploaded</span>
                 </div>
                 <div class="text-xs text-gray-500 ml-auto">
-                  <a href="javascript:;" class="text-pink-800 accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#provenance-2">View Less</a>
+                  <a href="javascript:" class="text-pink-800 accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#provenance-2">View Less</a>
                 </div>
               </div>
               <div id="provenance-2" class="accordion-collapse collapse show text-gray-600 pt-2">
@@ -164,8 +164,8 @@
           <span>Bank Details</span>
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
-              <td class="border w-1/2">Payment Bank Acc</td>
-              <td class="border">MAYBANK 28172919212</td>
+              <td class="border w-1/2">Payment Bank Account</td>
+              <td class="border">{{batchDetails.bankDetails.bank && batchDetails.bankDetails.bank.bankName}}</td>
             </tr>
           </table>
         </div>
@@ -173,20 +173,28 @@
           <span>Batch Information</span>
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
-              <td class="border w-1/2">Buyer</td>
-              <td class="border">RM 41,000.00</td>
+              <td class="border w-1/2">Buyer Company</td>
+              <td class="border">{{batchDetails.batchInformation.buyerCompany}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Seller</td>
-              <td class="border">21/03/2021, 13:35</td>
+              <td class="border">Seller Company</td>
+              <td class="border">{{batchDetails.batchInformation.sellerCompany ? batchDetails.batchInformation.sellerCompany : 'NA'}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Seller</td>
-              <td class="border">21/03/2021, 13:35</td>
+              <td class="border">Funder Company</td>
+              <td class="border">{{batchDetails.batchInformation.funderCompany ? batchDetails.batchInformation.funderCompany : 'NA'}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Seller</td>
-              <td class="border">21/03/2021, 13:35</td>
+              <td class="border">No of batch entries</td>
+              <td class="border">{{batchDetails.batchInformation.noOfBatchEntries}}</td>
+            </tr>
+            <tr class="hover:bg-gray-200">
+              <td class="border">Upload Date</td>
+              <td class="border">{{batchDetails.batchInformation.uploadDate}}</td>
+            </tr>
+            <tr class="hover:bg-gray-200">
+              <td class="border">Total Amount</td>
+              <td class="border">{{batchDetails.batchInformation.totalAmount}}</td>
             </tr>
           </table>
         </div>
@@ -194,32 +202,56 @@
           <span>Formular</span>
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
-              <td class="border w-1/2">Invoice Amount</td>
-              <td class="border">RM 41,000.00</td>
+              <td class="border w-1/2">Interest Rate</td>
+              <td class="border">{{batchDetails.formula.interestRate}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Upload Date & Time</td>
-              <td class="border">21/03/2021, 13:35</td>
+              <td class="border">Processing Fee Rate</td>
+              <td class="border">{{batchDetails.formula.processingFeeRate}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Founder Approval Date & TIme</td>
-              <td class="border">03/04/2021, 13:35</td>
+              <td class="border">Processing Fee Amount</td>
+              <td class="border">{{batchDetails.formula.processingFeeAmount}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">No. of Days Until Payment</td>
-              <td class="border">55 Days</td>
+              <td class="border">Disbursable Amount To Seller</td>
+              <td class="border">{{batchDetails.formula.disbursableAmountToSeller}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Misc. Fee Rate</td>
-              <td class="border">2%</td>
+              <td class="border">Disbursable Date</td>
+              <td class="border">{{batchDetails.formula.disbursableDate}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Misc. Fee Amount</td>
-              <td class="border">RM 820.00</td>
+              <td class="border">Misc Fee Rate</td>
+              <td class="border">{{batchDetails.formula.miscFeeRate}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Net Amount to Founder</td>
-              <td class="border">RM 41,820.00</td>
+              <td class="border">Misc Fee Amount</td>
+              <td class="border">{{batchDetails.formula.miscFeeAmount}}</td>
+            </tr>
+            <tr class="hover:bg-gray-200">
+              <td class="border">Misc Fee Date</td>
+              <td class="border">{{batchDetails.formula.miscFeeDate}}</td>
+            </tr>
+            <tr class="hover:bg-gray-200">
+              <td class="border">Platform Fee Rate</td>
+              <td class="border">{{batchDetails.formula.platformFeeRate}}</td>
+            </tr>
+            <tr class="hover:bg-gray-200">
+              <td class="border">Platform Fee Amount</td>
+              <td class="border">{{batchDetails.formula.platformFeeAmount}}</td>
+            </tr>
+            <tr class="hover:bg-gray-200">
+              <td class="border">Platform Fee Date</td>
+              <td class="border">{{batchDetails.formula.platformFeeDate}}</td>
+            </tr>
+            <tr class="hover:bg-gray-200">
+              <td class="border">Repayment Amount To Funder</td>
+              <td class="border">{{batchDetails.formula.repaymentAmountToFunder}}</td>
+            </tr>
+            <tr class="hover:bg-gray-200">
+              <td class="border">Repayment Date</td>
+              <td class="border">{{batchDetails.formula.repaymentDate}}</td>
             </tr>
           </table>
         </div>
@@ -229,12 +261,12 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import { sysAxios } from '@/plugins/axios';
-import moment from 'moment';
+import moment from 'moment'
+import _ from 'lodash'
+import { sysAxios } from '@/plugins/axios'
 import Docments from './Documents'
-import tempVue from '../../components/pincode-input/temp.vue';
 
 export default {
   props: {
@@ -247,38 +279,106 @@ export default {
     Docments
   },
   setup(props) {
-    const journalBatchEntry = ref();
+    const journalBatchEntry = ref()
     const batchData = JSON.parse(props.batchData)
-    const store = useStore();
+    const adminCompany = ref()
+    const batchDetails = ref({
+      bankDetails: {
+        bank: null,
+      },
+      batchInformation: {
+        buyerCompany: null,
+        sellerCompany: null,
+        funderCompany: null,
+        noOfBatchEntries: 0,
+        uploadDate: moment(batchData.createdTime).format('DD/MM/YYYY'),
+        totalAmount: `${batchData.currencyCode} ${batchData.totalAmount}`
+      },
+      formula: {
+        interestRate: batchData.interestRate,
+        processingFeeRate: batchData.processingFeeRateForSeller + batchData.processingFeeRateForFunder,
+        processingFeeAmount: null,
+        disbursableAmountToSeller: null,
+        disbursableDate: null,
+        miscFeeRate: batchData.processingFeeRateForBuyer,
+        miscFeeAmount: null,
+        miscFeeDate: null,
+        platformFeeRate: batchData.processingFeeRateForFunder,
+        platformFeeAmount: null,
+        platformFeeDate: null,
+        repaymentAmountToFunder: batchData.totalAmount,
+        repaymentDate: moment(batchData.paymentDueDate).format('DD/MM/YYYY')
+      }
+    })
+    const store = useStore()
+    const user = store.state.auth
+    console.log('user = ', user)
     console.log("batch Detail = ", JSON.parse(props.batchData))
     
     onMounted(async () => {
-      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchData.journalBatchHeaderId}/entries`;
-      sysAxios.get(api).then(res => {
-        console.log(res.data)
+      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchData.journalBatchHeaderId}/entries`
+      await sysAxios.get(api).then(res => {
         journalBatchEntry.value = res.data
+        batchDetails.value.batchInformation.noOfBatchEntries = res.data.length
       })
 
-      const apiBank = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/bankaccounts`;
-      sysAxios.get(apiBank).then(res => {
-        console.log("apiBank = ", apiBank)
-        console.log("bankAPI = ", res.data)
+      const bankApi = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/bankaccounts`
+      await sysAxios.get(bankApi).then(res => {
+        batchDetails.value.bankDetails.bank = _.find(res.data, {currency: batchData.currencyCode})
       })
 
-      const batchBuyer = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}`
-      sysAxios.get(batchBuyer).then(res => {
-        console.log("batch buyer", res.data)
+      const batchBuyerApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchData.buyerCompanyId}`
+      await sysAxios.get(batchBuyerApi).then(res => {
+        batchDetails.value.batchInformation.buyerCompany = res.data.companyDisplayName
+      })
+
+      if(batchData.sellerCompanyId !== '00000000-0000-0000-0000-000000000000'){
+        const batchSellerApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchData.sellerCompanyId}`
+        await sysAxios.get(batchSellerApi).then(res => {
+          batchDetails.value.batchInformation.sellerCompany = res.data.companyDisplayName
+        })
+      }
+      
+      if(batchData.funderCompanyId !== '00000000-0000-0000-0000-000000000000'){
+        const batchFunderApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchData.funderCompanyId}`
+        await sysAxios.get(batchFunderApi).then(res => {
+          batchDetails.value.batchInformation.funderCompany = res.data.companyDisplayName
+        })
+      }
+
+      const adminCompanyApi = `configuration/v1/Genie Global Settings`
+      await sysAxios.get(adminCompanyApi).then(res => {
+        console.log('adminCompany = ', res.data)
+        adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
+      })
+
+      const processingFeeApi = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceyid/${batchData.workflowExecutionReferenceId}`
+      await sysAxios.get(processingFeeApi).then(res => {
+        console.log("admin company id = ", adminCompany.value)
+
+        console.log(processingFeeApi)
+        console.log("taxs = ", res.data)
+        var tax = _.find(res.data, {fromCompanyId: batchData.funderCompanyId, toCompanyId: batchData.sellerCompanyId}).amountBeforeTax
+        batchDetails.value.formula.processingFeeAmount = tax.amountBeforeTax - batchData.totalAmount
+        batchDetails.value.formula.disbursableAmountToSeller = tax.amountBeforeTax
+        batchDetails.value.formula.disbursableDate = moment(tax.dueDate).format('DD/MM/YYYY')
+
+        var misc = _.find(res.data, {fromCompanyId: adminCompany.value, toCompanyId: batchData.buyerCompanyId})
+        batchDetails.value.formula.miscFeeAmount = misc.amountBeforeTax
+        batchDetails.value.formula.miscFeeDate = misc.dueDate
+
+        var platformFee = _.find(res.data, {fromCompanyId: batchData.funderCompanyId, toCompanyId: adminCompany.value})
+        batchDetails.value.formula.platformFeeAmount = platformFee.amountBeforeTax
+        batchDetails.value.formula.platformFeeDate = platformFee.dueDate
       })
     })
 
     return {
       journalBatchEntry,
       moment,
+      batchDetails,
+      user
     }
   },
-}
-
-const bankDetails = () => {
-  
 }
 </script>
