@@ -221,11 +221,11 @@
               <td class="border">Disbursable Date</td>
               <td class="border">{{batchDetails.formula.disbursableDate}}</td>
             </tr>
-            <tr class="hover:bg-gray-200">
+            <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
               <td class="border">Misc Fee Rate</td>
               <td class="border">{{batchDetails.formula.miscFeeRate}}</td>
             </tr>
-            <tr class="hover:bg-gray-200">
+            <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
               <td class="border">Misc Fee Amount</td>
               <td class="border">{{batchDetails.formula.miscFeeAmount}}</td>
             </tr>
@@ -233,11 +233,11 @@
               <td class="border">Misc Fee Date</td>
               <td class="border">{{batchDetails.formula.miscFeeDate}}</td>
             </tr>
-            <tr class="hover:bg-gray-200">
+            <tr class="hover:bg-gray-200" v-if="user.user_role === 'Funder Admin' || user.user_role === 'Genie Admin'">
               <td class="border">Platform Fee Rate</td>
               <td class="border">{{batchDetails.formula.platformFeeRate}}</td>
             </tr>
-            <tr class="hover:bg-gray-200">
+            <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
               <td class="border">Platform Fee Amount</td>
               <td class="border">{{batchDetails.formula.platformFeeAmount}}</td>
             </tr>
@@ -354,12 +354,14 @@ export default {
 
       const processingFeeApi = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceyid/${batchData.workflowExecutionReferenceId}`
       await sysAxios.get(processingFeeApi).then(res => {
-        console.log("admin company id = ", adminCompany.value)
 
         console.log(processingFeeApi)
         console.log("taxs = ", res.data)
-        var tax = _.find(res.data, {fromCompanyId: batchData.funderCompanyId, toCompanyId: batchData.sellerCompanyId}).amountBeforeTax
-        batchDetails.value.formula.processingFeeAmount = tax.amountBeforeTax - batchData.totalAmount
+        var tax = _.find(res.data, {fromCompanyId: batchData.funderCompanyId, toCompanyId: batchData.sellerCompanyId})
+        console.log('tax =' , tax)
+        console.log("tax.amountBeforeTax = ", tax.amountBeforeTax)
+        console.log("batchData.totalAmount = ", batchData.totalAmount)
+        batchDetails.value.formula.processingFeeAmount = batchData.totalAmount - tax.amountBeforeTax
         batchDetails.value.formula.disbursableAmountToSeller = tax.amountBeforeTax
         batchDetails.value.formula.disbursableDate = moment(tax.dueDate).format('DD/MM/YYYY')
 

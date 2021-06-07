@@ -13,16 +13,7 @@
       <td class="dark:border-dark-5">Jane Levine</td>
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
-      <td class="dark:border-dark-5">
-        <div class="grid grid-cols-2 gap-2">
-          <div class="flex justify-end">
-            <UploadIcon class="w-4 h-4"/>
-          </div>
-          <div class="flex justify-start">
-            <MinusCircleIcon class="w-4 h-4" />
-          </div>
-        </div>
-      </td>
+      <td class="dark:border-dark-5"></td>
     </tr>
 </template>
 
