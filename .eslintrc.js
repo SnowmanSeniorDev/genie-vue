@@ -1,25 +1,24 @@
 module.exports = {
   root: true,
   env: {
-    node: true,
-    browser: true
+    node: true
   },
   extends: [
-    "plugin:vue/recommended",
-    "eslint:recommended",
-    "prettier/vue",
-    // "plugin:prettier/recommended"
+    'plugin:vue/vue3-essential',
+    // '@vue/standard'
   ],
+  parserOptions: {
+    parser: 'babel-eslint'
+  },
   rules: {
-    "vue/component-name-in-template-casing": ["error", "PascalCase"],
-    "no-console": process.env.NODE_ENV === "production" ? "error" : "off",
-    "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off"
+    eqeqeq: 'off',
+    'no-new': 'off',
+    'no-unused-expressions': 'off',
+    'space-before-function-paren': 'off',
+    'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off'
   },
   globals: {
-    cash: true,
-    $nuxt: true
-  },
-  parserOptions: {
-    parser: "babel-eslint"
+    cash: true
   }
-};
+}

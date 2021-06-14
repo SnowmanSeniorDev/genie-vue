@@ -50,106 +50,21 @@
         </div>
         <img alt="" class="intro-x w-full h-48" :src="require(`@/assets/images/illustration.svg`)"/>
         <div class="report-timeline mt-5 relative">
-          <div class="intro-x relative flex items-start pb-5">
+          <div v-for="(item, index) in provenance" class="intro-x relative flex items-start pb-5" :key="index">
             <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
             <div class="px-5 ml-4 flex-1">
               <div class="flex items-center">
-                <div class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                  Not Started
+                <div v-if="item.passed" class="alert show flex items-center h-5 p-3 text-sm justify-center text-green-700 bg-green-200" role="alert">
+                  <CheckCircleIcon class="w-3 h-3 mr-3" />
+                  <span class="pr-3">Passed</span>
                 </div>
-                <span class="ml-3 text-gray-500">Buyer Acknowledgement</span>
-              </div>
-              <hr class="mt-5">
-            </div>
-          </div>
-          <div class="intro-x relative flex items-start pb-5">
-            <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-            <div class="px-5 ml-4 flex-1">
-              <div class="flex items-center">
-                <div class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                  Not Started
-                </div>
-                <span class="ml-3 text-gray-500">Seller Acknowledgement</span>
-              </div>
-              <hr class="mt-5">
-            </div>
-          </div>
-          <div class="intro-x relative flex items-start pb-5">
-            <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-            <div class="px-5 ml-4 flex-1">
-              <div class="flex items-center">
-                <div class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                  Not Started
-                </div>
-                <span class="ml-3 text-gray-500">Repayment</span>
-              </div>
-              <hr class="mt-5">
-            </div>
-          </div>
-          <div class="intro-x relative flex items-start pb-5">
-            <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-            <div class="px-5 ml-4 flex-1">
-              <div class="flex items-center">
-                <div class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                  Not Started
-                </div>
-                <span class="ml-3 text-gray-500">Founder Approval</span>
-              </div>
-              <hr class="mt-5">
-            </div>
-          </div>
-          <div class="intro-x relative flex items-start pb-5">
-            <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2">
-            </div>
-            <div class="px-5 ml-4 flex-1">
-              <div class="flex items-center">
-                <div class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                  Not Started
-                </div>
-                <span class="ml-3 text-gray-500">Seller Acknowledgement</span>
-              </div>
-              <hr class="mt-5">
-            </div>
-          </div>
-          <div class="intro-x relative flex items-start pb-5">
-            <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-            <div class="px-5 ml-4 flex-1 accordion-item">
-              <div class="flex items-center">
-                <div class="flex items-center">
-                  <div class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
+                <div v-else-if="(provenance.length - index) === provenancePendingStatusIndex + 1" class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
                     <span class="px-4">Pending</span>
                   </div>
-                  <span class="text-sm font-bold text-gray-800 ml-3">Support Document</span>
+                <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
+                  Not Started
                 </div>
-                <div class="text-xs text-gray-500 ml-auto">
-                  <a href="javascript:" class="text-pink-800 accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#provenance-1">View Less</a>
-                </div>
-              </div>
-              <div id="provenance-1" class="accordion-collapse collapse show text-gray-600 pt-2">
-                <div class="mt-1">Uploader: jane.levine@peaktechnology.com</div>
-                <div class="mt-1">Timestamp: 20/04/2021, 10:03</div>
-              </div>
-              <hr class="mt-5">
-            </div>
-          </div>
-          <div class="intro-x relative flex items-start pb-5">
-            <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-            <div class="px-5 ml-4 flex-1 accordion-item">
-              <div class="flex items-center">
-                <div class="flex items-center">
-                  <div class="alert show flex items-center h-5 p-3 text-sm justify-center text-green-700 bg-green-200" role="alert">
-                    <CheckCircleIcon class="w-3 h-3 mr-3" />
-                    <span class="pr-3">Verified</span>
-                  </div>
-                  <span class="text-sm font-bold text-gray-800 ml-3">Invoice Uploaded</span>
-                </div>
-                <div class="text-xs text-gray-500 ml-auto">
-                  <a href="javascript:" class="text-pink-800 accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#provenance-2">View Less</a>
-                </div>
-              </div>
-              <div id="provenance-2" class="accordion-collapse collapse show text-gray-600 pt-2">
-                <div class="mt-1">Uploader: jane.levine@peaktechnology.com</div>
-                <div class="mt-1">Timestamp: 21/03/2021, 13:55</div>
+                <span class="ml-3 text-gray-500">{{item.eventName}}</span>
               </div>
               <hr class="mt-5">
             </div>
@@ -282,6 +197,9 @@ export default {
     const journalBatchEntry = ref()
     const batchData = JSON.parse(props.batchData)
     const adminCompany = ref()
+    const initWorkflowId = ref()
+    const provenance = ref()
+    const provenancePendingStatusIndex = ref(0);
     const batchDetails = ref({
       bankDetails: {
         bank: null,
@@ -314,14 +232,8 @@ export default {
     const user = store.state.auth
     console.log('user = ', user)
     console.log("batch Detail = ", JSON.parse(props.batchData))
-    
-    onMounted(async () => {
-      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchData.journalBatchHeaderId}/entries`
-      await sysAxios.get(api).then(res => {
-        journalBatchEntry.value = res.data
-        batchDetails.value.batchInformation.noOfBatchEntries = res.data.length
-      })
 
+    const invoiceDetailApi = async() => {
       const bankApi = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/bankaccounts`
       await sysAxios.get(bankApi).then(res => {
         batchDetails.value.bankDetails.bank = _.find(res.data, {currency: batchData.currencyCode})
@@ -346,21 +258,10 @@ export default {
         })
       }
 
-      const adminCompanyApi = `configuration/v1/Genie Global Settings`
-      await sysAxios.get(adminCompanyApi).then(res => {
-        console.log('adminCompany = ', res.data)
-        adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
-      })
-
       const processingFeeApi = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceyid/${batchData.workflowExecutionReferenceId}`
       await sysAxios.get(processingFeeApi).then(res => {
 
-        console.log(processingFeeApi)
-        console.log("taxs = ", res.data)
         var tax = _.find(res.data, {fromCompanyId: batchData.funderCompanyId, toCompanyId: batchData.sellerCompanyId})
-        console.log('tax =' , tax)
-        console.log("tax.amountBeforeTax = ", tax.amountBeforeTax)
-        console.log("batchData.totalAmount = ", batchData.totalAmount)
         batchDetails.value.formula.processingFeeAmount = batchData.totalAmount - tax.amountBeforeTax
         batchDetails.value.formula.disbursableAmountToSeller = tax.amountBeforeTax
         batchDetails.value.formula.disbursableDate = moment(tax.dueDate).format('DD/MM/YYYY')
@@ -373,11 +274,61 @@ export default {
         batchDetails.value.formula.platformFeeAmount = platformFee.amountBeforeTax
         batchDetails.value.formula.platformFeeDate = platformFee.dueDate
       })
+    }
+
+    const provenanceApi = async() => {
+      var workflowsApi = `https://workflow.bsg-api.tk/api/genie/workflow/v1?visibility=true`
+      await sysAxios.get(workflowsApi).then(res => {
+        console.log("whole workflow =", res.data)
+        provenance.value = res.data
+      })
+      var currentWorkflowStatusesApi = 'https://workflow.bsg-api.tk/api/genie/workflowstatustransition/v1/retrievestatustransitions/byreferenceids'
+      await sysAxios.post(currentWorkflowStatusesApi, [batchData.workflowExecutionReferenceId]).then(res => {
+        console.log("current workflow status = ", res.data)
+        provenancePendingStatusIndex.value = res.data[0].workflows.length
+        res.data[0].workflows.forEach(passedWorkflow => {
+          provenance.value = provenance.value.map(item => {
+            if(item.workflowId === passedWorkflow.workflowId){
+              item.workflowStatuses.map(workflowState => {
+                console.log(workflowState.statusName, '=/=', passedWorkflow.statusTransitions.statusName)
+                if(_.find(passedWorkflow.statusTransitions, (passedWorkflowStatusTransitionEntity) => {
+                  if(passedWorkflowStatusTransitionEntity.statusName === workflowState.statusName) {
+                    return true
+                  }
+                })){
+                  workflowState.passed = true
+                }
+              })
+            }
+            return item
+          })
+        })
+
+        provenance.value = _.map(provenance.value, 'workflowStatuses').flat().reverse()
+      })
+      console.log('updated provenance history = ', provenance.value)
+    }
+    
+    onMounted(async () => {
+      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchData.journalBatchHeaderId}/entries`
+      await sysAxios.get(api).then(res => {
+        journalBatchEntry.value = res.data
+        batchDetails.value.batchInformation.noOfBatchEntries = res.data.length
+      })
+      const genieGlobalSetting = `configuration/v1/Genie Global Settings`
+      await sysAxios.get(genieGlobalSetting).then(res => {
+        adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
+        initWorkflowId.value = _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id'}).value
+      })
+      invoiceDetailApi()
+      provenanceApi()
     })
 
     return {
       journalBatchEntry,
       moment,
+      provenance,
+      provenancePendingStatusIndex,
       batchDetails,
       user
     }

@@ -12,9 +12,7 @@
         </div>
         <div class="w-full xl:flex xl:justify-end sm:mr-auto ">
           <div class="sm:flex items-center sm:mr-4">
-            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2"
-              >Field</label
-            >
+            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Field</label>
             <select
               id="tabulator-html-filter-field"
               v-model="filter.field"
@@ -26,9 +24,7 @@
             </select>
           </div>
           <div class="sm:flex items-center sm:mr-4 mt-2 xl:mt-0">
-            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2"
-              >Type</label
-            >
+            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Type</label>
             <select
               id="tabulator-html-filter-type"
               v-model="filter.type"
@@ -44,9 +40,7 @@
             </select>
           </div>
           <div class="sm:flex items-center sm:mr-4 mt-2 xl:mt-0">
-            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2"
-              >Value</label
-            >
+            <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Value</label>
             <input
               id="tabulator-html-filter-value"
               v-model="filter.value"

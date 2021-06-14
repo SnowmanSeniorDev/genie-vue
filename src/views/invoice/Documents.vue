@@ -1,16 +1,16 @@
 <template>
-    <!-- <tr class="odd:bg-gray-200 font-bold">
+    <tr class="odd:bg-gray-200 font-bold">
       <td class="dark:border-dark-5">SUPPORTING DOCUMENTS</td>
       <td class="dark:border-dark-5">DATE UPLOADED</td>
       <td class="dark:border-dark-5">UPLOADED BY</td>
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
-    </tr> -->
-    <tr class="odd:bg-gray-200">
-      <td class="dark:border-dark-5 text-blue-500">01_SupportDocu01.pdf</td>
-      <td class="dark:border-dark-5">03/04/2021, 10:03</td>
-      <td class="dark:border-dark-5">Jane Levine</td>
+    </tr>
+    <tr v-for="doc in documents" class="odd:bg-gray-200" :key="doc.documentURL  ">
+      <td class="dark:border-dark-5 text-blue-500">{{doc.documentName}}</td>
+      <td class="dark:border-dark-5">{{moment(doc.uploadTime).format("DD/MM/YYYY")}}</td>
+      <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
@@ -19,8 +19,8 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import { sysAxios } from "@/plugins/axios"
-
+import { sysAxios } from '@/plugins/axios'
+import moment from 'moment'
 export default {
   props: {
     journalBatchHeaderId: {
@@ -37,10 +37,15 @@ export default {
     onMounted(() => {
       const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${props.journalBatchHeaderId }/entry/${props.journalBatchEntryId }/supportingdocuments`;
       sysAxios.get(api).then(res => {
+        console.log("supporting documents = ", res.data)
         documents.value = res.data
-        console.log(res.data)
       })
     })
+
+    return {
+      documents,
+      moment
+    }
   }
 }
 </script>

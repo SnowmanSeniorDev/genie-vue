@@ -148,8 +148,11 @@ export default {
       console.log(xlsxRows.value)
     }
 
-    const addSupportDoc = (index, data) => {
-      jsonData.value[index].supportingDocumentsURI.push("https://fileupload.bsg-api.tk/api/uploads/v1/" + data);
+    const addSupportDoc = (index, documentId, documentName) => {
+      jsonData.value[index].supportingDocuments.push({
+          documentName: documentName,
+          documentURI: "https://fileupload.bsg-api.tk/api/uploads/v1/" + documentId,
+        });
     }
 
     const removeSupportDoc = (index, data) => {
@@ -159,20 +162,27 @@ export default {
     const chooseFiles = () => {
       document.getElementById("file-upload").click()
     }
-
+    
+    const getSellerCompanyId = (companyName) => {
+      const api = `https://companies.bsg-api.tk/api/genie/company/v1/${companyName}`;
+      return new Promise( resolve => {
+        sysAxios.get(api).then(res => {
+          resolve(res.data.companyId)
+        })
+      })
+    }
     const submitInvoice = async () => {
+
       const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
-      
       
       let journalBatchEntries = [];
       await Promise.all(
         jsonData.value.map(async item => {
-          const getCompanyId = `https://companies.bsg-api.tk/api/genie/company/v1/${item.sellerCompanyId}`;
-          var res = await sysAxios(getCompanyId);
+          const sellerCompanyId = await getSellerCompanyId("Signet");
           console.log(moment(item.documentDate).format());
           journalBatchEntries.push({
             ...item,
-            sellerCompanyId: res.data.companyId,
+            sellerCompanyId: sellerCompanyId,
             documentDate: moment(item.documentDate).format(),
             paymentDueDate: moment(item.paymentDueDate).format()
           });
@@ -226,7 +236,7 @@ export default {
           paymentDueDate: "02/03/2021",
           currencyCode: "USD",
           amount: 300.00,
-          supportingDocumentsURI: []
+          supportingDocuments: []
         }, {
           documentNumber: "INV-UATZ10002",
           documentType: "INV",
@@ -235,7 +245,7 @@ export default {
           paymentDueDate: "02/03/2021",
           currencyCode: "USD",
           amount: 862.00,
-          supportingDocumentsURI: []
+          supportingDocuments: []
         }, {
           documentNumber: "INV-UATZ10003",
           documentType: "INV",
@@ -244,7 +254,7 @@ export default {
           paymentDueDate: "12/03/2021",
           currencyCode: "USD",
           amount: 4325.00,
-          supportingDocumentsURI: []
+          supportingDocuments: []
         }, {
           documentNumber: "INV-UATZ10004",
           documentType: "INV",
@@ -253,7 +263,7 @@ export default {
           paymentDueDate: "12/03/2021",
           currencyCode: "USD",
           amount: 4575.00,
-          supportingDocumentsURI: []
+          supportingDocuments: []
         },
        ]
        /**

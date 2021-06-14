@@ -1,14 +1,16 @@
 <template>
   <div v-bind="getRootProps()" class="flex justify-center">
-    <template v-if="!files.length">
+    <div v-if="!files.length">
       <input v-bind="getInputProps()" :id="index">
       <UploadCloudIcon class="w-4 h-4 text-red-400" />
-    </template>
-    <template v-else>
-      <span v-for="(item, index) in files" :key="index">
+    </div>
+    <div v-else  class="dropzone-document-title">
+      <input v-bind="getInputProps()" :id="index">
+      <div v-for="(item, index) in files" :key="index">
         {{item.name}}
-      </span>
-    </template>
+        <br />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -37,7 +39,6 @@ export default {
     const onDrop = async (acceptFiles, rejectReasons ) => {
       files.value.push(acceptFiles[0])
       console.log(acceptFiles)
-      console.log(rejectReasons)
       const fileUploadApi = 'uploads/v1/supporting_document';
       let formData = new FormData();
       formData.append('file', acceptFiles[0])
@@ -47,7 +48,7 @@ export default {
           }
       });
       if(res.status === 200) {
-        props.addSupportDoc(props.index, res.data);
+        props.addSupportDoc(props.index, res.data, acceptFiles[0].name);
       }
     }
 
@@ -63,3 +64,9 @@ export default {
 }
 </script>
 
+<style scoped>
+.dropzone-document-title {
+  display: block;
+  text-align: center;
+}
+</style>
