@@ -38,7 +38,6 @@ export default {
     const files = ref([]);
     const onDrop = async (acceptFiles, rejectReasons ) => {
       files.value.push(acceptFiles[0])
-      console.log(acceptFiles)
       const fileUploadApi = 'uploads/v1/supporting_document';
       let formData = new FormData();
       formData.append('file', acceptFiles[0])

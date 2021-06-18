@@ -2,7 +2,7 @@
   <Chart
     type="bar"
     :width="width"
-    :height="height"
+    :height="200"
     :data="data"
     :options="options"
   />

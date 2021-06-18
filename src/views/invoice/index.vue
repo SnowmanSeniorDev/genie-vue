@@ -71,7 +71,7 @@
       </div>
     </div>
     <h4 class="text-lg underline mt-5 ml-2 text-red-400 font-bold">Invoice Overview</h4>
-    <div class="intro-y box px-3 mt-3">
+    <div class="intro-y box px-3 pb-3 mt-3">
       <div class="overflow-x-auto scrollbar-hidden">
         <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
       </div>
@@ -117,7 +117,7 @@ export default {
         columns: [
           {
             title: "BATCH NO.",
-            field: "dataSource",
+            field: "batchNumber",
             minWidth: 50,
             maxWidth: 150,
             resizable: false,

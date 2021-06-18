@@ -35,6 +35,26 @@
                 <UploadIcon class="w-4 h-4 mr-2" />
                 Upload Invoice
               </button>
+              <div id="basic-datepicker" class="p-5">
+                <div class="preview">
+                  <Litepicker
+                    v-model="bidEndTime"
+                    @change="changedDate"
+                    :options="{
+                      autoApply: false,
+                      showWeekNumbers: true,
+                      zIndex: 10001,
+                      dropdowns: {
+                        minYear: 1990,
+                        maxYear: null,
+                        months: true,
+                        years: true
+                      }
+                    }"
+                    class="form-control w-56 block mx-auto"
+                  />
+                </div>
+              </div>
             </div>
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
             <div class="intro-y col-span-12 h-96 overflow-y-auto overflow-x-invisible bg-gray-200 p-1 mt-5">
@@ -109,7 +129,7 @@ import xlsx from "xlsx";
 import moment from "moment";
 import _ from "lodash";
 import { appAxios, sysAxios } from "@/plugins/axios";
-import SupportDropzone from "./Dropzone";
+import SupportDropzone from "./SupportFileDropzone";
 
 export default {
   components: {
@@ -126,8 +146,12 @@ export default {
     const jsonHeaders = ref([
       'documentNumber', 'documentType', 'vendorDocumentReferenceNumber', 'postingDate', 'dueDate', 'currencyCode', 'amount'
     ]);
-
+    const bidEndTime = ref(moment(new Date()).format("D MMM, YYYY"))
     console.log(store.state.account.company_uuid)
+
+    const changedDate = (evt) => {
+      console.log(evt)
+    }
 
     const setDocumentFromat = (format) => {
       documentFormat.value = format
@@ -172,7 +196,6 @@ export default {
       })
     }
     const submitInvoice = async () => {
-
       const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
       
       let journalBatchEntries = [];
@@ -188,15 +211,15 @@ export default {
           });
         })
       )
-      console.log("11231 = ", journalBatchEntries)
+      
+
       appAxios.post(api, {
         buyerCompanyId: store.state.account.company_uuid,
-        journalBatchEntries: journalBatchEntries
+        journalBatchEntries: journalBatchEntries,
+        bidEndTime: moment(bidEndTime.value).format()
       }).then(res => {
-        console.log(res)
         cash("#upload-invoice-modal").modal("hide");
-      })
-      
+      })      
     }
     
     const fileChoosen = (event) => {
@@ -290,7 +313,9 @@ export default {
       submitInvoice,
       fileChoosen,
       addSupportDoc,
-      removeSupportDoc
+      removeSupportDoc,
+      bidEndTime,
+      changedDate
     }
   }
 }

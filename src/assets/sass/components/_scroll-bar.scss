@@ -1,0 +1,20 @@
+@layer components {
+  .scroll-primary::-webkit-scrollbar-track{
+    width: 7px;
+	  background-color: #f0e6ef;
+    border-radius: 10px;
+  }
+
+  .scroll-primary::-webkit-scrollbar{
+    width: 5px;
+    background-color: #9a428a;
+    border-radius: 10px;
+  }
+
+  .scroll-primary::-webkit-scrollbar-thumb{
+    width: 7px;
+    background-color: #9a428a;
+    border: 2px solid #9a428a;
+    border-radius: 10px;
+  }
+}

@@ -30,6 +30,7 @@ import InvoiceDetail from "../views/invoice/InvoiceDetail.vue"
 import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Error.vue";
 import AccessDenied from "../views/error-page/AccessDenied.vue";
+import Alerts from "../views/alerts/index.vue"
 import { auth } from "../middleware/auth"
 import { log } from "../middleware/log"
 
@@ -132,6 +133,9 @@ const routes = [
         name: "batchDetail",
         component: InvoiceDetail,
         props: true
+      }, {
+        path: "alerts",
+        component: Alerts,
       }
     ],
     meta: {

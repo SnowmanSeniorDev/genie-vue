@@ -5,7 +5,7 @@
         <h2 class="text-lg font-medium mr-auto">Invoice</h2>
       </div>
       <div class="text-lg font-medium mr-auto pl-2">
-        <span class="bg-pink-900 p-1 text-white text-sm">Branch No: #10054</span>
+        <span class="bg-pink-900 p-1 text-white text-sm">Branch No: {{batchDetails.batchNumber}}</span>
       </div>
     </div>
     <div class="intro-y box p-5 mt-5">
@@ -59,8 +59,8 @@
                   <span class="pr-3">Passed</span>
                 </div>
                 <div v-else-if="(provenance.length - index) === provenancePendingStatusIndex + 1" class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                    <span class="px-4">Pending</span>
-                  </div>
+                  <span class="px-4">Pending</span>
+                </div>
                 <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
                   Not Started
                 </div>
@@ -169,7 +169,87 @@
               <td class="border">{{batchDetails.formula.repaymentDate}}</td>
             </tr>
           </table>
+          <!-- <div v-if="visibleApproveButton" class="pt-8 flex justify-center"> -->
+          <div class="pt-8 flex justify-center">
+            <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
+            <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+  <div id="approve-invoice-modal" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- BEGIN: Modal Header -->
+        <div class="modal-header">
+          <h2 class="font-medium text-base mr-auto"> Approve Invoice </h2>
+        </div>
+        <!-- END: Modal Header -->
+        <div class="modal-body mx-8">
+          <div class="grid grid-cols-2 grid-flow-row gap-4">
+            <div class="self-center">Batch Number</div>
+            <div class="self-center">{{batchDetails.batchNumber}}</div>
+            <div class="self-center">Bid Expiry Date & Time</div>
+            <div class="self-center">{{batchDetails.batchInformation.bidEndTime}}</div>
+            <div class="self-center">Invoice Amount</div>
+            <div class="self-center">{{batchDetails.batchInformation.totalAmount}}</div>
+            <div class="self-center">Payment Due Date</div>
+            <div class="self-center">{{batchDetails.batchInformation.paymentDueDate}}</div>
+            <div class="self-center">Remark</div>
+            <div class="self-center">
+              <textarea v-model="remark" class="border-2 border w-full" rows="3" />
+            </div>
+          </div>
+          <signature-pad
+            :modelValue="signatureFile"
+            @input="onInput"
+            :height="150"
+            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
+            saveType="image/png"
+            saveOutput="file"
+            ref="signaturePad" />
+          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+            <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
+            <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
+            <button @click="saveSignature" class="btn btn-primary">Save signature</button>
+          </div>
+        </div>
+        <div class="modal-footer text-right">
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20 mr-1"> Cancel </button>
+          <button type="button" class="btn btn-primary w-20" @click="approveAcknowledge"> Approve </button>
+        </div> <!-- END: Modal Footer -->
+      </div>
+    </div>
+  </div>
+  <div id="decline-invoice-modal" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- BEGIN: Modal Header -->
+        <div class="modal-header">
+          <h2 class="font-medium text-base mr-auto"> Decline Invoice </h2>
+        </div>
+        <!-- END: Modal Header -->
+        <div class="modal-body mx-8">
+          <div class="grid grid-cols-2 grid-flow-row gap-4">
+            <div class="self-center">Batch Number</div>
+            <div class="self-center">{{batchDetails.batchNumber}}</div>
+            <div class="self-center">Bid Expiry Date & Time</div>
+            <div class="self-center">{{batchDetails.batchInformation.bidEndTime}}</div>
+            <div class="self-center">Invoice Amount</div>
+            <div class="self-center">{{batchDetails.batchInformation.totalAmount}}</div>
+            <div class="self-center">Payment Due Date</div>
+            <div class="self-center">{{batchDetails.batchInformation.paymentDueDate}}</div>
+            <div class="self-center">Remark</div>
+            <div class="self-center">
+              <textarea v-model="remark" class="border-2 border w-full" rows="3" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer text-right">
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20 mr-1"> Cancel </button>
+          <button type="button" class="btn btn-primary w-20" @click="declineAcknowledge"> Decline </button>
+        </div> <!-- END: Modal Footer -->
       </div>
     </div>
   </div>
@@ -178,6 +258,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
+import SignaturePad from "vue3-signature-pad";
 import moment from 'moment'
 import _ from 'lodash'
 import { sysAxios } from '@/plugins/axios'
@@ -191,7 +272,8 @@ export default {
     }
   },
   components: {
-    Docments
+    Docments,
+    SignaturePad
   },
   setup(props) {
     const journalBatchEntry = ref()
@@ -199,12 +281,21 @@ export default {
     const adminCompany = ref()
     const initWorkflowId = ref()
     const provenance = ref()
-    const provenancePendingStatusIndex = ref(0);
+    const provenancePendingStatusIndex = ref(0)
+    const visibleApproveButton = ref(false)
+    const signatureFileUrl = ref(null)
+    const signatureDataURL = ref(null)
+    const signatureFile = ref(null)
+    const signaturePad = ref(null)
+    const remark = ref(null)
     const batchDetails = ref({
+      batchNumber: batchData.batchNumber,
       bankDetails: {
         bank: null,
       },
       batchInformation: {
+        bidEndTime: batchData.bidEndTime,
+        paymentDueDate: batchData.paymentDueDate,
         buyerCompany: null,
         sellerCompany: null,
         funderCompany: null,
@@ -231,7 +322,8 @@ export default {
     const store = useStore()
     const user = store.state.auth
     console.log('user = ', user)
-    console.log("batch Detail = ", JSON.parse(props.batchData))
+    console.log("batch data = ", batchData)
+    console.log("batch detail = ", batchDetails.value)
 
     const invoiceDetailApi = async() => {
       const bankApi = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/bankaccounts`
@@ -279,18 +371,15 @@ export default {
     const provenanceApi = async() => {
       var workflowsApi = `https://workflow.bsg-api.tk/api/genie/workflow/v1?visibility=true`
       await sysAxios.get(workflowsApi).then(res => {
-        console.log("whole workflow =", res.data)
         provenance.value = res.data
       })
       var currentWorkflowStatusesApi = 'https://workflow.bsg-api.tk/api/genie/workflowstatustransition/v1/retrievestatustransitions/byreferenceids'
       await sysAxios.post(currentWorkflowStatusesApi, [batchData.workflowExecutionReferenceId]).then(res => {
-        console.log("current workflow status = ", res.data)
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         res.data[0].workflows.forEach(passedWorkflow => {
           provenance.value = provenance.value.map(item => {
             if(item.workflowId === passedWorkflow.workflowId){
               item.workflowStatuses.map(workflowState => {
-                console.log(workflowState.statusName, '=/=', passedWorkflow.statusTransitions.statusName)
                 if(_.find(passedWorkflow.statusTransitions, (passedWorkflowStatusTransitionEntity) => {
                   if(passedWorkflowStatusTransitionEntity.statusName === workflowState.statusName) {
                     return true
@@ -306,9 +395,83 @@ export default {
 
         provenance.value = _.map(provenance.value, 'workflowStatuses').flat().reverse()
       })
-      console.log('updated provenance history = ', provenance.value)
     }
     
+    const getLastWorkflowStatus = async() => {
+      const api = "https://workflow.bsg-api.tk/api/genie/workflowstatustransition/v1/retrievestatustransitions/byreferenceids/limittolaststatustransition";
+      await sysAxios.post(api, [batchData.workflowExecutionReferenceId]).then(res => {
+        if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_SELLER_ACKNOWLEDGEMENT" && user.user_role === "Seller Admin") visibleApproveButton.value = true
+      })
+    }
+
+    const approveAcknowledge = () => {
+      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0"
+      sysAxios.post(api, {
+        externalReferenceId: batchData.workflowExecutionReferenceId,
+        remark: remark.value,
+        signatureUri: signatureFileUrl.value
+      }).then(res => {
+        if(res.status === 200) {
+          visibleApproveButton.value = false
+          provenancePendingStatusIndex.value ++;
+        }
+      })
+    }
+
+    const declineAcknowledge = () => {
+      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0"
+      sysAxios.post(api, {
+        externalReferenceId: batchData.workflowExecutionReferenceId,
+        remark: remark.value,
+      }).then(res => {
+        if(res.status === 200) {
+          visibleApproveButton.value = false
+          provenancePendingStatusIndex.value ++;
+        }
+      })
+    }
+
+    const getSignaturePad = () => {
+      if (!signaturePad.value) {
+        throw new Error("No signature pad ref could be found");
+      }
+      return signaturePad.value;
+    };
+
+    const clearSignature = () => {
+      getSignaturePad().clearSignature();
+    };
+
+    const undoSignature = () => {
+      getSignaturePad().undoSignature();
+    }
+
+    const saveSignature = () => {
+      const signature = getSignaturePad().saveSignature();
+      const fileUploadApi = 'uploads/v1/acknowledgement_signature';
+      let formData = new FormData();
+      formData.append('file', signature.file)
+      sysAxios.post(fileUploadApi, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+      }).then(res => {
+        signatureFileUrl.value = `https://fileupload.bsg-api.tk/api/uploads/v1/${res.data}`
+      });
+    };
+
+    const onInput = (value) => {
+      if (!value) {
+        signatureDataURL.value = null;
+        signatureFile.value = null;
+      } else if (value instanceof File) {
+        signatureDataURL.value = null;
+        signatureFile.value = value;
+      } else {
+        signatureDataURL.value = value;
+        signatureFile.value = null;
+      }
+    };
     onMounted(async () => {
       const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchData.journalBatchHeaderId}/entries`
       await sysAxios.get(api).then(res => {
@@ -322,6 +485,7 @@ export default {
       })
       invoiceDetailApi()
       provenanceApi()
+      getLastWorkflowStatus()
     })
 
     return {
@@ -330,7 +494,18 @@ export default {
       provenance,
       provenancePendingStatusIndex,
       batchDetails,
-      user
+      visibleApproveButton,
+      user,
+      approveAcknowledge,
+      declineAcknowledge,
+      signaturePad,
+      signatureDataURL,
+      signatureFile,
+      clearSignature,
+      undoSignature,
+      saveSignature,
+      onInput,
+      remark
     }
   },
 }
