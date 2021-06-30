@@ -95,6 +95,7 @@ export default {
 
 		onMounted(async () => {
 			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
+			console.log(store.state.account.company_uuid)
 			const getAccountBankInfo = `genie/company/v1/${store.state.account.company_uuid}/bankaccounts`;
 			await sysAxios.get(companyProfileSystemConfig).then(res => {
 				banks.value = JSON.parse(_.find(res.data[0].configurations, {name: "banks"}).value);

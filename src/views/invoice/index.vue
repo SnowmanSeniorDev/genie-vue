@@ -178,7 +178,7 @@ export default {
                 </a>
               </div>`);
               cash(a).on("click", function() {
-                router.push({name: "batchDetail", params: {'batchData': JSON.stringify(cell.getData())}});
+                router.push({name: "batchDetail", params: {'workflowExecutionReferenceId': cell.getData().workflowExecutionReferenceId}});
               })
               return a[0];
             }

@@ -12,19 +12,21 @@ import router from "@/router";
 import { useStore } from "@/store";
 
 
-export const login = ({commit}, payload) => {
+export const login = async ({commit}, payload) => {
 	const store = useStore();
 	const api = '/user/v1/auth';
-	sysAxios.post(api, payload).then(response => {
-		return new Promise(() => {
+	await sysAxios.post(api, payload).then(response => {
+		return new Promise(async () => {
 			commit(types.LOGIN, response.data);
+			await store.dispatch('account/setCompanyIdFromApi', {userId: response.data.userId})
 			store.dispatch('main/updateMenu', {userId: response.data.userId}).then(() => {
 				router.push({
 					name: 'GENIE_DASHBOARD'
 				})
-			})	
+			})
 		});
 	})
+	
 };
 
 export const logout = ({commit}) => {

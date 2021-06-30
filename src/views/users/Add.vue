@@ -278,6 +278,7 @@ export default {
         sysAxios.post(api, {
           userName: formData.userName,
           secret: formData.password,
+          applicationDomain: "genie",
           emailAddress: formData.email,
           firstName: formData.firstName,
           lastName: formData.lastName,

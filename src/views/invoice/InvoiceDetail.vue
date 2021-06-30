@@ -54,17 +54,14 @@
             <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
             <div class="px-5 ml-4 flex-1">
               <div class="flex items-center">
-                <div v-if="item.passed" class="alert show flex items-center h-5 p-3 text-sm justify-center text-green-700 bg-green-200" role="alert">
+                <div v-if="item.passed" :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'text-green-700 bg-green-200'} `" role="alert">
                   <CheckCircleIcon class="w-3 h-3 mr-3" />
-                  <span class="pr-3">Passed</span>
-                </div>
-                <div v-else-if="(provenance.length - index) === provenancePendingStatusIndex + 1" class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                  <span class="px-4">Pending</span>
+                  <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Passed'}}</span>
                 </div>
                 <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
                   Not Started
                 </div>
-                <span class="ml-3 text-gray-500">{{item.eventName}}</span>
+                <span class="ml-3 text-gray-500">{{item.statusName}}</span>
               </div>
               <hr class="mt-5">
             </div>
@@ -169,10 +166,15 @@
               <td class="border">{{batchDetails.formula.repaymentDate}}</td>
             </tr>
           </table>
-          <!-- <div v-if="visibleApproveButton" class="pt-8 flex justify-center"> -->
-          <div class="pt-8 flex justify-center">
+          <div v-if="visibleApproveButton" class="pt-8 flex justify-center">
             <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
             <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
+          </div>
+          <div v-if="visibleSubmitProposal" class="pt-8 flex justify-center">
+            <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Proposal</a>
+          </div>
+          <div v-if="visibleSubmitDisbursmentAdvice" class="pt-8 flex justify-center">
+            <a href="javascript:;" data-toggle="modal" data-target="#submit-disbursment-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Disbursment</a>
           </div>
         </div>
       </div>
@@ -253,20 +255,148 @@
       </div>
     </div>
   </div>
+  <div id="submit-proposal-modal" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- BEGIN: Modal Header -->
+        <div class="modal-header">
+          <h2 class="font-medium text-base mr-auto"> Approve Invoice </h2>
+        </div>
+        <!-- END: Modal Header -->
+        <div class="modal-body mx-8">
+          <div class="grid grid-cols-2 grid-flow-row gap-4">
+            <div class="self-center">Interest Rate</div>
+            <div class="self-center">
+              <input type="text" v-model="bidValue" class="form-control"/>
+            </div>
+            <div class="self-center">Value Date</div>
+            <div class="self-center">
+              <Litepicker
+                v-model="valueDate"
+                :options="{
+                  autoApply: false,
+                  showWeekNumbers: true,
+                  zIndex: 10001,
+                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                  dropdowns: {
+                    minYear: 1990,
+                    maxYear: null,
+                    months: true,
+                    years: true
+                  }
+                }"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-primary w-20 mr-1" @click="submitProposal"> Confirm </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
+        </div> <!-- END: Modal Footer -->
+      </div>
+    </div>
+  </div>
+  <div id="submit-disbursment-modal" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- BEGIN: Modal Header -->
+        <div class="modal-header">
+          <h2 class="font-medium text-base mr-auto"> Upload fund disbursment payment advice </h2>
+        </div>
+        <!-- END: Modal Header -->
+        <div class="modal-body mx-8">
+          <div>Payment Advice File Upload</div>
+          <div v-bind="getRootProps()" class="flex mb-3 justify-center border-red-400 border-dashed border-2 rounded-lg cursor-pointer">
+            <div class="text-center py-5">
+              <template v-if="!files">
+                <input v-bind="getInputProps()" >
+                <UploadCloudIcon class="w-24 h-20 text-red-400" />
+                <div class="text-lg font-medium text-gray-600"> 
+                  Drag and drop here<br>or
+                </div>
+                <div class="text-red-400">browse</div>
+              </template>
+              <template v-else>
+                <div class="relative">
+                  <div class="absolute top-0 right-1">
+                    <XCircleIcon @click="removeFile" class="w-6 h-6" />
+                  </div>
+                  <FileTextIcon class="w-24 h-24"/>
+                </div>
+                {{files[0].name}}
+              </template>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 grid-flow-row gap-4">
+            
+            <div class="self-center">Payment Advice Number</div>
+            <div class="self-center">
+              <input type="text" v-model="disbursmentData.paymentAdviceNumber" class="form-control"/>
+            </div>
+            <div class="self-center">Payment Advice Amount</div>
+            <div class="self-center">
+              <input type="text" v-model="disbursmentData.paymentAdviceAmount" class="form-control"/>
+            </div>
+            <div class="self-center">Currency Code</div>
+            <div class="dropdown inline-block" data-placement="bottom">
+              <button class="dropdown-toggle btn btn-primary mr-1" aria-expanded="false"> {{disbursmentData.currencyCode}} </button>
+              <div class="dropdown-menu" id="currencyCodeDropDown" style="z-index: 10001;">
+                <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
+                  
+                  <a v-for="(currency, index) in currencies" :key="index"
+                    href="javascript:;"
+                    class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                    @click="setDisbursmentCurrencyCode(currency.currencyCode)"
+                  >
+                    {{currency.currencyCode}}
+                  </a>
+                </div>
+              </div>
+            </div>  
+            <div class="self-center">Payment Advice Date</div>
+            <div class="self-center">
+              <Litepicker
+                v-model="disbursmentData.paymentAdviceDate"
+                :options="{
+                  autoApply: false,
+                  showWeekNumbers: true,
+                  zIndex: 10001,
+                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                  dropdowns: {
+                    minYear: 1990,
+                    maxYear: null,
+                    months: true,
+                    years: true
+                  }
+                }"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-primary w-20 mr-1" @click="submitDisbursmentAdvice"> Submit </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
+        </div> <!-- END: Modal Footer -->
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { useStore } from 'vuex'
 import SignaturePad from "vue3-signature-pad";
 import moment from 'moment'
 import _ from 'lodash'
 import { sysAxios } from '@/plugins/axios'
 import Docments from './Documents'
+import { useDropzone } from 'vue3-dropzone';
 
 export default {
   props: {
-    batchData: {
+    workflowExecutionReferenceId: {
       type: String,
       required: true
     }
@@ -277,92 +407,119 @@ export default {
   },
   setup(props) {
     const journalBatchEntry = ref()
-    const batchData = JSON.parse(props.batchData)
     const adminCompany = ref()
     const initWorkflowId = ref()
     const provenance = ref()
     const provenancePendingStatusIndex = ref(0)
     const visibleApproveButton = ref(false)
+    const visibleSubmitProposal = ref(false)
+    const visibleSubmitDisbursmentAdvice = ref(false)
+    const currencies = ref(null)
     const signatureFileUrl = ref(null)
     const signatureDataURL = ref(null)
     const signatureFile = ref(null)
     const signaturePad = ref(null)
     const remark = ref(null)
+    const lastWorkStatus = ref()
     const batchDetails = ref({
-      batchNumber: batchData.batchNumber,
+      batchNumber: null,
       bankDetails: {
         bank: null,
       },
       batchInformation: {
-        bidEndTime: batchData.bidEndTime,
-        paymentDueDate: batchData.paymentDueDate,
+        bidEndTime: null,
+        paymentDueDate: null,
         buyerCompany: null,
         sellerCompany: null,
         funderCompany: null,
         noOfBatchEntries: 0,
-        uploadDate: moment(batchData.createdTime).format('DD/MM/YYYY'),
-        totalAmount: `${batchData.currencyCode} ${batchData.totalAmount}`
+        uploadDate: null,
+        totalAmount: null
       },
       formula: {
-        interestRate: batchData.interestRate,
-        processingFeeRate: batchData.processingFeeRateForSeller + batchData.processingFeeRateForFunder,
+        interestRate: null,
+        processingFeeRate: null,
         processingFeeAmount: null,
         disbursableAmountToSeller: null,
         disbursableDate: null,
-        miscFeeRate: batchData.processingFeeRateForBuyer,
+        miscFeeRate: null,
         miscFeeAmount: null,
         miscFeeDate: null,
-        platformFeeRate: batchData.processingFeeRateForFunder,
+        platformFeeRate: null,
         platformFeeAmount: null,
         platformFeeDate: null,
-        repaymentAmountToFunder: batchData.totalAmount,
-        repaymentDate: moment(batchData.paymentDueDate).format('DD/MM/YYYY')
+        repaymentAmountToFunder: null,
+        repaymentDate: null
       }
     })
     const store = useStore()
     const user = store.state.auth
+    const valueDate = ref()
+    const bidValue = ref(null)
+    const files = ref()
+    const disbursmentData = ref({
+      paymentAdviceNumber: null,
+      paymentAdviceAmount: null,
+      paymentInstructionId: null,
+      currencyCode: 'USD',
+      paymentAdviceDate: moment(new Date()).format("DD MMM, YYYY"),
+      paymentAdviceUri: null
+    })
+
+    const onDrop = (acceptFiles, rejectReasons) => {
+      files.value = acceptFiles;
+      console.log(acceptFiles)
+      console.log(rejectReasons)
+    }
+
+    const options = reactive({
+      multiple: true,
+      onDrop,
+      accept: '.jpg, .csv',
+    })
+
+const { getRootProps, getInputProps, ...rest } = useDropzone(options)
+
     console.log('user = ', user)
-    console.log("batch data = ", batchData)
-    console.log("batch detail = ", batchDetails.value)
 
     const invoiceDetailApi = async() => {
       const bankApi = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/bankaccounts`
       await sysAxios.get(bankApi).then(res => {
-        batchDetails.value.bankDetails.bank = _.find(res.data, {currency: batchData.currencyCode})
+        batchDetails.value.bankDetails.bank = _.find(res.data, {currency: batchDetails.value.currencyCode})
       })
 
-      const batchBuyerApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchData.buyerCompanyId}`
+      const batchBuyerApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchDetails.value.buyerCompanyId}`
       await sysAxios.get(batchBuyerApi).then(res => {
         batchDetails.value.batchInformation.buyerCompany = res.data.companyDisplayName
       })
 
-      if(batchData.sellerCompanyId !== '00000000-0000-0000-0000-000000000000'){
-        const batchSellerApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchData.sellerCompanyId}`
+      if(batchDetails.value.sellerCompanyId !== '00000000-0000-0000-0000-000000000000'){
+        const batchSellerApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchDetails.value.sellerCompanyId}`
         await sysAxios.get(batchSellerApi).then(res => {
           batchDetails.value.batchInformation.sellerCompany = res.data.companyDisplayName
         })
       }
       
-      if(batchData.funderCompanyId !== '00000000-0000-0000-0000-000000000000'){
-        const batchFunderApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchData.funderCompanyId}`
+      if(batchDetails.value.funderCompanyId !== '00000000-0000-0000-0000-000000000000'){
+        const batchFunderApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchDetails.value.funderCompanyId}`
         await sysAxios.get(batchFunderApi).then(res => {
           batchDetails.value.batchInformation.funderCompany = res.data.companyDisplayName
         })
       }
 
-      const processingFeeApi = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceyid/${batchData.workflowExecutionReferenceId}`
+      const processingFeeApi = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceyid/${batchDetails.value.workflowExecutionReferenceId}`
       await sysAxios.get(processingFeeApi).then(res => {
 
-        var tax = _.find(res.data, {fromCompanyId: batchData.funderCompanyId, toCompanyId: batchData.sellerCompanyId})
-        batchDetails.value.formula.processingFeeAmount = batchData.totalAmount - tax.amountBeforeTax
+        var tax = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId})
+        batchDetails.value.formula.processingFeeAmount = batchDetails.value.totalAmount - tax.amountBeforeTax
         batchDetails.value.formula.disbursableAmountToSeller = tax.amountBeforeTax
         batchDetails.value.formula.disbursableDate = moment(tax.dueDate).format('DD/MM/YYYY')
 
-        var misc = _.find(res.data, {fromCompanyId: adminCompany.value, toCompanyId: batchData.buyerCompanyId})
+        var misc = _.find(res.data, {fromCompanyId: adminCompany.value, toCompanyId: batchDetails.value.buyerCompanyId})
         batchDetails.value.formula.miscFeeAmount = misc.amountBeforeTax
         batchDetails.value.formula.miscFeeDate = misc.dueDate
 
-        var platformFee = _.find(res.data, {fromCompanyId: batchData.funderCompanyId, toCompanyId: adminCompany.value})
+        var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
         batchDetails.value.formula.platformFeeAmount = platformFee.amountBeforeTax
         batchDetails.value.formula.platformFeeDate = platformFee.dueDate
       })
@@ -374,7 +531,7 @@ export default {
         provenance.value = res.data
       })
       var currentWorkflowStatusesApi = 'https://workflow.bsg-api.tk/api/genie/workflowstatustransition/v1/retrievestatustransitions/byreferenceids'
-      await sysAxios.post(currentWorkflowStatusesApi, [batchData.workflowExecutionReferenceId]).then(res => {
+      await sysAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         res.data[0].workflows.forEach(passedWorkflow => {
           provenance.value = provenance.value.map(item => {
@@ -399,15 +556,37 @@ export default {
     
     const getLastWorkflowStatus = async() => {
       const api = "https://workflow.bsg-api.tk/api/genie/workflowstatustransition/v1/retrievestatustransitions/byreferenceids/limittolaststatustransition";
-      await sysAxios.post(api, [batchData.workflowExecutionReferenceId]).then(res => {
+      await sysAxios.post(api, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
+        lastWorkStatus.value = res.data[0].workflow.lastStatusTransition
         if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_SELLER_ACKNOWLEDGEMENT" && user.user_role === "Seller Admin") visibleApproveButton.value = true
+        if(res.data[0].workflow.lastStatusTransition['statusName'] === "BIDDING_IN_PROGRESS" && user.user_role === "Funder Admin") visibleSubmitProposal.value = true
+        if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_FUNDER_DISBURSEMENT" && user.user_role === "Funder Admin") visibleSubmitDisbursmentAdvice.value = true
+      })
+    }
+
+    const getCurrencyCode = async() => {
+      const companyProfileSystemConfig = 'configuration/v1/Company Profile';
+      await sysAxios.get(companyProfileSystemConfig).then(res => {
+				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
+			})
+    }
+
+    const getpaymentInstructionId = async () => {
+      const api = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceyid/${props.workflowExecutionReferenceId}`
+      return new Promise( resolve => {
+        sysAxios.get(api).then(res => {
+          const paymentInstruction = _.find(res.data, {label: "DisbursableAmount"})
+          console.log("paymentInstruction = ", paymentInstruction)
+          disbursmentData.value.paymentInstructionId = paymentInstruction.paymentInstructionId
+          resolve(res.data)
+        })
       })
     }
 
     const approveAcknowledge = () => {
       const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0"
       sysAxios.post(api, {
-        externalReferenceId: batchData.workflowExecutionReferenceId,
+        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         remark: remark.value,
         signatureUri: signatureFileUrl.value
       }).then(res => {
@@ -421,7 +600,7 @@ export default {
     const declineAcknowledge = () => {
       const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0"
       sysAxios.post(api, {
-        externalReferenceId: batchData.workflowExecutionReferenceId,
+        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         remark: remark.value,
       }).then(res => {
         if(res.status === 200) {
@@ -431,16 +610,69 @@ export default {
       })
     }
 
+    const submitProposal = async () => {
+      const api = `https://bidding.bsg-api.tk/api/genie/bidding/v1/${batchDetails.value.workflowExecutionReferenceId}/vote`
+      sysAxios.put(api, {
+        vote: {
+          companyId: store.state.account.company_uuid,
+          bidValue: bidValue.value,
+          valueDate: moment(valueDate.value).format(),
+        }
+      }).then(res => {
+        console.log(res)
+      })
+    }
+
+    const submitDisbursmentAdvice = async () => {
+      await uploadFile()
+      await getpaymentInstructionId()
+
+      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10"
+      const request = {
+        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+        paymentInstructionId: disbursmentData.value.paymentInstructionId,
+        paymentAdviceNumber: disbursmentData.value.paymentAdviceNumber,
+        paymentAdviceUri: disbursmentData.value.paymentAdviceUri,
+        paymentAdviceAmount: disbursmentData.value.paymentAdviceAmount,
+        currencyCode: disbursmentData.value.currencyCode,
+        paymentAdviceDate: moment(disbursmentData.value.paymentAdviceDate).format()
+      }
+      sysAxios.post(api, request).then(res => {
+        console.log(res)
+        cash("#submit-disbursment-modal").model("hide")
+      })
+    }
+
+    const setDisbursmentCurrencyCode = (currencyCode) => {
+      disbursmentData.value.currencyCode = currencyCode
+    }
+
+    const uploadFile = async () => {
+      const fileUploadApi = 'https://fileupload.bsg-api.tk/api/uploads/v1/payment_advice';
+      let formData = new FormData();
+      formData.append('file', files.value[0])
+      let res = await sysAxios.post(fileUploadApi, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+      });
+      disbursmentData.value.paymentAdviceUri = 'https://fileupload.bsg.tk/api/uploads/v1/' + res.data
+    }
+
+    const removeFile = () => {
+      files.value = null;
+    }
+
     const getSignaturePad = () => {
       if (!signaturePad.value) {
         throw new Error("No signature pad ref could be found");
       }
       return signaturePad.value;
-    };
+    }
 
     const clearSignature = () => {
       getSignaturePad().clearSignature();
-    };
+    }
 
     const undoSignature = () => {
       getSignaturePad().undoSignature();
@@ -458,7 +690,7 @@ export default {
       }).then(res => {
         signatureFileUrl.value = `https://fileupload.bsg-api.tk/api/uploads/v1/${res.data}`
       });
-    };
+    }
 
     const onInput = (value) => {
       if (!value) {
@@ -471,12 +703,35 @@ export default {
         signatureDataURL.value = value;
         signatureFile.value = null;
       }
-    };
+    }
+
     onMounted(async () => {
-      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchData.journalBatchHeaderId}/entries`
-      await sysAxios.get(api).then(res => {
+
+      await sysAxios.get(`https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/byworkflowexecutionid/${props.workflowExecutionReferenceId}`).then( res => {        
+        const batch = {
+          ...res.data,
+          batchInformation: {
+            bidEndTime: res.data.bidEndTime,
+            paymentDueDate: res.data.paymentDueDate,
+            uploadDate: moment(res.data.createdTime).format('DD/MM/YYYY'),
+            totalAmount: `${res.data.currencyCode} ${res.data.totalAmount}`,
+            noOfBatchEntries: res.data.numberOfBatchEntries
+          },
+          formula: {
+            interestRate: res.data.interestRate,
+            processingFeeRate: res.data.processingFeeRateForSeller + res.data.processingFeeRateForFunder,
+            miscFeeRate: res.data.processingFeeRateForBuyer,
+            platformFeeRate: res.data.processingFeeRateForFunder,
+            repaymentAmountToFunder: res.data.totalAmount,
+            repaymentDate: moment(res.data.paymentDueDate).format('DD/MM/YYYY')
+          }
+        }
+        batchDetails.value = {...batchDetails.value, ...batch}
+      })
+      console.log(batchDetails.value)
+      await sysAxios.get(`https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
+        console.log("entries = ", res)
         journalBatchEntry.value = res.data
-        batchDetails.value.batchInformation.noOfBatchEntries = res.data.length
       })
       const genieGlobalSetting = `configuration/v1/Genie Global Settings`
       await sysAxios.get(genieGlobalSetting).then(res => {
@@ -486,18 +741,34 @@ export default {
       invoiceDetailApi()
       provenanceApi()
       getLastWorkflowStatus()
+      getCurrencyCode()
     })
 
     return {
       journalBatchEntry,
       moment,
       provenance,
+      lastWorkStatus,
       provenancePendingStatusIndex,
       batchDetails,
       visibleApproveButton,
+      visibleSubmitProposal,
+      visibleSubmitDisbursmentAdvice,
+      currencies,
       user,
+      bidValue,
+      valueDate,
+      remark,
+      disbursmentData,
       approveAcknowledge,
       declineAcknowledge,
+      submitProposal,
+      submitDisbursmentAdvice,
+      setDisbursmentCurrencyCode,
+      getRootProps,
+      getInputProps,
+      files,
+      removeFile,
       signaturePad,
       signatureDataURL,
       signatureFile,
@@ -505,7 +776,6 @@ export default {
       undoSignature,
       saveSignature,
       onInput,
-      remark
     }
   },
 }

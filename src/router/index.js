@@ -23,16 +23,16 @@ import Account from "../views/account/index.vue";
 import CompanyInformation from "../views/account/CompanyInformation.vue";
 import BankInformation from "../views/account/BankInformation.vue";
 import CurrencySettings from "../views/account/CurrencySettings.vue";
-import Kyc from "../views/account/Kyc.vue"
+import Kyc from "../views/account/Kyc.vue";
 import CompanyOnboard from "../views/company/index.vue";
 import Invoice from "../views/invoice/index.vue";
 import InvoiceDetail from "../views/invoice/InvoiceDetail.vue"
 import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Error.vue";
 import AccessDenied from "../views/error-page/AccessDenied.vue";
-import Alerts from "../views/alerts/index.vue"
-import { auth } from "../middleware/auth"
-import { log } from "../middleware/log"
+import Alerts from "../views/alerts/index.vue";
+import { auth } from "../middleware/auth";
+import { log } from "../middleware/log";
 
 const routes = [
   {
@@ -129,7 +129,7 @@ const routes = [
         path: "invoice",
         component: Invoice
       }, {
-        path: "invoice/detail/:batchData",
+        path: "invoice/detail/:workflowExecutionReferenceId",
         name: "batchDetail",
         component: InvoiceDetail,
         props: true

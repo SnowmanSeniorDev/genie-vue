@@ -201,7 +201,7 @@ export default {
       let journalBatchEntries = [];
       await Promise.all(
         jsonData.value.map(async item => {
-          const sellerCompanyId = await getSellerCompanyId("Signet");
+          const sellerCompanyId = await getSellerCompanyId("Seller company Display Name");
           console.log(moment(item.documentDate).format());
           journalBatchEntries.push({
             ...item,
@@ -211,12 +211,12 @@ export default {
           });
         })
       )
-      
 
       appAxios.post(api, {
         buyerCompanyId: store.state.account.company_uuid,
         journalBatchEntries: journalBatchEntries,
-        bidEndTime: moment(bidEndTime.value).format()
+        // bidEndTime: moment(bidEndTime.value).format()
+        bidEndTime: "2021-06-28T11:45:00.000Z"
       }).then(res => {
         cash("#upload-invoice-modal").modal("hide");
       })      
@@ -256,7 +256,7 @@ export default {
           documentType: "INV",
           sellerCompanyId: "MonsterInc01",
           documentDate: "11/01/2021",
-          paymentDueDate: "02/03/2021",
+          paymentDueDate: "12/03/2021",
           currencyCode: "USD",
           amount: 300.00,
           supportingDocuments: []
@@ -265,7 +265,7 @@ export default {
           documentType: "INV",
           sellerCompanyId: "MonsterInc01",
           documentDate: "11/01/2021",
-          paymentDueDate: "02/03/2021",
+          paymentDueDate: "12/03/2021",
           currencyCode: "USD",
           amount: 862.00,
           supportingDocuments: []
