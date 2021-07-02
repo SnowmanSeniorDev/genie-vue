@@ -176,6 +176,14 @@
           <div v-if="visibleSubmitDisbursmentAdvice" class="pt-8 flex justify-center">
             <a href="javascript:;" data-toggle="modal" data-target="#submit-disbursment-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Disbursment</a>
           </div>
+          <div v-if="visibleSellerAcknowledgeOfReceiveDisbursement" class="pt-8 flex justify-center">
+          <!-- <div class="pt-8 flex justify-center"> -->
+            <a href="javascript:;" @click="openSellerAcknowledgeOfReceiveDisbursementModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Receive of Disbursement</a>
+          </div>
+          <div v-if="visibleUploadRepaymentAdvice" class="pt-8 flex justify-center">
+          <!-- <div class="pt-8 flex justify-center"> -->
+            <a href="javascript:;" data-toggle="modal" data-target="#upload-repayment-advice" class="btn btn-primary w-48 sm:w-auto mr-2" >Upload Repayment Advice</a>
+          </div>
         </div>
       </div>
     </div>
@@ -218,8 +226,8 @@
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20 mr-1"> Cancel </button>
-          <button type="button" class="btn btn-primary w-20" @click="approveAcknowledge"> Approve </button>
+          <button type="button" class="btn btn-primary w-20 mr-1" @click="approveAcknowledge"> Approve </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
     </div>
@@ -249,8 +257,8 @@
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20 mr-1"> Cancel </button>
-          <button type="button" class="btn btn-primary w-20" @click="declineAcknowledge"> Decline </button>
+          <button type="button" class="btn btn-primary w-20 mr-1" @click="declineAcknowledge"> Decline </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
     </div>
@@ -332,15 +340,15 @@
             
             <div class="self-center">Payment Advice Number</div>
             <div class="self-center">
-              <input type="text" v-model="disbursmentData.paymentAdviceNumber" class="form-control"/>
+              <input type="text" v-model="disbursementData.paymentAdviceNumber" class="form-control"/>
             </div>
             <div class="self-center">Payment Advice Amount</div>
             <div class="self-center">
-              <input type="text" v-model="disbursmentData.paymentAdviceAmount" class="form-control"/>
+              <input type="text" v-model="disbursementData.paymentAdviceAmount" class="form-control"/>
             </div>
             <div class="self-center">Currency Code</div>
             <div class="dropdown inline-block" data-placement="bottom">
-              <button class="dropdown-toggle btn btn-primary mr-1" aria-expanded="false"> {{disbursmentData.currencyCode}} </button>
+              <button class="dropdown-toggle btn btn-primary mr-1" aria-expanded="false"> {{disbursementData.currencyCode}} </button>
               <div class="dropdown-menu" id="currencyCodeDropDown" style="z-index: 10001;">
                 <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
                   
@@ -357,7 +365,7 @@
             <div class="self-center">Payment Advice Date</div>
             <div class="self-center">
               <Litepicker
-                v-model="disbursmentData.paymentAdviceDate"
+                v-model="disbursementData.paymentAdviceDate"
                 :options="{
                   autoApply: false,
                   showWeekNumbers: true,
@@ -377,6 +385,135 @@
         </div>
         <div class="modal-footer text-right">
           <button type="button" class="btn btn-primary w-20 mr-1" @click="submitDisbursmentAdvice"> Submit </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
+        </div> <!-- END: Modal Footer -->
+      </div>
+    </div>
+  </div>
+  <div id="seller-acknowledge-of-receive-disbursement" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg" v-if="confirmAbleDisbursementData">
+      <div class="modal-content">
+        <!-- BEGIN: Modal Header -->
+        <div class="modal-header">
+          <h2 class="font-medium text-base mr-auto"> Acknowledge receive of disbursement </h2>
+        </div>
+        <!-- END: Modal Header -->
+        <div class="modal-body mx-8">
+          <div class="grid grid-cols-2 grid-flow-row gap-4">
+            <div class="self-center">Payment Advice Number</div>
+            <div class="self-center">{{confirmAbleDisbursementData.paymentAdviceNumber}}</div>
+            <div class="self-center">Payment Advice File</div>
+            <div class="self-center">{{confirmAbleDisbursementData.paymentAdviceNumber}}</div>
+            <div class="self-center">Payment Advice Amount</div>
+            <div class="self-center">{{confirmAbleDisbursementData.paymentAdviceAmount + ' ' + confirmAbleDisbursementData.currencyCode}}</div>
+            <div class="self-center">Payment Advice Date</div>
+            <div class="self-center">{{moment(confirmAbleDisbursementData.paymentAdviceDate).format("DD MMM, YYYY")}}</div>
+            <div class="self-center">Remark</div>
+            <div class="self-center">
+              <textarea v-model="remark" class="border-2 border w-full" rows="3" />
+            </div>
+          </div>
+          <signature-pad
+            :modelValue="signatureFile"
+            @input="onInput"
+            :height="150"
+            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
+            saveType="image/png"
+            saveOutput="file"
+            ref="signaturePad" />
+          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+            <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
+            <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
+            <button @click="saveSignature" class="btn btn-primary">Save signature</button>
+          </div>
+        </div>
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-primary w-20 mr-1" @click="sellerAcknowledgeOfReceiveDisbursement"> Confirm </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
+        </div> <!-- END: Modal Footer -->
+      </div>
+    </div>
+  </div>
+  <div id="upload-repayment-advice" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <!-- BEGIN: Modal Header -->
+        <div class="modal-header">
+          <h2 class="font-medium text-base mr-auto"> Upload Repayment Advice </h2>
+        </div>
+        <!-- END: Modal Header -->
+        <div class="modal-body mx-8">
+          <div>Payment Advice File Upload</div>
+          <div v-bind="getRootProps()" class="flex mb-3 justify-center border-red-400 border-dashed border-2 rounded-lg cursor-pointer">
+            <div class="text-center py-5">
+              <template v-if="!files">
+                <input v-bind="getInputProps()" >
+                <UploadCloudIcon class="w-24 h-20 text-red-400" />
+                <div class="text-lg font-medium text-gray-600"> 
+                  Drag and drop here<br>or
+                </div>
+                <div class="text-red-400">browse</div>
+              </template>
+              <template v-else>
+                <div class="relative">
+                  <div class="absolute top-0 right-1">
+                    <XCircleIcon @click="removeFile" class="w-6 h-6" />
+                  </div>
+                  <FileTextIcon class="w-24 h-24"/>
+                </div>
+                {{files[0].name}}
+              </template>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 grid-flow-row gap-4">
+            
+            <div class="self-center">Payment Advice Number</div>
+            <div class="self-center">
+              <input type="text" v-model="disbursementData.paymentAdviceNumber" class="form-control"/>
+            </div>
+            <div class="self-center">Payment Advice Amount</div>
+            <div class="self-center">
+              <input type="text" v-model="disbursementData.paymentAdviceAmount" class="form-control"/>
+            </div>
+            <div class="self-center">Currency Code</div>
+            <div class="dropdown inline-block" data-placement="bottom">
+              <button class="dropdown-toggle btn btn-primary mr-1" aria-expanded="false"> {{disbursementData.currencyCode}} </button>
+              <div class="dropdown-menu" id="currencyCodeDropDown" style="z-index: 10001;">
+                <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
+                  
+                  <a v-for="(currency, index) in currencies" :key="index"
+                    href="javascript:;"
+                    class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                    @click="setDisbursmentCurrencyCode(currency.currencyCode)"
+                  >
+                    {{currency.currencyCode}}
+                  </a>
+                </div>
+              </div>
+            </div>  
+            <div class="self-center">Payment Advice Date</div>
+            <div class="self-center">
+              <Litepicker
+                v-model="disbursementData.paymentAdviceDate"
+                :options="{
+                  autoApply: false,
+                  showWeekNumbers: true,
+                  zIndex: 10001,
+                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                  dropdowns: {
+                    minYear: 1990,
+                    maxYear: null,
+                    months: true,
+                    years: true
+                  }
+                }"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-primary w-20 mr-1" @click="uploadRepaymentAdvice"> Submit </button>
           <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
@@ -414,6 +551,8 @@ export default {
     const visibleApproveButton = ref(false)
     const visibleSubmitProposal = ref(false)
     const visibleSubmitDisbursmentAdvice = ref(false)
+    const visibleSellerAcknowledgeOfReceiveDisbursement = ref(false)
+    const visibleUploadRepaymentAdvice = ref(false)
     const currencies = ref(null)
     const signatureFileUrl = ref(null)
     const signatureDataURL = ref(null)
@@ -457,7 +596,7 @@ export default {
     const valueDate = ref()
     const bidValue = ref(null)
     const files = ref()
-    const disbursmentData = ref({
+    const disbursementData = ref({
       paymentAdviceNumber: null,
       paymentAdviceAmount: null,
       paymentInstructionId: null,
@@ -465,6 +604,8 @@ export default {
       paymentAdviceDate: moment(new Date()).format("DD MMM, YYYY"),
       paymentAdviceUri: null
     })
+    const confirmAbleDisbursementData = ref()
+
 
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles;
@@ -478,10 +619,10 @@ export default {
       accept: '.jpg, .csv',
     })
 
-const { getRootProps, getInputProps, ...rest } = useDropzone(options)
+    const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
     console.log('user = ', user)
-
+    console.log("company uuid = ", store.state.account)
     const invoiceDetailApi = async() => {
       const bankApi = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/bankaccounts`
       await sysAxios.get(bankApi).then(res => {
@@ -507,7 +648,7 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
         })
       }
 
-      const processingFeeApi = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceyid/${batchDetails.value.workflowExecutionReferenceId}`
+      const processingFeeApi = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`
       await sysAxios.get(processingFeeApi).then(res => {
 
         var tax = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId})
@@ -530,7 +671,7 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
       await sysAxios.get(workflowsApi).then(res => {
         provenance.value = res.data
       })
-      var currentWorkflowStatusesApi = 'https://workflow.bsg-api.tk/api/genie/workflowstatustransition/v1/retrievestatustransitions/byreferenceids'
+      var currentWorkflowStatusesApi = 'https://workflow.bsg-api.tk/api/genie/workflow/v1/statustransition/retrieve/byreferenceids'
       await sysAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         res.data[0].workflows.forEach(passedWorkflow => {
@@ -555,12 +696,14 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
     }
     
     const getLastWorkflowStatus = async() => {
-      const api = "https://workflow.bsg-api.tk/api/genie/workflowstatustransition/v1/retrievestatustransitions/byreferenceids/limittolaststatustransition";
+      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition";
       await sysAxios.post(api, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
         lastWorkStatus.value = res.data[0].workflow.lastStatusTransition
         if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_SELLER_ACKNOWLEDGEMENT" && user.user_role === "Seller Admin") visibleApproveButton.value = true
-        if(res.data[0].workflow.lastStatusTransition['statusName'] === "BIDDING_IN_PROGRESS" && user.user_role === "Funder Admin") visibleSubmitProposal.value = true
-        if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_FUNDER_DISBURSEMENT" && user.user_role === "Funder Admin") visibleSubmitDisbursmentAdvice.value = true
+        else if(res.data[0].workflow.lastStatusTransition['statusName'] === "BIDDING_IN_PROGRESS" && user.user_role === "Funder Admin") visibleSubmitProposal.value = true
+        else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_FUNDER_DISBURSEMENT" && user.user_role === "Funder Admin") visibleSubmitDisbursmentAdvice.value = true
+        else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_SELLER_ACKNOWLEDGE_DISBURSEMENT" && user.user_role === "Seller Admin") visibleSellerAcknowledgeOfReceiveDisbursement.value = true
+        else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_BUYER_REPAYMENT_ON_DUE_DATE" && user.user_role === "Buyer Admin") visibleUploadRepaymentAdvice.value = true
       })
     }
 
@@ -571,14 +714,12 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 			})
     }
 
-    const getpaymentInstructionId = async () => {
-      const api = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceyid/${props.workflowExecutionReferenceId}`
+    const getpaymentInstructionId = async (label) => {
+      const api = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
       return new Promise( resolve => {
         sysAxios.get(api).then(res => {
-          const paymentInstruction = _.find(res.data, {label: "DisbursableAmount"})
-          console.log("paymentInstruction = ", paymentInstruction)
-          disbursmentData.value.paymentInstructionId = paymentInstruction.paymentInstructionId
-          resolve(res.data)
+          const paymentInstruction = _.find(res.data, {label: label}) //RepaymentAmount | DisbursableAmount
+          resolve(paymentInstruction.paymentInstructionId)
         })
       })
     }
@@ -625,17 +766,17 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
     const submitDisbursmentAdvice = async () => {
       await uploadFile()
-      await getpaymentInstructionId()
+      disbursementData.value.paymentInstructionId = await getpaymentInstructionId("DisbursableAmount")
 
       const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10"
       const request = {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-        paymentInstructionId: disbursmentData.value.paymentInstructionId,
-        paymentAdviceNumber: disbursmentData.value.paymentAdviceNumber,
-        paymentAdviceUri: disbursmentData.value.paymentAdviceUri,
-        paymentAdviceAmount: disbursmentData.value.paymentAdviceAmount,
-        currencyCode: disbursmentData.value.currencyCode,
-        paymentAdviceDate: moment(disbursmentData.value.paymentAdviceDate).format()
+        paymentInstructionId: disbursementData.value.paymentInstructionId,
+        paymentAdviceNumber: disbursementData.value.paymentAdviceNumber,
+        paymentAdviceUri: disbursementData.value.paymentAdviceUri,
+        paymentAdviceAmount: disbursementData.value.paymentAdviceAmount,
+        currencyCode: disbursementData.value.currencyCode,
+        paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
       }
       sysAxios.post(api, request).then(res => {
         console.log(res)
@@ -643,12 +784,53 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
       })
     }
 
+    const openSellerAcknowledgeOfReceiveDisbursementModel = async () => {
+      const paymentInstructionId = await getpaymentInstructionId("DisbursableAmount")
+      const api = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
+      const conformableDisbursementData = await sysAxios.get(api)
+      confirmAbleDisbursementData.value = {..._.find(conformableDisbursementData.data, {paymentInstructionId: paymentInstructionId}) }
+      cash("#seller-acknowledge-of-receive-disbursement").modal("show")
+    }
+
+    const sellerAcknowledgeOfReceiveDisbursement = async () => {
+      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0"
+      const request = {
+        externalReferenceId: props.workflowExecutionReferenceId,
+        signatureUri: signatureFileUrl.value,
+        remarks: remark.value
+      }
+      sysAxios.post(api, request).then(res => {
+        console.log(res)
+        cash("#seller-acknowledge-of-receive-disbursement").model("hide")
+      })
+    }
+
     const setDisbursmentCurrencyCode = (currencyCode) => {
-      disbursmentData.value.currencyCode = currencyCode
+      disbursementData.value.currencyCode = currencyCode
+    }
+
+    const uploadRepaymentAdvice = async () => {
+      await uploadFile()
+      disbursementData.value.paymentInstructionId = await getpaymentInstructionId("RepaymentAmount")
+
+      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20"
+      const request = {
+        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+        paymentInstructionId: disbursementData.value.paymentInstructionId,
+        paymentAdviceNumber: disbursementData.value.paymentAdviceNumber,
+        paymentAdviceUri: disbursementData.value.paymentAdviceUri,
+        paymentAdviceAmount: disbursementData.value.paymentAdviceAmount,
+        currencyCode: disbursementData.value.currencyCode,
+        paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
+      }
+      sysAxios.post(api, request).then(res => {
+        console.log(res)
+        cash("#upload-repayment-advice").model("hide")
+      })
     }
 
     const uploadFile = async () => {
-      const fileUploadApi = 'https://fileupload.bsg-api.tk/api/uploads/v1/payment_advice';
+      const fileUploadApi = 'uploads/v1/payment_advice';
       let formData = new FormData();
       formData.append('file', files.value[0])
       let res = await sysAxios.post(fileUploadApi, formData, {
@@ -656,7 +838,7 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
             'Content-Type': 'multipart/form-data'
           }
       });
-      disbursmentData.value.paymentAdviceUri = 'https://fileupload.bsg.tk/api/uploads/v1/' + res.data
+      disbursementData.value.paymentAdviceUri = 'https:// authorization.bsg-api.tk/api/uploads/v1/' + res.data
     }
 
     const removeFile = () => {
@@ -688,7 +870,7 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
             'Content-Type': 'multipart/form-data'
           }
       }).then(res => {
-        signatureFileUrl.value = `https://fileupload.bsg-api.tk/api/uploads/v1/${res.data}`
+        signatureFileUrl.value = `https://authorization.bsg-api.tk/api/uploads/v1/${res.data}`
       });
     }
 
@@ -754,17 +936,23 @@ const { getRootProps, getInputProps, ...rest } = useDropzone(options)
       visibleApproveButton,
       visibleSubmitProposal,
       visibleSubmitDisbursmentAdvice,
+      visibleSellerAcknowledgeOfReceiveDisbursement,
+      visibleUploadRepaymentAdvice,
       currencies,
       user,
       bidValue,
       valueDate,
       remark,
-      disbursmentData,
+      disbursementData,
+      confirmAbleDisbursementData,
       approveAcknowledge,
       declineAcknowledge,
       submitProposal,
       submitDisbursmentAdvice,
       setDisbursmentCurrencyCode,
+      uploadRepaymentAdvice,
+      openSellerAcknowledgeOfReceiveDisbursementModel,
+      sellerAcknowledgeOfReceiveDisbursement,
       getRootProps,
       getInputProps,
       files,

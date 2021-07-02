@@ -175,7 +175,7 @@ export default {
     const addSupportDoc = (index, documentId, documentName) => {
       jsonData.value[index].supportingDocuments.push({
           documentName: documentName,
-          documentURI: "https://fileupload.bsg-api.tk/api/uploads/v1/" + documentId,
+          documentURI: "https://authorization.bsg-api.tk/api/uploads/v1/" + documentId,
         });
     }
 
@@ -216,7 +216,7 @@ export default {
         buyerCompanyId: store.state.account.company_uuid,
         journalBatchEntries: journalBatchEntries,
         // bidEndTime: moment(bidEndTime.value).format()
-        bidEndTime: "2021-06-28T11:45:00.000Z"
+        bidEndTime: "2021-07-01T23:51:00.000Z"
       }).then(res => {
         cash("#upload-invoice-modal").modal("hide");
       })      

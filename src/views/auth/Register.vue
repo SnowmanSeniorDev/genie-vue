@@ -29,10 +29,12 @@
               New account registration.
             </div>
             <div class="intro-x mt-8">
-              <input type="text" class="intro-x login__input form-control py-3 px-4 border-gray-300 block" placeholder="Username"/>
-              <input type="text" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Company Name"/>
-              <input type="text" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Work Email"/>
-              <input type="text" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Password"/>
+              <input type="text" v-model="formData.firstName" class="intro-x login__input form-control py-3 px-4 border-gray-300 block" placeholder="First Name"/>
+              <input type="text" v-model="formData.lastName" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Last Name"/>
+              <input type="text" v-model="formData.userName" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Username"/>
+              <input type="text" v-model="formData.emailAddress" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Work Email"/>
+              <input type="text" v-model="formData.displayName" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Display Name"/>
+              <input type="password" v-model="formData.password" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Password"/>
               <div class="intro-x w-full grid grid-cols-12 gap-4 h-1 mt-3">
                 <div class="col-span-3 h-full rounded bg-theme-9"></div>
                 <div class="col-span-3 h-full rounded bg-theme-9"></div>
@@ -40,10 +42,10 @@
                 <div class="col-span-3 h-full rounded bg-gray-200 dark:bg-dark-2"></div>
               </div>
               <a href="" class="intro-x text-gray-600 block mt-2 text-xs sm:text-sm">What is a secure password?</a>
-              <input type="text" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Password Confirmation"/>
+              <input type="password" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Password Confirmation"/>
             </div>
             <div class="intro-x mt-5 xl:mt-8 text-center xl:text-left">
-              <button class="btn btn-primary py-3 px-4 w-full xl:mr-3 align-top"> Register</button>
+              <button class="btn btn-primary py-3 px-4 w-full xl:mr-3 align-top" @click="submit"> Register</button>
               <div class="intro-x flex justify-center text-gray-700 dark:text-gray-600 mt-4 text-xs sm:text-sm">
                 <label class="cursor-pointer select-none" for="remember-me">Already have an account? </label>
                 <a class="text-theme-1 dark:text-theme-10 ml-1" href="javascript:;" @click="gotoSignIn">Sign in instead</a>
@@ -60,21 +62,34 @@
 <script>
 import { reactive, onMounted } from "vue";
 import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
+import {useRouter} from "vue-router"
+import {sysAxios} from "@/plugins/axios"
 
 export default {
   components: {
     DarkModeSwitcher
   },
   setup() {
+    const router = useRouter()
     const formData = reactive({
-      username: "",
-      companyName: "",
-      email: "",
-      userName: "",
-      displayName: "",
-      password: "",
-      confirmPassword: "",
+      userName: null,
+      secret: null,
+      emailAddress: null,
+      firstName: null,
+      lastName: null,
+      displayName: null,
+      applicationDomain: null
     });
+
+    const submit = () => {
+      sysAxios.post("api/user/v1").then(res => {
+        if(res.status === 201) gotoSignIn()
+      })
+    }
+
+    const gotoSignIn = () => {
+      router.push({path: "login"})
+    }
 
     onMounted(() => {
       cash("body")
@@ -83,13 +98,13 @@ export default {
         .addClass("login");
     });
     return {
-      formData
+      formData,
+      gotoSignIn,
+      submit
     }
   },
   methods: {
-    gotoSignIn() {
-      this.$router.push({path: "login"})
-    }
+    
   }
 };
 </script>
