@@ -8,7 +8,7 @@ export const auth = ({ next, router, to }) => {
     console.log(to.meta.permission)
     console.log(store.state.main.permissions)
     // if(!store.state.main.permissions.some( permission => permission.permissionName == to.meta.permission)){
-      // return router.push({ name: "GENIE_ACCESS_DENIED" });
+    //   return router.push({ name: "GENIE_ACCESS_DENIED" });
     // }
   }
   return next();

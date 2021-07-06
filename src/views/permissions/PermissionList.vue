@@ -93,7 +93,7 @@
               <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-24 mr-1">
                 Cancel
               </button>
-              <button type="button" data-dismiss="modal" class="btn btn-danger w-24" @click="deletePermission('111')">Delete</button>
+              <button type="button" data-dismiss="modal" class="btn btn-danger w-24" @click="deletePermission">Delete</button>
             </div>
           </div>
         </div>
@@ -124,13 +124,10 @@ export default {
     }
     const deletePermission = () => {
       const api = `access/v1/permission/${deletePermissionId.value}`;
-      console.log(api);
-      _.remove(permissions.value, {permissionId: deletePermissionId.value})
-      console.log(permissions.value)
       modal.value = false
-      // sysAxios.delete(api).then(res => {
-        // if(res.status === 200) {_.remove(permissions, {permissionId: permissionId})}
-      // })
+      sysAxios.delete(api).then(res => {
+        if(res.status === 200) {_.remove(permissions, {permissionId: permissionId})}
+      })
     }
 
     return {

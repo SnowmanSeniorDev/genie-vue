@@ -3,123 +3,74 @@ const menu = [{
     pageName: "side-menu-dashboard",
     icon: "HomeIcon",
     subMenu: [{
-      icon: "HomeIcon",
+      icon: "MonitorIcon",
       title: "Dashboard",
       pageName: "GENIE_DASHBOARD",
       permission: "GENIE_DASHBOARD"
     }]
   },{
-    icon: "InboxIcon",
+    icon: "ClipboardIcon",
     pageName: "side-menu-inbox",
     title: "Invoices",
     subMenu: [{
-        icon: "InboxIcon",
-        pageName: "side-menu-inbox",
-        title: "Upload",
-        permission: "GENIE_INVOICE_UPLOAD"
-      },{
-        icon: "InboxIcon",
-        pageName: "side-menu-inbox",
-        title: "Pending Action",
-        permission: "GENIE_INVOICE_PENDING_ACTION"
-      },{
-        icon: "InboxIcon",
-        pageName: "side-menu-inbox",
-        title: "Batch Detail",
-        permission: "GENIE_INVOICE_BATCH_DETAIL"
-      },{
-        icon: "InboxIcon",
-        pageName: "side-menu-inbox",
-        title: "Admin Fee Report",
-        permission: "GENIE_INVOICE_ADMIN_FEE_REPORT"
-      },{
-        icon: "InboxIcon",
-        pageName: "side-menu-inbox",
-        title: "Bidding Status",
-        permission: "GENIE_INVOICE_BIDDING_STATUS"
+        icon: "ClipboardIcon",
+        title: "Invoices",
+        pageName: "GENIE_INVOICE",
+        permission: "GENIE_INVOICE"
       }
     ]
   },{
-    icon: "HardDriveIcon",
-    pageName: "side-menu-file-manager",
-    title: "Onboarding",
+    icon: "KeyIcon",
+    pageName: "GENIE_PERMISSION",
+    title: "Permissions",
     subMenu: [{
-      icon: "HardDriveIcon",
-      pageName: "side-menu-file-manager",
-      title: "Seller",
-      permission: "GENIE_ONBOARDING"
-    }]
-  },{
-    icon: "LayoutIcon",
-    pageName: "side-menu-file-manager",
-    title: "KYC",
-    subMenu: [{
-        icon: "LayoutIcon",
-        pageName: "side-menu-file-manager",
-        title: "Know Your Buyers",
-        permission: "GENIE_KYC_BUYERS"
-      },{
-        icon: "LayoutIcon",
-        pageName: "side-menu-file-manager",
-        title: "Know Your Sellers",
-        permission: "GENIE_KYC_SELLERS"
+        icon: "KeyIcon",
+        title: "Permissions",
+        pageName: "GENIE_PERMISSION",
+        permission: "GENIE_PERMISSION"
       }
     ]
   },{
-    icon: "LayoutIcon",
-    pageName: "side-menu-layout",
+    icon: "AirplayIcon",
+    pageName: "GENIE_COMPANY_PROFILE",
     title: "Company",
     subMenu: [{
-      icon: "LayoutIcon",
-      pageName: "side-menu-layout",
-      title: "Company",
-      permission: "GENIE_COMPANY"
-    }]
-  },{
-    icon: "LayoutIcon",
-    pageName: "side-menu-layout",
-    title: "Security",
-    subMenu: [{
-        icon: "LayoutIcon",
-        pageName: "GENIE_SECURITY_USER_MANAGEMENT",
-        title: "User Management",
-        permission: "GENIE_SECURITY_USER_MANAGEMENT"
-      },{
-        icon: "LayoutIcon",
-        pageName: "GENIE_SECURITY_ROLES",
-        title: "User Group",
-        permission: "GENIE_SECURITY_ROLES"
+        icon: "AirplayIcon",
+        title: "profile",
+        pageName: "GENIE_COMPANY_PROFILE",
+        permission: "GENIE_COMPANY_PROFILE"
       }
     ]
   },{
-    icon: "LayoutIcon",
-    pageName: "side-menu-layout",
-    title: "Settings",
+    icon: "SettingsIcon",
+    pageName: "GENIE_SYSTEM_CONFIG",
+    title: "Config",
     subMenu: [{
-        icon: "LayoutIcon",
-        pageName: "side-menu-layout",
-        title: "Email Gateway",
-        permission: "GENIE_SETTINGS_EMAIL_GATEWAY"
+        icon: "SettingsIcon",
+        title: "System Config",
+        pageName: "GENIE_SYSTEM_CONFIG",
+        permission: "GENIE_SYSTEM_CONFIG"
+      }
+    ]
+  },{
+    icon: "UserIcon",
+    pageName: "side-menu-layout",
+    title: "Users",
+    subMenu: [{
+        icon: "UserIcon",
+        pageName: "GENIE_USERS",
+        title: "User Management",
+        permission: "GENIE_USERS"
       },{
-        icon: "LayoutIcon",
-        pageName: "side-menu-layout",
-        title: "Process Term",
-        permission: "GENIE_SETTINGS_PROCESS_TERM"
+        icon: "UsersIcon",
+        pageName: "GENIE_USERS_ROLES",
+        title: "User Group",
+        permission: "GENIE_USERS_ROLES"
       },{
-        icon: "LayoutIcon",
-        pageName: "side-menu-layout",
-        title: "Payment Count",
-        permission: "GENIE_SETTINGS_PAYMENTCOUNT"
-      },{
-        icon: "LayoutIcon",
-        pageName: "side-menu-layout",
-        title: "Email Template",
-        permission: "GENIE_SETTINGS_EMAILTEMPLATE"
-      },{
-        icon: "LayoutIcon",
-        pageName: "side-menu-layout",
-        title: "Currency Master",
-        permission: "GENIE_SETTINGS_CURRENCYMASTER"
+        icon: "UserPlusIcon",
+        pageName: "GENIE_USERS_ASSIGN_ROLE",
+        title: "New Users",
+        permission: "GENIE_USERS_ASSIGN_ROLE"
       }
     ]
   }
@@ -142,5 +93,6 @@ export const custom_menu = (permissions) => {
       ret.push(iMenu) ;
     }
   });
+  console.log("ret = ", ret)
   return ret ;
 }

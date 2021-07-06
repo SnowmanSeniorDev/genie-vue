@@ -11,6 +11,7 @@ import Users from "../views/users/index.vue";
 import UsersList from "../views/users/UsersList.vue";
 import CreatUser from "../views/users/Add.vue";
 import UpdateUser from "../views/users/Edit.vue";
+import NewUsers from "../views/users/NewUsers.vue";
 import Permission from "../views/permissions/index.vue";
 import PermissionList from "../views/permissions/PermissionList.vue";
 import CreatePermission from "../views/permissions/Add.vue";
@@ -40,7 +41,7 @@ const routes = [
     component: SideMenu,
     children: [
       {
-        path: "/",
+        path: "/dashboard",
         name: "GENIE_DASHBOARD",
         component: DashboardOverview1,
         meta: {
@@ -55,7 +56,7 @@ const routes = [
         component: Users,
         children: [{
           path: "",
-          name: "GENIE_SECURITY_USER_MANAGEMENT",
+          name: "GENIE_USERS",
           component: UsersList
         }, {
           path: "creat",
@@ -63,16 +64,20 @@ const routes = [
         }, {
           path: "edit/:id",
           component: UpdateUser,
+        }, {
+          path: "new-users",
+          name: "GENIE_USERS_ASSIGN_ROLE",
+          component: NewUsers,
         }],
         meta: {
-          permission: "GENIE_SECURITY_USER_MANAGEMENT"
+          permission: "GENIE_USERS"
         }
       }, {
         path: "permission",
-        name: "permission",
         component: Permission,
         children: [{
           path: "",
+          name: "GENIE_PERMISSION",
           component: PermissionList
         }, {
           path: "add",
@@ -80,35 +85,39 @@ const routes = [
         }, {
           path: "edit/:id",
           component: EditPermission
-        }]
+        }],
+        meta: {
+          permission: "GENIE_PERMISSION"
+        }
       }, {
         path: "roles",
         component: RolesIndex,
         children: [{
           path: "",
-          name: "GENIE_SECURITY_ROLES",
+          name: "GENIE_USERS_ROLES",
           component: GrantAccess
         }],
         meta: {
-          permission: "GENIE_SECURITY_ROLES"
+          permission: "GENIE_USERS_ROLES"
         }
       }, {
         path: "settings",
         component: SettingsIndex,
         children: [{
           path: "",
-          name: "GENIE_SYSTEM_CONFIGURATION",
+          name: "GENIE_SYSTEM_CONFIG",
           component: SystemConfigure
         }],
         meta: {
-          permission: "GENIE_SYSTEM_CONFIGURATION"
+          permission: "GENIE_SYSTEM_CONFIG"
         }
       }, {
         path: "account",
         component: Account,
         children: [{
           path: "",
-          component: CompanyInformation
+          component: CompanyInformation,
+          name: "GENIE_COMPANY_PROFILE",
         }, {
           path: "bank-information",
           component: BankInformation
@@ -120,13 +129,14 @@ const routes = [
           component: Kyc
         }],
         meta: {
-          permission: "GENIE_COMPANY_CREATE"
+          permission: "GENIE_COMPANY_PROFILE"
         }
       }, {
         path: "company-onboard",
         component: CompanyOnboard
       }, {
         path: "invoice",
+        name: "GENIE_INVOICE",
         component: Invoice
       }, {
         path: "invoice/detail/:workflowExecutionReferenceId",

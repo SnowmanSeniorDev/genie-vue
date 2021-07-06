@@ -70,10 +70,10 @@
                       name="accessVerb"
                       :options="{ search: true, descriptions: true, hideSelected: true, hideDisabled: true, multiLimit: 15, multiShowCount: false, multiContainer: true, classNames: 'w-full' }"
                       multiple>
-                      <option value="get">Get</option>
-                      <option value="post">Post</option>
-                      <option value="put">Put</option>
-                      <option value="delete">Delete</option>
+                      <option value="Get">Get</option>
+                      <option value="Post">Post</option>
+                      <option value="Put">Put</option>
+                      <option value="Delete">Delete</option>
                     </TailSelect>
                   </div>
                 </div>
