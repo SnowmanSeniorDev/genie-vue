@@ -127,8 +127,18 @@ import _ from "lodash";
 export default {
   setup() {
     const api = "user/v1/";
-    const users = ref(null);
-    sysAxios.get(api).then(res => {users.value = res.data});
+    const users = ref([]);
+    sysAxios.get(api).then( res => {
+      console.log(res.data)
+      res.data.map(user => {
+        const authorizationApi = `access/v1/authorization/user/${user.userId}`;
+        sysAxios.get(authorizationApi).then(authRes => {
+          authRes.data.roles.forEach(role => {
+            if(role.roleName === "guest") users.value = [...users.value, user]
+          });
+        })
+      })
+    });
     return {
       users
     }

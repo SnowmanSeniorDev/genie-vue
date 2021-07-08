@@ -34,7 +34,7 @@
               <input type="text" v-model="formData.userName" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Username"/>
               <input type="text" v-model="formData.emailAddress" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Work Email"/>
               <input type="text" v-model="formData.displayName" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Display Name"/>
-              <input type="password" v-model="formData.password" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Password"/>
+              <input type="password" v-model="formData.secret" class="intro-x login__input form-control py-3 px-4 border-gray-300 block mt-4" placeholder="Password"/>
               <div class="intro-x w-full grid grid-cols-12 gap-4 h-1 mt-3">
                 <div class="col-span-3 h-full rounded bg-theme-9"></div>
                 <div class="col-span-3 h-full rounded bg-theme-9"></div>
@@ -78,11 +78,11 @@ export default {
       firstName: null,
       lastName: null,
       displayName: null,
-      applicationDomain: null
+      applicationDomain: 'genie'
     });
 
     const submit = () => {
-      sysAxios.post("api/user/v1").then(res => {
+      sysAxios.post("https://companies.bsg-api.tk/api/genie/company/v1/user", formData).then(res => {
         if(res.status === 201) gotoSignIn()
       })
     }
