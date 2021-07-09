@@ -149,7 +149,7 @@ export default {
 
     const submit = () => {
 			console.log(store.state.account.company_uuid)
-      const api = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/user`
+      const api = `/company/v1/${store.state.account.company_uuid}/user`
       console.log(store.getters['account/getAccount']);
       sysAxios.post(api, {
         userId: store.state.auth.user_id,

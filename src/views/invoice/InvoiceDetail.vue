@@ -180,9 +180,13 @@
           <!-- <div class="pt-8 flex justify-center"> -->
             <a href="javascript:;" @click="openSellerAcknowledgeOfReceiveDisbursementModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Receive of Disbursement</a>
           </div>
-          <div v-if="visibleUploadRepaymentAdvice" class="pt-8 flex justify-center">
+          <div v-if="visibleBuyerUploadRepaymentAdvice" class="pt-8 flex justify-center">
           <!-- <div class="pt-8 flex justify-center"> -->
-            <a href="javascript:;" data-toggle="modal" data-target="#upload-repayment-advice" class="btn btn-primary w-48 sm:w-auto mr-2" >Upload Repayment Advice</a>
+            <a href="javascript:;" data-toggle="modal" data-target="#buyer-upload-repayment-advice" class="btn btn-primary w-48 sm:w-auto mr-2" >Upload Repayment Advice</a>
+          </div>
+          <div v-if="visibleFunderAcknowledgeRepaymentAdvice" class="pt-8 flex justify-center">
+          <!-- <div class="pt-8 flex justify-center"> -->
+            <a href="javascript:;" @click="openFunderAcknowledgeUploadRepaymentAdviceModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Repayment Advice</a>
           </div>
         </div>
       </div>
@@ -434,7 +438,7 @@
       </div>
     </div>
   </div>
-  <div id="upload-repayment-advice" class="modal" tabindex="-1" aria-hidden="true">
+  <div id="buyer-upload-repayment-advice" class="modal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <!-- BEGIN: Modal Header -->
@@ -513,7 +517,52 @@
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" class="btn btn-primary w-20 mr-1" @click="uploadRepaymentAdvice"> Submit </button>
+          <button type="button" class="btn btn-primary w-20 mr-1" @click="BuyerUploadRepaymentAdvice"> Submit </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
+        </div> <!-- END: Modal Footer -->
+      </div>
+    </div>
+  </div>
+  <div id="funder-acknowledge-upload-repayment-advice" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg" v-if="confirmFunderAcknowledgeReceiveOfRepaymentData">
+      <div class="modal-content">
+        <!-- BEGIN: Modal Header -->
+        <div class="modal-header">
+          <h2 class="font-medium text-base mr-auto"> Acknowledge Receive of Repayment </h2>
+        </div>
+        <!-- END: Modal Header -->
+        <div class="modal-body mx-8">
+          <div class="grid grid-cols-2 grid-flow-row gap-4">
+            <div class="self-center">Payment Advice Number</div>
+            <div class="self-center">{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceNumber}}</div>
+            <div class="self-center">Payment Advice File</div>
+            <div class="self-center">{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceNumber}}</div>
+            <div class="self-center">Payment Advice Amount</div>
+            <div class="self-center">{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceAmount + ' ' + confirmFunderAcknowledgeReceiveOfRepaymentData.currencyCode}}</div>
+            <div class="self-center">Payment Advice Date</div>
+            <div class="self-center">{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format("DD MMM, YYYY")}}</div>
+            <div class="self-center">Remark</div>
+            <div class="self-center">
+              <textarea v-model="remark" class="border-2 border w-full" rows="3" />
+            </div>
+          </div>
+          <signature-pad
+            :modelValue="signatureFile"
+            @input="onInput"
+            :height="150"
+            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
+            saveType="image/png"
+            saveOutput="file"
+            ref="signaturePad" />
+          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+            <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
+            <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
+            <button @click="saveSignature" class="btn btn-primary">Save signature</button>
+          </div>
+        </div>
+        <div class="modal-footer text-right">
+          <button type="button" class="btn btn-primary w-20 mr-1" @click="funderAcknowledgeOfRepaymentComfirm"> Confirm </button>
+          <button type="button" class="btn btn-danger w-20 mr-1" @click="funderAcknowledgeOfRepaymentDecline"> Decline </button>
           <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
@@ -527,7 +576,7 @@ import { useStore } from 'vuex'
 import SignaturePad from "vue3-signature-pad";
 import moment from 'moment'
 import _ from 'lodash'
-import { sysAxios } from '@/plugins/axios'
+import { sysAxios, appAxios } from '@/plugins/axios'
 import Docments from './Documents'
 import { useDropzone } from 'vue3-dropzone';
 
@@ -552,7 +601,8 @@ export default {
     const visibleSubmitProposal = ref(false)
     const visibleSubmitDisbursmentAdvice = ref(false)
     const visibleSellerAcknowledgeOfReceiveDisbursement = ref(false)
-    const visibleUploadRepaymentAdvice = ref(false)
+    const visibleBuyerUploadRepaymentAdvice = ref(false)
+    const visibleFunderAcknowledgeRepaymentAdvice = ref(false)
     const currencies = ref(null)
     const signatureFileUrl = ref(null)
     const signatureDataURL = ref(null)
@@ -605,6 +655,7 @@ export default {
       paymentAdviceUri: null
     })
     const confirmAbleDisbursementData = ref()
+    const confirmFunderAcknowledgeReceiveOfRepaymentData = ref()
 
 
     const onDrop = (acceptFiles, rejectReasons) => {
@@ -624,32 +675,32 @@ export default {
     console.log('user = ', user)
     console.log("company uuid = ", store.state.account)
     const invoiceDetailApi = async() => {
-      const bankApi = `https://companies.bsg-api.tk/api/genie/company/v1/${store.state.account.company_uuid}/bankaccounts`
-      await sysAxios.get(bankApi).then(res => {
+      const bankApi = `/company/v1/${store.state.account.company_uuid}/bankaccounts`
+      await appAxios.get(bankApi).then(res => {
         batchDetails.value.bankDetails.bank = _.find(res.data, {currency: batchDetails.value.currencyCode})
       })
 
-      const batchBuyerApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchDetails.value.buyerCompanyId}`
-      await sysAxios.get(batchBuyerApi).then(res => {
+      const batchBuyerApi = `/company/v1/${batchDetails.value.buyerCompanyId}`
+      await appAxios.get(batchBuyerApi).then(res => {
         batchDetails.value.batchInformation.buyerCompany = res.data.companyDisplayName
       })
 
       if(batchDetails.value.sellerCompanyId !== '00000000-0000-0000-0000-000000000000'){
-        const batchSellerApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchDetails.value.sellerCompanyId}`
-        await sysAxios.get(batchSellerApi).then(res => {
+        const batchSellerApi = `/company/v1/${batchDetails.value.sellerCompanyId}`
+        await appAxios.get(batchSellerApi).then(res => {
           batchDetails.value.batchInformation.sellerCompany = res.data.companyDisplayName
         })
       }
       
       if(batchDetails.value.funderCompanyId !== '00000000-0000-0000-0000-000000000000'){
-        const batchFunderApi = `https://companies.bsg-api.tk/api/genie/company/v1/${batchDetails.value.funderCompanyId}`
-        await sysAxios.get(batchFunderApi).then(res => {
+        const batchFunderApi = `/company/v1/${batchDetails.value.funderCompanyId}`
+        await appAxios.get(batchFunderApi).then(res => {
           batchDetails.value.batchInformation.funderCompany = res.data.companyDisplayName
         })
       }
 
-      const processingFeeApi = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`
-      await sysAxios.get(processingFeeApi).then(res => {
+      const processingFeeApi = `/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`
+      await appAxios.get(processingFeeApi).then(res => {
 
         var tax = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId})
         batchDetails.value.formula.processingFeeAmount = batchDetails.value.totalAmount - tax.amountBeforeTax
@@ -667,12 +718,12 @@ export default {
     }
 
     const provenanceApi = async() => {
-      var workflowsApi = `https://workflow.bsg-api.tk/api/genie/workflow/v1?visibility=true`
-      await sysAxios.get(workflowsApi).then(res => {
+      var workflowsApi = '/workflow/v1?visibility=true'
+      await appAxios.get(workflowsApi).then(res => {
         provenance.value = res.data
       })
-      var currentWorkflowStatusesApi = 'https://workflow.bsg-api.tk/api/genie/workflow/v1/statustransition/retrieve/byreferenceids'
-      await sysAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
+      var currentWorkflowStatusesApi = '/workflow/v1/statustransition/retrieve/byreferenceids'
+      await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         res.data[0].workflows.forEach(passedWorkflow => {
           provenance.value = provenance.value.map(item => {
@@ -696,14 +747,15 @@ export default {
     }
     
     const getLastWorkflowStatus = async() => {
-      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition";
-      await sysAxios.post(api, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
+      const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition'
+      await appAxios.post(api, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
         lastWorkStatus.value = res.data[0].workflow.lastStatusTransition
         if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_SELLER_ACKNOWLEDGEMENT" && user.user_role === "Seller Admin") visibleApproveButton.value = true
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "BIDDING_IN_PROGRESS" && user.user_role === "Funder Admin") visibleSubmitProposal.value = true
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_FUNDER_DISBURSEMENT" && user.user_role === "Funder Admin") visibleSubmitDisbursmentAdvice.value = true
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_SELLER_ACKNOWLEDGE_DISBURSEMENT" && user.user_role === "Seller Admin") visibleSellerAcknowledgeOfReceiveDisbursement.value = true
-        else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_BUYER_REPAYMENT_ON_DUE_DATE" && user.user_role === "Buyer Admin") visibleUploadRepaymentAdvice.value = true
+        else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_BUYER_REPAYMENT_ON_DUE_DATE" && user.user_role === "Buyer Admin") visibleBuyerUploadRepaymentAdvice.value = true
+        else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT" && user.user_role === "Funder Admin") visibleFunderAcknowledgeRepaymentAdvice.value = true
       })
     }
 
@@ -715,9 +767,9 @@ export default {
     }
 
     const getpaymentInstructionId = async (label) => {
-      const api = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
+      const api = `/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
       return new Promise( resolve => {
-        sysAxios.get(api).then(res => {
+        appAxios.get(api).then(res => {
           const paymentInstruction = _.find(res.data, {label: label}) //RepaymentAmount | DisbursableAmount
           resolve(paymentInstruction.paymentInstructionId)
         })
@@ -725,8 +777,8 @@ export default {
     }
 
     const approveAcknowledge = () => {
-      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0"
-      sysAxios.post(api, {
+      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+      appAxios.post(api, {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         remark: remark.value,
         signatureUri: signatureFileUrl.value
@@ -739,8 +791,8 @@ export default {
     }
 
     const declineAcknowledge = () => {
-      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0"
-      sysAxios.post(api, {
+      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
+      appAxios.post(api, {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         remark: remark.value,
       }).then(res => {
@@ -752,8 +804,8 @@ export default {
     }
 
     const submitProposal = async () => {
-      const api = `https://bidding.bsg-api.tk/api/genie/bidding/v1/${batchDetails.value.workflowExecutionReferenceId}/vote`
-      sysAxios.put(api, {
+      const api = `/bidding/v1/${batchDetails.value.workflowExecutionReferenceId}/vote`
+      appAxios.put(api, {
         vote: {
           companyId: store.state.account.company_uuid,
           bidValue: bidValue.value,
@@ -768,7 +820,7 @@ export default {
       await uploadFile()
       disbursementData.value.paymentInstructionId = await getpaymentInstructionId("DisbursableAmount")
 
-      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10"
+      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10'
       const request = {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         paymentInstructionId: disbursementData.value.paymentInstructionId,
@@ -778,7 +830,7 @@ export default {
         currencyCode: disbursementData.value.currencyCode,
         paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
       }
-      sysAxios.post(api, request).then(res => {
+      appAxios.post(api, request).then(res => {
         console.log(res)
         cash("#submit-disbursment-modal").model("hide")
       })
@@ -786,22 +838,56 @@ export default {
 
     const openSellerAcknowledgeOfReceiveDisbursementModel = async () => {
       const paymentInstructionId = await getpaymentInstructionId("DisbursableAmount")
-      const api = `https://ledger.bsg-api.tk/api/genie/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
-      const conformableDisbursementData = await sysAxios.get(api)
+      const api = `/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
+      const conformableDisbursementData = await appAxios.get(api)
       confirmAbleDisbursementData.value = {..._.find(conformableDisbursementData.data, {paymentInstructionId: paymentInstructionId}) }
       cash("#seller-acknowledge-of-receive-disbursement").modal("show")
     }
 
+    const openFunderAcknowledgeUploadRepaymentAdviceModel = async () => {
+      const paymentInstructionId = await getpaymentInstructionId("RepaymentAmount")
+      const api = `/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
+      const resData = await appAxios.get(api)
+      confirmFunderAcknowledgeReceiveOfRepaymentData.value = {..._.find(resData.data, {paymentInstructionId: paymentInstructionId}) }
+      console.log("result filter = ", confirmFunderAcknowledgeReceiveOfRepaymentData.value)
+      cash("#funder-acknowledge-upload-repayment-advice").modal("show")
+    }
+
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
-      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0"
+      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
       const request = {
         externalReferenceId: props.workflowExecutionReferenceId,
         signatureUri: signatureFileUrl.value,
         remarks: remark.value
       }
-      sysAxios.post(api, request).then(res => {
+      appAxios.post(api, request).then(res => {
         console.log(res)
         cash("#seller-acknowledge-of-receive-disbursement").model("hide")
+      })
+    }
+
+    const funderAcknowledgeOfRepaymentComfirm = async () => {
+      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
+      const request = {
+        externalReferenceId: props.workflowExecutionReferenceId,
+        signatureUri: signatureFileUrl.value,
+        remarks: remark.value
+      }
+      appAxios.post(api, request).then(res => {
+        console.log(res)
+        cash("#funder-acknowledge-upload-repayment-advice").model("hide")
+      })
+    }
+
+    const funderAcknowledgeOfRepaymentDecline = async () => {
+      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
+      const request = {
+        externalReferenceId: props.workflowExecutionReferenceId,
+        remarks: remark.value
+      }
+      appAxios.post(api, request).then(res => {
+        console.log(res)
+        cash("#funder-acknowledge-upload-repayment-advice").model("hide")
       })
     }
 
@@ -809,11 +895,11 @@ export default {
       disbursementData.value.currencyCode = currencyCode
     }
 
-    const uploadRepaymentAdvice = async () => {
+    const BuyerUploadRepaymentAdvice = async () => {
       await uploadFile()
       disbursementData.value.paymentInstructionId = await getpaymentInstructionId("RepaymentAmount")
 
-      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20"
+      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20'
       const request = {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         paymentInstructionId: disbursementData.value.paymentInstructionId,
@@ -823,9 +909,29 @@ export default {
         currencyCode: disbursementData.value.currencyCode,
         paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
       }
-      sysAxios.post(api, request).then(res => {
+      appAxios.post(api, request).then(res => {
         console.log(res)
-        cash("#upload-repayment-advice").model("hide")
+        cash("#buyer-upload-repayment-advice").model("hide")
+      })
+    }
+
+    const FunderUploadRepaymentAdvice = async () => {
+      await uploadFile()
+      disbursementData.value.paymentInstructionId = await getpaymentInstructionId("RepaymentAmount")
+
+      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20'
+      const request = {
+        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+        paymentInstructionId: disbursementData.value.paymentInstructionId,
+        paymentAdviceNumber: disbursementData.value.paymentAdviceNumber,
+        paymentAdviceUri: disbursementData.value.paymentAdviceUri,
+        paymentAdviceAmount: disbursementData.value.paymentAdviceAmount,
+        currencyCode: disbursementData.value.currencyCode,
+        paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
+      }
+      appAxios.post(api, request).then(res => {
+        console.log(res)
+        cash("#seller-upload-repayment-advice").model("hide")
       })
     }
 
@@ -838,7 +944,7 @@ export default {
             'Content-Type': 'multipart/form-data'
           }
       });
-      disbursementData.value.paymentAdviceUri = 'https:// authorization.bsg-api.tk/api/uploads/v1/' + res.data
+      disbursementData.value.paymentAdviceUri = 'https://authorization.bsg-api.tk/api/uploads/v1/' + res.data
     }
 
     const removeFile = () => {
@@ -889,7 +995,7 @@ export default {
 
     onMounted(async () => {
 
-      await sysAxios.get(`https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/byworkflowexecutionid/${props.workflowExecutionReferenceId}`).then( res => {        
+      await appAxios.get(`/journalbatch/v1/header/byworkflowexecutionid/${props.workflowExecutionReferenceId}`).then( res => {        
         const batch = {
           ...res.data,
           batchInformation: {
@@ -911,7 +1017,7 @@ export default {
         batchDetails.value = {...batchDetails.value, ...batch}
       })
       console.log(batchDetails.value)
-      await sysAxios.get(`https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
+      await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
         console.log("entries = ", res)
         journalBatchEntry.value = res.data
       })
@@ -937,7 +1043,8 @@ export default {
       visibleSubmitProposal,
       visibleSubmitDisbursmentAdvice,
       visibleSellerAcknowledgeOfReceiveDisbursement,
-      visibleUploadRepaymentAdvice,
+      visibleBuyerUploadRepaymentAdvice,
+      visibleFunderAcknowledgeRepaymentAdvice,
       currencies,
       user,
       bidValue,
@@ -945,14 +1052,19 @@ export default {
       remark,
       disbursementData,
       confirmAbleDisbursementData,
+      confirmFunderAcknowledgeReceiveOfRepaymentData,
       approveAcknowledge,
       declineAcknowledge,
       submitProposal,
       submitDisbursmentAdvice,
       setDisbursmentCurrencyCode,
-      uploadRepaymentAdvice,
+      BuyerUploadRepaymentAdvice,
+      FunderUploadRepaymentAdvice,
       openSellerAcknowledgeOfReceiveDisbursementModel,
+      openFunderAcknowledgeUploadRepaymentAdviceModel,
       sellerAcknowledgeOfReceiveDisbursement,
+      funderAcknowledgeOfRepaymentComfirm,
+      funderAcknowledgeOfRepaymentDecline,
       getRootProps,
       getInputProps,
       files,

@@ -76,8 +76,8 @@ export default {
     });
 
     const resetPassword = () => {
-      const api = `https://authorization.bsg-api.tk/api/user/v1/${userId.value}/updatesecret`;
-      axios.put(api, {newSecret: newPassword.value}).then(res => {
+      const api = `/user/v1/${userId.value}/updatesecret`;
+      sysAxios.put(api, {newSecret: newPassword.value}).then(res => {
         if(res.status === 200){
             Toastify({
               node: cash("#success-notification-update-password").clone().removeClass("hidden")[0],

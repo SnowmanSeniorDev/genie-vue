@@ -188,15 +188,15 @@ export default {
     }
     
     const getSellerCompanyId = (companyName) => {
-      const api = `https://companies.bsg-api.tk/api/genie/company/v1/${companyName}`;
+      const api = `/company/v1/${companyName}`;
       return new Promise( resolve => {
-        sysAxios.get(api).then(res => {
+        appAxios.get(api).then(res => {
           resolve(res.data.companyId)
         })
       })
     }
     const submitInvoice = async () => {
-      const api = "https://workflow.bsg-api.tk/api/genie/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
+      const api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
       
       let journalBatchEntries = [];
       await Promise.all(
@@ -216,7 +216,7 @@ export default {
         buyerCompanyId: store.state.account.company_uuid,
         journalBatchEntries: journalBatchEntries,
         // bidEndTime: moment(bidEndTime.value).format()
-        bidEndTime: "2021-07-01T23:51:00.000Z"
+        bidEndTime: "2021-07-09T10:20:00.000Z"
       }).then(res => {
         cash("#upload-invoice-modal").modal("hide");
       })      

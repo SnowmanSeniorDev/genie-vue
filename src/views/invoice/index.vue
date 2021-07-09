@@ -86,7 +86,7 @@ import { useRouter } from "vue-router";
 import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
 import InvoiceUploadModal from "./InvoiceUploadModal";
-import { sysAxios } from "@/plugins/axios";
+import { sysAxios, appAxios } from "@/plugins/axios";
 
 export default {
   components: {
@@ -216,8 +216,8 @@ export default {
     };
 
     const getInvoiceOverview = () => {
-      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${store.state.account.company_uuid}`;
-      sysAxios.get(api).then(res => {
+      const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
+      appAxios.get(api).then(res => {
         invoiceOverview.value = res.data;
         console.log(invoiceOverview.value);
         initTabulator()

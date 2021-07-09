@@ -19,7 +19,7 @@
 
 <script>
 import { ref, onMounted } from 'vue'
-import { sysAxios } from '@/plugins/axios'
+import { appAxios } from '@/plugins/axios'
 import moment from 'moment'
 export default {
   props: {
@@ -35,8 +35,8 @@ export default {
   setup(props) {
     const documents = ref();
     onMounted(() => {
-      const api = `https://journalbatch.bsg-api.tk/api/genie/journalbatch/v1/header/${props.journalBatchHeaderId }/entry/${props.journalBatchEntryId }/supportingdocuments`;
-      sysAxios.get(api).then(res => {
+      const api = `/journalbatch/v1/header/${props.journalBatchHeaderId }/entry/${props.journalBatchEntryId }/supportingdocuments`;
+      appAxios.get(api).then(res => {
         console.log("supporting documents = ", res.data)
         documents.value = res.data
       })

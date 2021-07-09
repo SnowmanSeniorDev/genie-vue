@@ -82,7 +82,7 @@ export default {
     });
 
     const submit = () => {
-      sysAxios.post("https://companies.bsg-api.tk/api/genie/company/v1/user", formData).then(res => {
+      appAxios.post("/company/v1/user", formData).then(res => {
         if(res.status === 201) gotoSignIn()
       })
     }
