@@ -8,11 +8,10 @@
         }
         &:before {
             content: "";
-            margin-left: -48%;
-            background-image: url(../images/bg-login-page.svg);
+            background-image: url(../images/auth.png);
             background-repeat: no-repeat;
-            background-size: auto 100%;
-            background-position: right;
+            background-size: 50% 100%;
+            background-position: left;
             @apply w-full h-full absolute top-0 left-0;
             @include media-breakpoint-down(xl) {
                 @apply hidden;

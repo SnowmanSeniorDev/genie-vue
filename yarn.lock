@@ -1386,10 +1386,10 @@
     "@intlify/shared" "^9.1.1"
     loader-utils "^2.0.0"
 
-"@left4code/tw-starter@^1.0.9":
-  version "1.0.27"
-  resolved "https://registry.yarnpkg.com/@left4code/tw-starter/-/tw-starter-1.0.27.tgz#b8434001224a745909a2987fbd44fe8d997e41e1"
-  integrity sha512-fUlFugdAIqIyF1WpIJs9KfD8tGU34oLzYgAoN7U5tz58mrJ0Lb7nhdIe0HuIGl51Bn/g9c1UDoaA7jwgxvcASw==
+"@left4code/tw-starter@^1.0.28":
+  version "1.0.28"
+  resolved "https://registry.yarnpkg.com/@left4code/tw-starter/-/tw-starter-1.0.28.tgz#191844935089f4f4757aae26652d66f3c10c2740"
+  integrity sha512-B+ZDrnmZSn94WudqKAoeIDQdii+e+/ww6uzkPShzE3ukkZgcS6XSRERLjERrKgs8IUXKbEfuQwn0t+1cVY+KsA==
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"

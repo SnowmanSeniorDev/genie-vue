@@ -1,5 +1,5 @@
-const primaryColors = require("@left4code/tw-starter/dist/js/colors");
-
+// const primaryColors = require("@left4code/tw-starter/dist/js/colors");
+const primaryColors = require("./src/plugins/colors");
 module.exports = {
   purge: [
     "./src/**/*.php",
@@ -19,7 +19,7 @@ module.exports = {
       colors: {
         ...primaryColors,
         theme: {
-          1: "#1C3FAA",
+          1: "#9A428A",
           2: "#F1F5F8",
           3: "#2E51BB",
           4: "#3151BC",
