@@ -59,7 +59,7 @@
 <script>
 import { reactive, onMounted } from "vue";
 import {useRouter} from "vue-router"
-import {sysAxios} from "@/plugins/axios"
+import {sysAxios, appAxios} from "@/plugins/axios"
 
 export default {
   setup() {
