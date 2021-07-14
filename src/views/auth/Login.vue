@@ -69,6 +69,7 @@ export default {
       cash("body")
         .removeClass("main")
         .removeClass("error-page")
+        .removeClass("register")
         .addClass("login");
     });
     return {
