@@ -1,8 +1,8 @@
 @layer components {
     .main {
+        @apply bg-gray-100;
         background-repeat: no-repeat;
         background-attachment: fixed;
         padding: 0;
-        
     }
 }

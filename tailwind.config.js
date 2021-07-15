@@ -20,7 +20,7 @@ module.exports = {
         ...primaryColors,
         theme: {
           1: "#9A428A",
-          2: "#F1F5F8",
+          2: "#FAF2F8",
           3: "#2E51BB",
           4: "#3151BC",
           5: "#DEE7EF",

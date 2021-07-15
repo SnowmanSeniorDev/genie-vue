@@ -1,19 +1,15 @@
 <template>
   <div>
-    <DarkModeSwitcher />
     <MobileMenu />
     <div class="flex">
       <!-- BEGIN: Side Menu -->
       <nav class="side-nav">
         <!-- BEGIN: Logo -->
-        <router-link :to="{ name: 'GENIE_DASHBOARD' }" tag="a" class="intro-x flex items-center pl-5 pt-4">
-          <img alt="Midone Tailwind HTML Admin Template" class="w-6" src="@/assets/images/logo.svg"/>
-          <span class="hidden xl:block text-white text-lg ml-3">
-            Genie
-          </span>
+        <router-link :to="{ name: 'GENIE_DASHBOARD' }" tag="a" class="intro-x flex items-center pt-4 flex justify-center">
+          <img alt="Midone Tailwind HTML Admin Template" class="" src="@/assets/images/logo.svg"/>
         </router-link>
         <!-- END: Logo -->
-        <div class="side-nav__devider my-6"></div>
+        <div class="my-6"></div>
         <ul>
           <!-- BEGIN: First Child -->
           <template v-for="(menu, menuKey) in formattedMenu">

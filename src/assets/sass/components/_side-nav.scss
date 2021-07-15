@@ -1,7 +1,7 @@
 @layer components {
   .side-nav {
     width: 230px;
-    @apply px-5 pb-16 pt-8 overflow-x-hidden bg-white;
+    @apply px-5 pb-16 pt-8 overflow-x-hidden bg-white shadow-lg;
     @include media-breakpoint-down(xl) {
       width: 85px;
     }
@@ -23,8 +23,8 @@
       }
     }
     .side-menu {
-      height: 50px;
-      @apply flex items-center text-theme-1 pl-5 text-white mb-1 relative rounded-full;
+      height: 40px;
+      @apply flex items-center bg-theme-2 text-theme-1 pl-5 text-white mb-1 relative rounded-md;
       .side-menu__title {
         @apply w-full ml-3 flex items-center;
         .side-menu__sub-icon {
@@ -52,7 +52,6 @@
           }
           & > a {
             &:not(.side-menu--active) {
-              // @apply bg-primary;
               transform: translateX(50px);
               animation: 0.4s intro-menu-animation ease-in-out 0.33333s;
               animation-fill-mode: forwards;
@@ -83,7 +82,10 @@
         }
         li a {
           &:not(.side-menu--active) {
-            @apply text-black dark:text-gray-600;
+            @apply text-black bg-gray-200;
+            &:hover {
+              @apply bg-white;
+            }
           }
           &.side-menu--active .side-menu__title {
             @apply font-medium;
