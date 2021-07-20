@@ -43,7 +43,6 @@ export default {
   [LOGOUT](state) {
     state.authenticated = false;
     state.loginSuccess = false;
-    state.userRole = null;
     localStorage.removeItem('id_token');
     localStorage.removeItem('user_role');
     localStorage.removeItem('profile');

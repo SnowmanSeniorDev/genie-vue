@@ -47,7 +47,7 @@
           <tbody>
             <tr v-for="(permission, permissionKey) in permissions" :key="permissionKey" class="intro-x">
               <td>
-                <a href="" class="font-medium whitespace-nowrap">{{permission.permissionName}}</a>
+                <a class="font-medium whitespace-nowrap">{{permission.permissionName}}</a>
               </td>
               <td>
                 <div class="text-gray-600 text-xs whitespace-nowrap mt-0.5"> {{ permission.resourceURI }}</div>
@@ -141,8 +141,9 @@ export default {
     gotoCreatePermission(){
       this.$router.push("/permission/add")
     },
-    gotoEditPermission(permission) {
-      this.$router.push("/permission/edit", {...permission})
+    gotoEditPermission(id) {
+      console.log(id)
+      this.$router.push(`/permission/edit/${id}`)
     }
   }
 }

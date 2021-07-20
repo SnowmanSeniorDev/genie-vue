@@ -11,6 +11,5 @@ export default {
   user_id: "",
   display_name: "",
   token: "",
-  userRole: 0,
   profile: {}
 };

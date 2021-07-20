@@ -37,7 +37,6 @@ export default {
     onMounted(() => {
       const api = `/journalbatch/v1/header/${props.journalBatchHeaderId }/entry/${props.journalBatchEntryId }/supportingdocuments`;
       appAxios.get(api).then(res => {
-        console.log("supporting documents = ", res.data)
         documents.value = res.data
       })
     })

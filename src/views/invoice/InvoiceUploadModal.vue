@@ -148,6 +148,7 @@ export default {
     ]);
     const bidEndTime = ref(moment(new Date()).format("D MMM, YYYY"))
     console.log(store.state.account.company_uuid)
+    console.log(store.state.auth)
 
     const changedDate = (evt) => {
       console.log(evt)
@@ -187,7 +188,7 @@ export default {
       document.getElementById("file-upload").click()
     }
     
-    const getSellerCompanyId = (companyName) => {
+    const getCompanyIdByCompanyName = (companyName) => {
       const api = `/company/v1/${companyName}`;
       return new Promise( resolve => {
         appAxios.get(api).then(res => {
@@ -196,30 +197,58 @@ export default {
       })
     }
     const submitInvoice = async () => {
-      const api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
-      
-      let journalBatchEntries = [];
-      await Promise.all(
-        jsonData.value.map(async item => {
-          const sellerCompanyId = await getSellerCompanyId("Seller company Display Name");
-          console.log(moment(item.documentDate).format());
-          journalBatchEntries.push({
-            ...item,
-            sellerCompanyId: sellerCompanyId,
-            documentDate: moment(item.documentDate).format(),
-            paymentDueDate: moment(item.paymentDueDate).format()
-          });
-        })
-      )
+      if(store.state.auth === 'Buyer Admin') {
+        const api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
+        
+        let journalBatchEntries = [];
+        await Promise.all(
+          jsonData.value.map(async item => {
+            const companyId = await getCompanyIdByCompanyName("Seller company Display Name");
+            console.log(moment(item.documentDate).format());
+            journalBatchEntries.push({
+              ...item,
+              sellerCompanyId: companyId,
+              documentDate: moment(item.documentDate).format(),
+              paymentDueDate: moment(item.paymentDueDate).format()
+            });
+          })
+        )
 
-      appAxios.post(api, {
-        buyerCompanyId: store.state.account.company_uuid,
-        journalBatchEntries: journalBatchEntries,
-        // bidEndTime: moment(bidEndTime.value).format()
-        bidEndTime: "2021-07-09T10:20:00.000Z"
-      }).then(res => {
-        cash("#upload-invoice-modal").modal("hide");
-      })      
+        appAxios.post(api, {
+          buyerCompanyId: store.state.account.company_uuid,
+          journalBatchEntries: journalBatchEntries,
+          // bidEndTime: moment(bidEndTime.value).format()
+          bidEndTime: "2021-07-19T12:19:00.000Z"
+        }).then(res => {
+          cash("#upload-invoice-modal").modal("hide");
+        })      
+      } else {
+        const api = "/workflow/v1/seller-led-invoice-financing-workflow-1/0"
+        
+        let journalBatchEntries = [];
+        await Promise.all(
+          jsonData.value.map(async item => {
+            const companyId = await getCompanyIdByCompanyName("buyer testing company");
+            console.log(moment(item.documentDate).format());
+            journalBatchEntries.push({
+              ...item,
+              buyerCompanyId: companyId,
+              documentDate: moment(item.documentDate).format(),
+              paymentDueDate: moment(item.paymentDueDate).format()
+            });
+          })
+        )
+
+        appAxios.post(api, {
+          sellerCompanyId: store.state.account.company_uuid,
+          journalBatchEntries: journalBatchEntries,
+          // bidEndTime: moment(bidEndTime.value).format()
+          bidEndTime: "2021-07-19T12:30:00.000Z"
+        }).then(res => {
+          cash("#upload-invoice-modal").modal("hide");
+        })
+      }
+      
     }
     
     const fileChoosen = (event) => {
