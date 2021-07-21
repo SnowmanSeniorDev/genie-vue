@@ -1,6 +1,6 @@
 <template>
-	<div class="px-5 sm:px-20 mt-10 pt-10 border-t border-gray-200 dark:border-dark-5">
-		<div class="font-medium text-base">Company Information</div>
+	<div class="dark:border-dark-5">
+		<div class="font-medium text-2xl">Company Information</div>
 		<div class="grid grid-cols-12 gap-4 gap-y-5 mt-5">
 			<div class="intro-y col-span-12 sm:col-span-6">
 				<label for="account-1-company-display-name" class="form-label">Company Display Name</label>

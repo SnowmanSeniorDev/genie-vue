@@ -4,55 +4,48 @@
       <h2 class="intro-y text-lg font-medium mr-auto">Account Settings</h2>
     </div>
     <!-- BEGIN: Wizard Layout -->
-    <div class="intro-y box sm:py-20 mt-5">
-      <div class="wizard flex flex-col lg:flex-row justify-center px-5 sm:px-20">
+    <div class="intro-y box sm:py-10 mt-5 flex divide-x divide-gray-500">
+			<div class="w-1/4 px-10 py-12">
         <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
           <button
-						:class="step === `company-information` ? `w-12 h-12 rounded-full btn btn-primary` : `w-12 h-12 rounded-full btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
+						:class="step === `company-information` ? `w-full h-12 btn btn-primary` : `w-full h-12 btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
 						@click="gotoCompanyInformation"
 					>
 						<HomeIcon class="w-8 h-8"/>
+						Company Information
 					</button>
-          <div :class="step === `company-information` ? `font-medium text-base lg:mt-3 ml-3 lg:mx-auto` : `text-base lg:mt-3 ml-3 lg:mx-auto text-gray-700 dark:text-gray-600`">
-            Company Information
-          </div>
         </div>
         <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
 					<button 
-						:class="step === `bank-information` ? `w-12 h-12 rounded-full btn btn-primary` : `w-12 h-12 rounded-full btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
+						:class="step === `bank-information` ? `w-full h-12 btn btn-primary` : `w-full h-12 btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
 						@click="gotoBankInformation"
 					>
 						<ApertureIcon class="w-8 h-8"/>
-					</button>
-					<div :class="step === `bank-information` ? `font-medium text-base lg:mt-3 ml-3 lg:mx-auto` : `text-base lg:mt-3 ml-3 lg:mx-auto text-gray-700 dark:text-gray-600`">
             Bank Information
-          </div>
+					</button>
         </div>
         <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
 					<button 
-						:class="step === `currency-settings` ? `w-12 h-12 rounded-full btn btn-primary` : `w-12 h-12 rounded-full btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
+						:class="step === `currency-settings` ? `w-full h-12 btn btn-primary` : `w-full h-12 btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
 						@click="gotoCurrencySettings"
 					>
 						<DollarSignIcon class="w-8 h-8"/>
-					</button>
-					<div :class="step === `currency-settings` ? `font-medium text-base lg:mt-3 ml-3 lg:mx-auto` : `text-base lg:mt-3 ml-3 lg:mx-auto text-gray-700 dark:text-gray-600`">
             Currency Settings
-          </div>
+					</button>
         </div>
         <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
 					<button 
-						:class="step === `kyc` ? `w-12 h-12 rounded-full btn btn-primary` : `w-12 h-12 rounded-full btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
+						:class="step === `kyc` ? `w-full h-12 btn btn-primary` : `w-full h-12 btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
 						@click="gotoKyc"
 					>
 						<PaperclipIcon class="w-8 h-8"/>
-					</button>
-					<div :class="step === `currency-settings` ? `font-medium text-base lg:mt-3 ml-3 lg:mx-auto` : `text-base lg:mt-3 ml-3 lg:mx-auto text-gray-700 dark:text-gray-600`">
             KYC Documents
-          </div>
+					</button>
         </div>
-        <div class="wizard__line hidden lg:block w-2/3 bg-gray-200 dark:bg-dark-1 absolute mt-5"></div>
-      </div>
-			<router-view></router-view>
+			</div>
+			<div class="w-3/4 px-10">
+				<router-view></router-view>
+			</div>
     </div>
     <!-- END: Wizard Layout -->
   </div>

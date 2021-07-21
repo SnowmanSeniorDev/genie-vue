@@ -1,55 +1,52 @@
 <template>
-	<div class="px-5 sm:px-20 mt-10 pt-10 border-t border-gray-200 dark:border-dark-5">
-		<div class="font-medium text-base">
-			Bank Information
-			<button class="btn btn-outline-primary btn-sm ml-2" @click="addBank">
-				<PlusIcon class="w-4 h-4 mr-1" />Add More
-			</button>
-		</div>
-		<div class="grid grid-cols-2 mt-5">
-			<div v-for="(item, index) in bankInfos" :key="index" class="grid grid-cols-1 m-4 p-4 rounded-md border-2 gap-2">
-				<div class="intro-y col-span-12">
-					<div class="flex justify-between">
-						<label :for="'input-wizard-3-bank-name-' + index" class="flex self-end">Bank Name</label>
-						<a class="flex items-center text-theme-6" href="javascript:;" @click="removeBank(index, item)">
-							<Trash2Icon class="w-4 h-4 mr-1" /> Remove
-						</a>
-					</div>
-					<select :id="'input-wizard-3-bank-name-' + index" v-model="bankInfos[index].bankName" class="form-select">
-						<option v-for="(bank, bank_index) in banks" :key="bank_index">
-							{{bank}}
-						</option>
-					</select>
+	<div class="dark:border-dark-5">
+		<div class="font-medium text-2xl">Bank Information</div>
+		<div v-for="(item, index) in bankInfos" :key="index" class="grid grid-cols-2 gap-4 border-b border-gray-500 py-4">
+			<div class="intro-y">
+				<div class="flex justify-between">
+					<label :for="'input-wizard-3-bank-name-' + index" class="flex self-end">Bank Name</label>
+					<a class="flex items-center text-theme-6" href="javascript:;" @click="removeBank(index, item)">
+						<Trash2Icon class="w-4 h-4 mr-1" /> Remove
+					</a>
 				</div>
-				<div class="intro-y col-span-12">
-					<label :for="'input-wizard-3-bank-branch-name-' + index" class="">Bank Branch Name</label>
-					<input :id="'input-wizard-3-bank-branch-name-' + index" v-model="bankInfos[index].branchName" type="text" class="form-control" placeholder="Bank branch name"/>
-				</div>
-				<div class="intro-y col-span-12">
-					<label :for="'input-wizard-3-bank-address-' + index" class="">Bank Address</label>
-					<input :id="'input-wizard-3-bank-address-' + index" v-model="bankInfos[index].address" type="text" class="form-control" placeholder="Bank address"/>
-				</div>
-				<div class="intro-y col-span-12">
-					<label :for="'input-wizard-3-bank-account-number-' + index" class="">Bank Account Number</label>
-					<input :id="'input-wizard-3-bank-account-number-' + index" v-model="bankInfos[index].accountNumber" type="text" class="form-control" placeholder="Bank account number"/>
-				</div>
-				<div class="intro-y col-span-12">
-					<label :for="'input-wizard-3-bank-swift-code-' + index" class="">Bank Swift Code</label>
-					<input :id="'input-wizard-3-bank-swift-code-' + index" v-model="bankInfos[index].swiftCode" type="text" class="form-control" placeholder="Bank swift code"/>
-				</div>
-				<div class="intro-y col-span-12">
-					<label :for="'input-wizard-3-bank-name-' + index" class="">Bank Currency</label>
-					<select :id="'input-wizard-3-bank-name-' + index" v-model="bankInfos[index].currency" class="form-select">
-						<option v-for="(currency, currency_index) in currencies" :key="currency_index">
-							{{currency.currencyCode}}
-						</option>
-					</select>
-				</div>
+				<select :id="'input-wizard-3-bank-name-' + index" v-model="bankInfos[index].bankName" class="form-select">
+					<option v-for="(bank, bank_index) in banks" :key="bank_index">
+						{{bank}}
+					</option>
+				</select>
+			</div>
+			<div class="">
+				<label :for="'input-wizard-3-bank-branch-name-' + index" class="">Bank Branch Name</label>
+				<input :id="'input-wizard-3-bank-branch-name-' + index" v-model="bankInfos[index].branchName" type="text" class="form-control" placeholder="Bank branch name"/>
+			</div>
+			<div class="">
+				<label :for="'input-wizard-3-bank-address-' + index" class="">Bank Address</label>
+				<input :id="'input-wizard-3-bank-address-' + index" v-model="bankInfos[index].address" type="text" class="form-control" placeholder="Bank address"/>
+			</div>
+			<div class="">
+				<label :for="'input-wizard-3-bank-account-number-' + index" class="">Bank Account Number</label>
+				<input :id="'input-wizard-3-bank-account-number-' + index" v-model="bankInfos[index].accountNumber" type="text" class="form-control" placeholder="Bank account number"/>
+			</div>
+			<div class="">
+				<label :for="'input-wizard-3-bank-swift-code-' + index" class="">Bank Swift Code</label>
+				<input :id="'input-wizard-3-bank-swift-code-' + index" v-model="bankInfos[index].swiftCode" type="text" class="form-control" placeholder="Bank swift code"/>
+			</div>
+			<div class="">
+				<label :for="'input-wizard-3-bank-name-' + index" class="">Bank Currency</label>
+				<select :id="'input-wizard-3-bank-name-' + index" v-model="bankInfos[index].currency" class="form-select">
+					<option v-for="(currency, currency_index) in currencies" :key="currency_index">
+						{{currency.currencyCode}}
+					</option>
+				</select>
 			</div>
 		</div>
-		<div class="intro-y col-span-12 flex items-center justify-center sm:justify-end mt-5">
-			<button class="btn btn-secondary w-24" @click="gotoBack">Previous</button>
-			<button class="btn btn-primary w-24 ml-2" @click="submitBanks">Next</button>
+		<div class="mt-4">
+			<a class="btn-sm text-primary flex hover:bg-red focus:bg-red" @click="addBank">
+				<PlusCircleIcon class="w-4 h-4 mr-1" /><span class="self-center">Add More</span>
+			</a>
+		</div>
+		<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
+			<button class="btn btn-primary w-24 ml-2" @click="submitBanks">Save</button>
 		</div>
 		<div id="success-notification-content" class="toastify-content hidden flex">
 			<CheckCircleIcon class="text-theme-9" />

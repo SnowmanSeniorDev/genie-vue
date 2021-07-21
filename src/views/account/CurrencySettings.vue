@@ -1,11 +1,11 @@
 <template>
-	<div class="px-5 sm:px-20 mt-10 pt-10 border-t border-gray-200 dark:border-dark-5">
-		<div class="font-medium text-base">Currency Settings</div>
+  <div class="dark:border-dark-5">
+    <div class="font-medium text-2xl">Currency Information</div>
 		<div class="grid grid-cols-12 gap-4 gap-y-5 mt-5">
 			<div class="intro-y col-span-12">
-        <table class="table table--lg border-l border-r">
+        <table class="table table--lg">
           <thead>
-            <tr class="bg-gray-400">
+            <tr class="bg-theme-2">
               <th class="dark:border-dark-5 whitespace-nowrap"> CURRENCY CODE </th>
               <th class="dark:border-dark-5 whitespace-nowrap"> CURRENCY NAME </th>
               <th class="dark:border-dark-5 whitespace-nowrap"> CURRENCY SYMBOL </th>
@@ -37,9 +37,8 @@
           </tbody>
         </table>
 			</div>
-			<div class="intro-y col-span-12 flex items-center justify-center sm:justify-end mt-5">
-				<button class="btn btn-secondary w-24" @click="gotoBack">Previous</button>
-				<button class="btn btn-primary w-24 ml-2" @click="gotoNext">Next</button>
+			<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
+				<button class="btn btn-primary w-24" @click="gotoNext">Save</button>
 			</div>
 		</div>
     <div id="success-notification-content" class="toastify-content hidden flex">

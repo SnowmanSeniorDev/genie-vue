@@ -41,7 +41,7 @@ const routes = [
     component: SideMenu,
     children: [
       {
-        path: "/dashboard",
+        path: "",
         name: "GENIE_DASHBOARD",
         component: DashboardOverview1,
         meta: {
