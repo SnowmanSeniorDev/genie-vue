@@ -1,8 +1,8 @@
 <template>
 	<div class="dark:border-dark-5">
 		<div class="font-medium text-2xl">Bank Information</div>
-		<div v-for="(item, index) in bankInfos" :key="index" class="grid grid-cols-2 gap-4 border-b border-gray-500 py-4">
-			<div class="intro-y">
+		<div v-for="(item, index) in bankInfos" :key="index" class="intro-y grid grid-cols-2 gap-4 border-b border-gray-500 py-4">
+			<div class="">
 				<div class="flex justify-between">
 					<label :for="'input-wizard-3-bank-name-' + index" class="flex self-end">Bank Name</label>
 					<a class="flex items-center text-theme-6" href="javascript:;" @click="removeBank(index, item)">
@@ -40,7 +40,7 @@
 				</select>
 			</div>
 		</div>
-		<div class="mt-4">
+		<div class="mt-4 intro-y">
 			<a class="btn-sm text-primary flex hover:bg-red focus:bg-red" @click="addBank">
 				<PlusCircleIcon class="w-4 h-4 mr-1" /><span class="self-center">Add More</span>
 			</a>

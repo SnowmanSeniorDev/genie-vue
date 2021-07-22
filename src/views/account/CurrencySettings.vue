@@ -80,6 +80,7 @@ export default {
 			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
       const getCompanyCurrencies = `/company/v1/${store.state.account.company_uuid}/currencies`;
       await sysAxios.get(companyProfileSystemConfig).then(res => {
+        console.log("currencies = ", JSON.parse(currencies))
 				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
 			})
       await appAxios.get(getCompanyCurrencies).then(res => {
