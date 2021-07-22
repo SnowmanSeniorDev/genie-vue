@@ -243,7 +243,7 @@ export default {
           sellerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
           // bidEndTime: moment(bidEndTime.value).format()
-          bidEndTime: "2021-07-19T12:30:00.000Z"
+          bidEndTime: "2021-07-22T10:20:00.000Z"
         }).then(res => {
           cash("#upload-invoice-modal").modal("hide");
         })

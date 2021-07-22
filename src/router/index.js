@@ -21,6 +21,7 @@ import GrantAccess from "../views/roles/GrantAccess.vue";
 import SettingsIndex from "../views/settings/index.vue";
 import SystemConfigure from "../views/settings/SystemConfigure.vue";
 import Account from "../views/account/index.vue";
+import ProfileInformation from "../views/account/ProfileInformation.vue";
 import CompanyInformation from "../views/account/CompanyInformation.vue";
 import BankInformation from "../views/account/BankInformation.vue";
 import CurrencySettings from "../views/account/CurrencySettings.vue";
@@ -121,6 +122,9 @@ const routes = [
         }, {
           path: "bank-information",
           component: BankInformation
+        },{
+          path: "profile-information",
+          component: ProfileInformation
         }, {
           path: "currency-settings",
           component: CurrencySettings

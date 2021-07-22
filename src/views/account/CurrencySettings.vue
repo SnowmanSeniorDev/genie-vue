@@ -78,7 +78,7 @@ export default {
 
     onMounted(async () => {
 			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
-      const getCompanyCurrencies = `genie/company/v1/${store.state.account.company_uuid}/currencies`;
+      const getCompanyCurrencies = `/company/v1/${store.state.account.company_uuid}/currencies`;
       await sysAxios.get(companyProfileSystemConfig).then(res => {
 				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
 			})
@@ -108,7 +108,7 @@ export default {
         return support.value.includes(currency.currencyCode);
       })
       console.log(currencyInfo.value)
-			const currencyRegister = `genie/company/v1/${store.state.account.company_uuid}/currencies`;
+			const currencyRegister = `/company/v1/${store.state.account.company_uuid}/currencies`;
 			appAxios[requestMethod.value](currencyRegister, currencyInfo.value).then(res => {
         if(res.status === 200) {
 					Toastify({

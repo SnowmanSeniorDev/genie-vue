@@ -93,7 +93,7 @@ export default {
 		onMounted(async () => {
 			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
 			console.log(store.state.account.company_uuid)
-			const getAccountBankInfo = `genie/company/v1/${store.state.account.company_uuid}/bankaccounts`;
+			const getAccountBankInfo = `/company/v1/${store.state.account.company_uuid}/bankaccounts`;
 			await sysAxios.get(companyProfileSystemConfig).then(res => {
 				banks.value = JSON.parse(_.find(res.data[0].configurations, {name: "banks"}).value);
 				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
@@ -138,7 +138,7 @@ export default {
 		
 		const registerBankRequest = async (banks) => {
 			console.log("I have to be after delete bank")
-			const registerBankApiUrl = `genie/company/v1/${store.state.account.company_uuid}/bankaccount`;
+			const registerBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount`;
 			const res = await appAxios.post(registerBankApiUrl, [...banks]);
 			if(res.status === 201) return {result: true};
 			return {result: false, response: res.data};
@@ -146,7 +146,7 @@ export default {
 
 		const updateBankRequest = async (bank) => {
 			console.log(bank)
-			const updateBankApiUrl = `genie/company/v1/${store.state.account.company_uuid}/bankaccount/${bank.bankAccountId}`;
+			const updateBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount/${bank.bankAccountId}`;
 			delete bank['bankAccountId'];
 			console.log(bank)
 			const res = await appAxios.put(updateBankApiUrl, bank);
@@ -155,7 +155,7 @@ export default {
 		}
 
 		const deleteBankRequest = async (bankId) => {
-			const deleteBankApiUrl = `genie/company/v1/${store.state.account.company_uuid}/bankaccount/${bankId}`;
+			const deleteBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount/${bankId}`;
 			const res = await appAxios.delete(deleteBankApiUrl);
 			console.log("I have to be before the registerbank");
 			if(res.status === 200 || res.status === 204) return {result: true};

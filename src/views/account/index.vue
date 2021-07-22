@@ -6,39 +6,48 @@
     <!-- BEGIN: Wizard Layout -->
     <div class="intro-y box sm:py-10 mt-5 flex divide-x divide-gray-500">
 			<div class="w-1/4 px-10 py-12">
-        <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+				<div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10 pt-4">
           <button
-						:class="step === `company-information` ? `w-full h-12 btn btn-primary` : `w-full h-12 btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
+						:class="step === `profile-information` ? `w-full h-12 btn bg-theme-2` : `w-full h-12 btn dark:bg-dark-1`"
+						@click="gotoProfileInformation"
+					>
+						<UserIcon class="w-6 h-6 pr-2"/>
+						Profile Information
+					</button>
+        </div>
+        <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10 pt-4">
+          <button
+						:class="step === `company-information` ? `w-full h-12 btn bg-theme-2` : `w-full h-12 btn dark:bg-dark-1`"
 						@click="gotoCompanyInformation"
 					>
-						<HomeIcon class="w-8 h-8"/>
+						<HomeIcon class="w-6 h-6 pr-2"/>
 						Company Information
 					</button>
         </div>
-        <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+        <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10 pt-4">
 					<button 
-						:class="step === `bank-information` ? `w-full h-12 btn btn-primary` : `w-full h-12 btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
+						:class="step === `bank-information` ? `w-full h-12 btn bg-theme-2` : `w-full h-12 btn dark:bg-dark-1`"
 						@click="gotoBankInformation"
 					>
-						<ApertureIcon class="w-8 h-8"/>
+						<ApertureIcon class="w-6 h-6 pr-2"/>
             Bank Information
 					</button>
         </div>
-        <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+        <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10 pt-4">
 					<button 
-						:class="step === `currency-settings` ? `w-full h-12 btn btn-primary` : `w-full h-12 btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
+						:class="step === `currency-settings` ? `w-full h-12 btn bg-theme-2 btn-outline` : `outline-none w-full h-12 btn dark:bg-dark-1`"
 						@click="gotoCurrencySettings"
 					>
-						<DollarSignIcon class="w-8 h-8"/>
+						<DollarSignIcon class="w-6 h-6 pr-2"/>
             Currency Settings
 					</button>
         </div>
-        <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10">
+        <div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10 pt-4">
 					<button 
-						:class="step === `kyc` ? `w-full h-12 btn btn-primary` : `w-full h-12 btn text-gray-600 bg-gray-200 dark:bg-dark-1`"
+						:class="step === `kyc` ? `w-full h-12 btn bg-theme-2` : `w-full h-12 btn dark:bg-dark-1`"
 						@click="gotoKyc"
 					>
-						<PaperclipIcon class="w-8 h-8"/>
+						<PaperclipIcon class="w-6 h-6 pr-2"/>
             KYC Documents
 					</button>
         </div>
@@ -64,12 +73,15 @@ export default {
 		const step = computed(() => store.getters['account/getStep']);
 
 		onMounted(async () => {
-			const companyIdApi = `genie/company/v1/user/${store.state.auth.user_id}`;
+			const companyIdApi = `/company/v1/user/${store.state.auth.user_id}`;
 			await appAxios.get(companyIdApi).then(res => {
 				store.commit('account/SET_COMPANYID', {company_uuid: res.data});
 			})
 		})
-
+		const gotoProfileInformation = () => {
+			store.commit('account/SET_STEP', {step: "profile-information"});
+			router.push({path: "/account/profile-information"});
+		}
 		const gotoCompanyInformation = () => {
 			store.commit('account/SET_STEP', {step: "company-information"});
 			router.push({path: "/account/"});
@@ -89,6 +101,7 @@ export default {
     
 		return {
 			step,
+			gotoProfileInformation,
 			gotoCompanyInformation,
 			gotoBankInformation,
 			gotoCurrencySettings,

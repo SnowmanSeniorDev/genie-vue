@@ -52,8 +52,8 @@
 				<label for="account-1-email" class="form-label">Primary Email</label>
 				<input id="account-1-email" v-model="companyProfile.primaryEmail" type="text" class="form-control" placeholder="Primary Email"/>
 			</div>
-			<div class="intro-y col-span-12 flex items-center justify-center sm:justify-end mt-5">
-				<button class="btn btn-primary w-24 ml-2" @click="submitCompanyProfile">Next</button>
+			<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
+				<button class="btn btn-primary w-24" @click="submitCompanyProfile">Save</button>
 			</div>
 		</div>
 		<div id="success-notification-content" class="toastify-content hidden flex">
@@ -109,7 +109,7 @@ export default {
 				countries.value = JSON.parse(_.find(res.data[0].configurations, {name: "countries"}).value);
 			})
 			if(store.state.account.company_uuid !== "00000000-0000-0000-0000-000000000000") {
-				const getCompanyInfo = `genie/company/v1/${store.state.account.company_uuid}`;
+				const getCompanyInfo = `/company/v1/${store.state.account.company_uuid}`;
 				const res = await appAxios.get(getCompanyInfo);
 				originalCompanyProfile.value = {...res.data};
 				companyProfile.value = {...res.data};
@@ -138,14 +138,14 @@ export default {
 				gotoNext();
 			}
 			else {
-				const companyRegisterAPi = "genie/company/v1/register";
-				const companyUpdateApi = `genie/company/v1/${store.state.account.company_uuid}`;
+				const companyRegisterAPi = "/company/v1/register";
+				const companyUpdateApi = `/company/v1/${store.state.account.company_uuid}`;
 				if(store.state.account.company_uuid === "00000000-0000-0000-0000-000000000000") {
 					appAxios.post(companyRegisterAPi, companyProfile.value).then(async (res) => {
 						if(res.status === 201) {
 							console.log(res.data);
 							store.commit('account/SET_COMPANYID', {company_uuid: res.data});
-							const combineUsertoCompany = `genie/company/v1/${res.data}/user`;
+							const combineUsertoCompany = `/company/v1/${res.data}/user`;
 							await appAxios.post(combineUsertoCompany, {userId: store.state.auth.user_id, displayPicture: companyProfile.value.companyDisplayName});
 							showNotification(true);
 							gotoNext()				

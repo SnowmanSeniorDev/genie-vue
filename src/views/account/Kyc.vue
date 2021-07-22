@@ -2,13 +2,12 @@
 	<div class="dark:border-dark-5">
 		<div class="font-medium text-2xl">
       KYC Documents
-      <p class=" text-lg">Please upload the required document(s).</p>
     </div>
 		<div class="grid grid-cols-12 gap-4 gap-y-5 mt-5">
 			<div class="intro-y col-span-12">
-        <table class="table table--lg border-l border-r border-b">
+        <table class="table table--lg">
           <thead>
-            <tr class="bg-gray-400">
+            <tr class="bg-theme-2">
               <th class="dark:border-dark-5 whitespace-nowrap w-1/5"> DOCUMENT CATEGORY </th>
               <th class="dark:border-dark-5 whitespace-nowrap w-3/5"> STATUS </th>
               <th class="dark:border-dark-5 whitespace-nowrap text-center w-1/12"> ACTIONS </th>
@@ -37,8 +36,7 @@
           </tbody>
         </table>
 			</div>
-			<div class="intro-y col-span-12 flex items-center justify-center sm:justify-end mt-5">
-				<button class="btn btn-secondary w-24" @click="gotoBack">Previous</button>
+			<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
 				<button class="btn bg-red-600 w-24 ml-2 text-white">Save</button>
 				<button class="btn bg-purple-800 w-42 ml-2 text-white" @click="submit">Submit for Approval</button>
 			</div>
@@ -118,7 +116,7 @@ export default {
 
     onMounted(async () => {
 			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
-      const getCompanyCoporateInfoApi = `genie/company/v1/${store.state.account.company_uuid}/corporateinfo`;
+      const getCompanyCoporateInfoApi = `/company/v1/${store.state.account.company_uuid}/corporateinfo`;
       await sysAxios.get(companyProfileSystemConfig).then(res => {
         JSON.parse(_.find(res.data[0].configurations, {name: "kyc_dument_category"}).value).forEach(item => {
           docList.value.push({
@@ -166,7 +164,7 @@ export default {
 
     const save = async () => {
       const fileUploadApi = 'uploads/v1/kyc';
-      const corporateinfoApi = `genie/company/v1/${store.state.account.company_uuid}/corporateinfo`;
+      const corporateinfoApi = `/company/v1/${store.state.account.company_uuid}/corporateinfo`;
       let formData = new FormData();
       formData.append('file', files.value[0])
       let res = await sysAxios.post(fileUploadApi, formData, {
@@ -203,7 +201,7 @@ export default {
     }
 
     const removeDoc = (index) => {
-      const corporateinfoApi = `genie/company/v1/${store.state.account.company_uuid}/corporateinfo/${docList.value[index].corporateInfoHeaderId}`;
+      const corporateinfoApi = `/company/v1/${store.state.account.company_uuid}/corporateinfo/${docList.value[index].corporateInfoHeaderId}`;
       appAxios.delete(corporateinfoApi).then(() => {
         docList.value[index].corporateInfoHeaderId = '';
         docList.value[index].status = 'waiting for document upload';
