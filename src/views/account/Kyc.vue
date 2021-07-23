@@ -127,7 +127,6 @@ export default {
         })
       })
       await appAxios.get(getCompanyCoporateInfoApi).then(res => {
-        console.log(res.data)
         for(let index in res.data){
           docList.value[_.findIndex(docList.value, {category: res.data[index].corporateInfoDocumentCategoryName})] = {
             corporateInfoHeaderId: res.data[index].corporateInfoHeaderId,

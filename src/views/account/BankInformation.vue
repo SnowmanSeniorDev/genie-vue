@@ -92,11 +92,10 @@ export default {
 
 		onMounted(async () => {
 			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
-			console.log(store.state.account.company_uuid)
 			const getAccountBankInfo = `/company/v1/${store.state.account.company_uuid}/bankaccounts`;
 			await sysAxios.get(companyProfileSystemConfig).then(res => {
 				banks.value = JSON.parse(_.find(res.data[0].configurations, {name: "banks"}).value);
-				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
+				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value);
 			})
 			await appAxios.get(getAccountBankInfo).then(res => {
 				if(res.data.length !== 0) {

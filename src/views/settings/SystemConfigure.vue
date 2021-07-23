@@ -312,8 +312,9 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { sysAxios } from "@/plugins/axios";
+import { copySource } from '../../global-components/highlight';
 
 export default {
   setup() {
@@ -349,8 +350,8 @@ export default {
 
     const jsonEncodeArray = (configurations) => {
       configurations.forEach((item, index) => {
-        if(item.dataType === "Array") configurations[index].value = JSON.stringify(item.value);
-        if(item.dataType === "Json") configurations[index].value = JSON.stringify(item.value);
+        if(item.dataType === "Array" && (typeof item.value) === 'object') configurations[index].value = JSON.stringify(item.value);
+        if(item.dataType === "Json" && (typeof item.value) === 'object') configurations[index].value = JSON.stringify(item.value);
       });
 
       return configurations
@@ -365,7 +366,11 @@ export default {
     }
 
     const saveConfigurations = (itemKey) => {
+      console.log("itemKey = ", itemKey)
       const api = `configuration/v1/${configurations.value[itemKey].configurationGroupName}`;
+      console.log(api)
+      console.log(configurations.value[itemKey].configurations)
+      console.log(jsonEncodeArray(configurations.value[itemKey].configurations))
       sysAxios.put(api, jsonEncodeArray(configurations.value[itemKey].configurations)).then(res => {
         if(res === 200) getConfigurations()
       })
@@ -428,7 +433,7 @@ export default {
     onMounted(() => {
       getConfigurations();
     });
-    
+
     return {
       configurations,
       openAddNewGroupModal,
