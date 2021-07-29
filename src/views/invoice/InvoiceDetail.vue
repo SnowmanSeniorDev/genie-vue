@@ -106,7 +106,7 @@
             </tr>
             <tr class="hover:bg-gray-200">
               <td class="border">Total Amount</td>
-              <td class="border">{{batchDetails.batchInformation.totalAmount}}</td>
+              <td class="border">{{batchDetails.currencyCode + ' ' + batchDetails.batchInformation.totalAmount}}</td>
             </tr>
           </table>
         </div>
@@ -647,6 +647,7 @@ export default {
     const valueDate = ref()
     const bidValue = ref(null)
     const files = ref()
+    const verifyRequestBody = ref({})
     const disbursementData = ref({
       paymentAdviceNumber: null,
       paymentAdviceAmount: null,
@@ -657,12 +658,11 @@ export default {
     })
     const confirmAbleDisbursementData = ref()
     const confirmFunderAcknowledgeReceiveOfRepaymentData = ref()
+    const paymentAdviceWorksStatus = ref([])
 
 
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles;
-      console.log(acceptFiles)
-      console.log(rejectReasons)
     }
 
     const options = reactive({
@@ -673,8 +673,8 @@ export default {
 
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
-    console.log('user = ', user)
-    console.log("company uuid = ", store.state.account)
+    // console.log('user = ', user)
+    // console.log("company uuid = ", store.state.account)
     const invoiceDetailApi = async() => {
       const bankApi = `/company/v1/${store.state.account.company_uuid}/bankaccounts`
       await appAxios.get(bankApi).then(res => {
@@ -727,6 +727,8 @@ export default {
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
         if(res.data[0].rootWorkflowId === initWorkflowId.value.sellerLedWorkflowId) batchDetails.value.batchFrom = 'seller'
         provenance.value = await getBranchLists(res.data[0].rootWorkflowId)
+        paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames
+
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         res.data[0].workflows.forEach(passedWorkflow => {
           provenance.value = provenance.value.map(item => {
@@ -744,9 +746,42 @@ export default {
             return item
           })
         })
-
-        provenance.value = _.map(provenance.value, 'workflowStatuses').flat().reverse()
+        provenance.value = _.map(_.map(provenance.value, 'workflowStatuses').flat().reverse(), function(item) {
+          return _.merge(item, _.find(_.map(res.data[0].workflows, 'statusTransitions').flat(), { 'statusName' : item.statusName }));
+        });
       })
+      const paymentAdviceData = await appAxios.get(`/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`).then(res => {
+        return res.data
+      })
+      console.log("paymentAdviceData = ", paymentAdviceData)
+      await Promise.all(
+        provenance.value.map(async status => {
+          var paymentAdvice = null
+
+          if(paymentAdviceWorksStatus.value.includes(status.statusName)) {
+            // _.find(paymentAdviceData, {})
+            // sysAxios.get(`${_.find(paymentAdviceData, {workflowId: status.workflowStatusId}).paymentAdviceUri}/info`).then(res => {
+            await sysAxios.get(`${paymentAdviceData[0].paymentAdviceUri}/info`).then(res => {
+              paymentAdvice = {paymentAdviceFileName: res.data.fileName, dataHash: {...res.data.dataHash}}
+            })
+            verifyRequestBody.value.TransactionWorkflowStatuses.push({
+              "status": status.statusName,
+              "datetimeutc": moment.utc(status.updateTime).valueOf(),
+              "identity": status.updateBy,
+              "paymentAdvice": {...paymentAdvice},
+            })
+          } else {
+            verifyRequestBody.value.TransactionWorkflowStatuses.push({
+              "status": status.statusName,
+              "datetimeutc": moment.utc(status.updateTime).valueOf(),
+              "identity": status.updateBy,
+              "paymentAdvice": null,
+            })
+          }
+        })
+      )
+     
+      console.log("verify request body = ", verifyRequestBody.value)
     }
     
     const getBranchLists = async (rootWorkflowId) => {
@@ -961,7 +996,6 @@ export default {
         paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
       }
       appAxios.post(api, request).then(res => {
-        console.log(res)
         cash("#buyer-upload-repayment-advice").model("hide")
       })
     }
@@ -981,7 +1015,6 @@ export default {
         paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
       }
       appAxios.post(api, request).then(res => {
-        console.log(res)
         cash("#seller-upload-repayment-advice").model("hide")
       })
     }
@@ -1045,14 +1078,15 @@ export default {
     }
 
     onMounted(async () => {
-      await appAxios.get(`/journalbatch/v1/header/byworkflowexecutionid/${props.workflowExecutionReferenceId}`).then( res => {        
+      await appAxios.get(`/journalbatch/v1/header/byworkflowexecutionid/${props.workflowExecutionReferenceId}`).then( res => {    
         const batch = {
           ...res.data,
+          traceId: res.data.traceId,
           batchInformation: {
             bidEndTime: res.data.bidEndTime,
             paymentDueDate: res.data.paymentDueDate,
             uploadDate: moment(res.data.createdTime).format('DD/MM/YYYY'),
-            totalAmount: `${res.data.currencyCode} ${res.data.totalAmount}`,
+            totalAmount: res.data.totalAmount,
             noOfBatchEntries: res.data.numberOfBatchEntries
           },
           formula: {
@@ -1066,15 +1100,55 @@ export default {
         }
         batchDetails.value = {...batchDetails.value, ...batch}
       })
+      
+      verifyRequestBody.value = {
+        batchId: batchDetails.value.batchNumber,
+        batchTotal: batchDetails.value.batchInformation.totalAmount,
+        batchCurrency: batchDetails.value.currencyCode,
+        batchEntriesBreakup: [{
+          entryType: null,
+          entryQuantity: batchDetails.value.numberOfBatchEntries
+        }],
+        batchEntries: [],
+        TransactionWorkflowStatuses: []
+      }
+
       await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
         journalBatchEntry.value = res.data
+        
+        res.data.forEach(async entry => {
+          const api = `/journalbatch/v1/header/${entry.journalBatchHeaderId }/entry/${entry.journalBatchEntryId }/supportingdocuments`;
+          let supportingDocument = []
+          await appAxios.get(api).then(res => {
+            res.data.forEach(async document => {
+              const fileData = await appAxios.get(document.documentURI + '/info').then(res => {
+                return res.data
+              })
+              supportingDocument.push({
+                "supportingdocumentname": document.documentName,
+                "supportingdocumentcategory": 'Supporting Document',
+                "identity": fileData.uploadByUserId,
+                "datetimeutc": moment.utc(document.uploadTime).valueOf(),
+                "dataHash": fileData.dataHash,
+              })
+            })
+          })
+          verifyRequestBody.value.batchEntries.push({
+            entryId: entry.documentNumber,
+            entryType: entry.documentType,
+            supportingDocument: supportingDocument
+          })
+        })
       })
       const genieGlobalSetting = `configuration/v1/Genie Global Settings`
       await sysAxios.get(genieGlobalSetting).then(res => {
         adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
         initWorkflowId.value = {...initWorkflowId.value, buyerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id'}).value}
         initWorkflowId.value = {...initWorkflowId.value, sellerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id'}).value}
+        paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow Status With Payment Advice'}).value)
       })
+
+
       invoiceDetailApi()
       provenanceApi()
       getLastWorkflowStatus()

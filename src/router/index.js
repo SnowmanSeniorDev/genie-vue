@@ -84,7 +84,7 @@ const routes = [
           path: "add",
           component: CreatePermission
         }, {
-          path: "edit/:id",
+          path: "edit/:permissionId",
           component: EditPermission
         }],
         meta: {

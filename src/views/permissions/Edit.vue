@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="intro-y flex items-center mt-8">
-      <h2 class="text-lg font-medium mr-auto">Create User</h2>
+      <h2 class="text-lg font-medium mr-auto">Update Permission</h2>
     </div>
     <div class="grid grid-cols-12 gap-6 mt-5">
       <div class="intro-y col-span-12 lg:col-span-6">
@@ -42,16 +42,16 @@
                   </label>
                   <input
                     id="validation-form-2"
-                    v-model.trim="validate.resourceUrl.$model"
+                    v-model.trim="validate.resourceURI.$model"
                     type="text"
                     name="resourceUrl"
                     class="form-control"
-                    :class="{ 'border-theme-6': validate.resourceUrl.$error }"
+                    :class="{ 'border-theme-6': validate.resourceURI.$error }"
                     placeholder="John Legend"
                   />
-                  <template v-if="validate.resourceUrl.$error">
+                  <template v-if="validate.resourceURI.$error">
                     <div
-                      v-for="(error, index) in validate.resourceUrl.$errors"
+                      v-for="(error, index) in validate.resourceURI.$errors"
                       :key="index"
                       class="text-theme-6 mt-2"
                     >
@@ -66,14 +66,14 @@
                   </label>
                   <div class="mt-2">
                     <TailSelect
-                      v-model="validate.accessVerb.$model"
+                      v-model="validate.accessVerbs.$model"
                       name="accessVerb"
                       :options="{ search: true, descriptions: true, hideSelected: true, hideDisabled: true, multiLimit: 15, multiShowCount: false, multiContainer: true, classNames: 'w-full' }"
                       multiple>
-                      <option value="get">Get</option>
-                      <option value="post">Post</option>
-                      <option value="put">Put</option>
-                      <option value="delete">Delete</option>
+                      <option value="Get">Get</option>
+                      <option value="Post">Post</option>
+                      <option value="Put">Put</option>
+                      <option value="Delete">Delete</option>
                     </TailSelect>
                   </div>
                 </div>
@@ -120,7 +120,7 @@
                   </div>
                 </div>
                 
-                <button type="submit" class="btn btn-primary mt-5">Create Permission</button>
+                <button type="submit" class="btn btn-primary mt-5" @click="save">Update Permission</button>
               </form>
               <!-- END: Validation Form -->
               <!-- BEGIN: Success Notification Content -->
@@ -151,29 +151,32 @@
 </template>
 
 <script>
-import { reactive, toRefs, ref } from "vue";
+import { reactive, toRefs, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { sysAxios } from "@/plugins/axios";
 import { required, minLength } from "@vuelidate/validators";
 import { useVuelidate } from "@vuelidate/core";
 import { helper } from "@/utils/helper";
 import Toastify from "toastify-js";
+import _ from "lodash"
+import moment from "moment"
 
 export default {
   setup() {
     const route = useRoute();
+    console.log("route.params.id = ", route.params.permissionId)
     const formData = reactive({
-      permissionName: route.params.permissionName,
-      resourceURI: route.params.resourceURI,
-      accessVerbs: route.params.accessVerbs,
-      validUntil: route.params.validUntil,
-      unExpired: route.params.validuntil ? false : true,
-      type: route.params.tye
+      permissionName: '',
+      resourceURI: '',
+      accessVerbs: [],
+      validUntil: '',
+      unExpired: false,
+      type: ''
     });
     const rules = {
       permissionName: { required, minLength: minLength(2) },
-      resourceUrl: { required, minLength: minLength(2)},
-      accessVerb: { required },
+      resourceURI: { required, minLength: minLength(2)},
+      accessVerbs: { required },
       validUntil: { required },
       unExpired: {  },
       type: { required }
@@ -194,8 +197,6 @@ export default {
         picker.on('button:apply', (date) => {
           console.log("date = ", helper.formatDate(date.dateInstance, "D MMM, YYYY"));
           formData.validUntil = helper.formatDate(date.dateInstance, "D MMM, YYYY")
-          // picker.preventClick = true;
-          // some action
         });
       },
     });
@@ -216,13 +217,12 @@ export default {
         const api = `/access/v1/permission/${route.params.permissionId}`;
         sysAxios.put(api, {
           permissionName: formData.permissionName,
-          resourceURI: formData.resourceUrl,
-          accessVerbs: formData.accessVerb,
-          validUntil: formData.unExpired ? null : formData.validUntil,
+          resourceURI: formData.resourceURI,
+          accessVerbs: formData.accessVerbs,
+          validUntil: formData.unExpired ? null : moment(formData.validUntil).format(),
           type: formData.type,
         }).then(res => {
-          console.log(res);
-          if(res.status === 201){
+          if(res.status === 200){
             Toastify({
               node: cash("#success-notification-content").clone().removeClass("hidden")[0],
               duration: 3000,
@@ -236,6 +236,18 @@ export default {
         })
       }
     };
+    onMounted(async () => {
+      const api = "access/v1/permission"
+      sysAxios.get(api).then(res => {
+        const permission = _.find(res.data, {permissionId: route.params.permissionId})
+        console.log("permission = ", permission)
+        formData.accessVerbs = permission.accessVerbs
+        formData.permissionName = permission.permissionName
+        formData.resourceURI = permission.resourceURI
+        formData.type = permission.type
+        console.log(formData)
+      });
+    })
 
     return {
       litePicker,
