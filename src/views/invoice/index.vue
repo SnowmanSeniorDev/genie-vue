@@ -72,7 +72,12 @@
     </div>
     <h4 class="text-lg underline mt-5 ml-2 text-red-400 font-bold">Invoice Overview</h4>
     <div class="intro-y box px-3 pb-3 mt-3">
-      <div class="overflow-x-auto scrollbar-hidden">
+      <div v-if="loading" class="py-16">
+        <div class="w-full h-8 px-8">
+          <LoadingIcon icon="spinning-circles" color="gray" class="w-4 h-4 py-8" />
+        </div>
+      </div>
+      <div v-if="!loading" class="overflow-x-auto scrollbar-hidden">
         <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
       </div>
     </div>
@@ -97,6 +102,7 @@ export default {
     const router = useRouter();
     const tableRef = ref();
     const tabulator = ref();
+    const loading = ref(true);
     const invoiceOverview = ref([]);
     const filter = reactive({
       field: "name",
@@ -227,9 +233,11 @@ export default {
     onMounted(async () => {
       await getInvoiceOverview();
       reInitOnResizeWindow();
+      loading.value = false
     });
 
     return {
+      loading,
       tableRef,
       filter,
       onFilter,

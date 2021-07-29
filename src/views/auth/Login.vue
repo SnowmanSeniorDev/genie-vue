@@ -32,7 +32,10 @@
               </div>
             </div>
             <div class="intro-x mt-5 xl:mt-8 text-center xl:text-left">
-              <button class="btn btn-primary w-full" @click="login({userName: userName, applicationDomain: 'genie', secret: password})">{{ $t('auth.login') }}</button>
+              <button class="btn btn-primary w-full" :disabled='loading' @click="login({userName: userName, applicationDomain: 'genie', secret: password})">
+                {{ $t('auth.login') }}
+                <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+              </button>
             </div>
             <div class="flex justify-center mt-4 intro-x">
               <label>New on our platform?&nbsp;</label><a @click="gotoSignUp" class="text-theme-1 cursor-pointer">Register an account</a>
@@ -46,14 +49,16 @@
 </template>
 
 <script>
-import { onMounted } from "vue";
-import { mapActions } from "vuex"
+import { onMounted, ref } from "vue";
+import { useStore } from "vuex"
 // import { useRecaptcha } from "vue-recaptcha-v3";
 
 export default {
   setup() {
     // const { executeRecaptcha, recaptchaLoaded } = useRecaptcha();
- 
+    const store = useStore()
+    const loading = ref(false)
+
     const recaptcha = async () => {
       // (optional) Wait until recaptcha has been loaded.
       // await recaptchaLoaded()
@@ -64,7 +69,10 @@ export default {
       // Do stuff with the received token.
     }
  
-    
+    const login = (userName, applicationDomain, secret) => {
+      loading.value = !loading.value
+      store.dispatch("auth/login", userName, applicationDomain, secret)
+    }
     onMounted(() => {
       cash("body")
         .removeClass("main")
@@ -73,7 +81,9 @@ export default {
         .addClass("login");
     });
     return {
-      recaptcha
+      recaptcha,
+      loading,
+      login
     }
   },
   data() {
@@ -84,9 +94,6 @@ export default {
     }
   },
   methods: {
-    ...mapActions({
-      login: "auth/login"
-    }),
     gotoSignUp() {
       this.$router.push({path: 'register'})
     },

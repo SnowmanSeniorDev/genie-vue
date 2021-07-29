@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="auth">
     <div class="intro-y flex items-center mt-8">
       <h2 class="text-lg font-medium mr-auto">Update Permission</h2>
     </div>
