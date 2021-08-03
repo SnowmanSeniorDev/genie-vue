@@ -174,10 +174,12 @@ export default defineComponent({
     
     onMounted(async () => {
       const api = `/communications/v1/notification/${store.state.account.company_uuid}`
-      await sysAxios.get(api).then(res => {
-        console.log("alerts top bar = ", res.data)
-        alerts.value = res.data
-      })
+      if(company_uuid !== "00000000-0000-0000-0000-000000000000") {
+        await sysAxios.get(api).then(res => {
+          console.log("alerts top bar = ", res.data)
+          alerts.value = res.data
+        })
+      }
     })
     return {
       alerts

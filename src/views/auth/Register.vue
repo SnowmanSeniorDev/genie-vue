@@ -41,7 +41,10 @@
         </div>
         <div class="flex justify-center">
           <div class="intro-x mt-5 xl:mt-8 text-center xl:text-left w-1/2">
-            <button class="btn btn-primary py-3 px-4 w-full xl:mr-3 align-top" @click="submit">Sign Up</button>
+            <button class="btn btn-primary py-3 px-4 w-full xl:mr-3 align-top" @click="submit" :disabled='loading'>
+              Sign Up
+              <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+            </button>
             <div class="intro-x flex justify-center text-gray-700 dark:text-gray-600 mt-4 text-xs sm:text-sm">
               <label class="cursor-pointer select-none" for="remember-me">Already have an account? </label>
               <a class="text-theme-1 dark:text-theme-10 ml-1" href="javascript:;" @click="gotoSignIn">Sign in instead</a>
@@ -56,12 +59,14 @@
 </template>
 
 <script>
-import { reactive, onMounted } from "vue";
+import { reactive, onMounted, ref } from "vue";
 import {useRouter} from "vue-router"
-import {sysAxios, appAxios} from "@/plugins/axios"
+import {appAxios} from "@/plugins/axios"
+import { useStore } from "vuex"
 
 export default {
   setup() {
+    const store = useStore()
     const router = useRouter()
     const formData = reactive({
       userName: null,
@@ -72,10 +77,14 @@ export default {
       displayName: null,
       applicationDomain: 'genie'
     });
-
+    const loading = ref(false)
     const submit = () => {
+      loading.value = true
       appAxios.post("/company/v1/user", formData).then(res => {
-        if(res.status === 201) gotoSignIn()
+        loading.value = false
+        if(res.status === 201){
+          store.dispatch("auth/login", {userName: formData.userName, applicationDomain: formData.applicationDomain, secret: formData.secret})
+        }
       })
     }
 
@@ -93,7 +102,8 @@ export default {
     return {
       formData,
       gotoSignIn,
-      submit
+      submit,
+      loading
     }
   },
   methods: {
