@@ -49,21 +49,28 @@
           <LockIcon class="w-6 h-6 mr-3" /><span class="text-lg">Provenance</span>
         </div>
         <img alt="" class="intro-x w-full h-48" :src="require(`@/assets/images/illustration.svg`)"/>
+        <div v-if="loading.provenance" class="py-16">
+          <div class="w-full h-8 px-8">
+            <LoadingIcon icon="spinning-circles" color="gray" class="w-4 h-4 py-8" />
+          </div>
+        </div>
         <div class="report-timeline mt-5 relative">
-          <div v-for="(item, index) in provenance" class="intro-x relative flex items-start pb-5" :key="index">
-            <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-            <div class="px-5 ml-4 flex-1">
-              <div class="flex items-center">
-                <div v-if="item.passed" :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'text-green-700 bg-green-200'} `" role="alert">
-                  <CheckCircleIcon class="w-3 h-3 mr-3" />
-                  <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Passed'}}</span>
+          <div v-if="!loading.provenance">
+            <div v-for="(item, index) in provenance" class="intro-x relative flex items-start pb-5" :key="index">
+              <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
+              <div class="px-5 ml-4 flex-1">
+                <div class="flex items-center">
+                  <div v-if="item.passed" :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'text-green-700 bg-green-200'} `" role="alert">
+                    <CheckCircleIcon class="w-3 h-3 mr-3" />
+                    <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Passed'}}</span>
+                  </div>
+                  <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
+                    Not Started
+                  </div>
+                  <span class="ml-3 text-gray-500">{{item.statusName}}</span>
                 </div>
-                <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                  Not Started
-                </div>
-                <span class="ml-3 text-gray-500">{{item.statusName}}</span>
+                <hr class="mt-5">
               </div>
-              <hr class="mt-5">
             </div>
           </div>
         </div>
@@ -223,11 +230,17 @@
           <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary">Save signature</button>
+            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
+              Save signature
+              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+            </button>
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" class="btn btn-primary w-20 mr-1" @click="approveAcknowledge"> Approve </button>
+          <button type="button" class="btn btn-primary w-24 mr-1" @click="approveAcknowledge" :disabled="modalLoading">
+            Approve
+            <LoadingIcon v-if="modalLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+          </button>
           <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
@@ -300,7 +313,10 @@
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" class="btn btn-primary w-20 mr-1" @click="submitProposal"> Confirm </button>
+          <button type="button" class="btn btn-primary w-24 mr-1" @click="submitProposal" :disabled="modalLoading"> 
+            Confirm
+            <LoadingIcon v-if="modalLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+          </button>
           <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
@@ -385,8 +401,11 @@
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" class="btn btn-primary w-20 mr-1" @click="submitDisbursmentAdvice"> Submit </button>
-          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
+          <button type="button" class="btn btn-primary w-24 mr-1" @click="submitDisbursmentAdvice" :disabled="modalLoading">
+            Submit
+            <LoadingIcon v-if="modalLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+          </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-24"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
     </div>
@@ -425,11 +444,17 @@
           <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary">Save signature</button>
+            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
+              Save signature
+              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+            </button>
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" class="btn btn-primary w-20 mr-1" @click="sellerAcknowledgeOfReceiveDisbursement"> Confirm </button>
+          <button type="button" class="btn btn-primary w-24 mr-1" @click="sellerAcknowledgeOfReceiveDisbursement" :disabled="modalLoading">
+            Confirm
+            <LoadingIcon v-if="modalLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+          </button>
           <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
@@ -514,8 +539,11 @@
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" class="btn btn-primary w-20 mr-1" @click="BuyerUploadRepaymentAdvice"> Submit </button>
-          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
+          <button type="button" class="btn btn-primary w-24 mr-1" @click="BuyerUploadRepaymentAdvice" :disabled="modalLoading">
+            Submit
+            <LoadingIcon v-if="modalLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+          </button>
+          <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-24"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
     </div>
@@ -554,12 +582,15 @@
           <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary">Save signature</button>
+            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
+              Save signature
+              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+            </button>
           </div>
         </div>
         <div class="modal-footer text-right">
-          <button type="button" class="btn btn-primary w-20 mr-1" @click="funderAcknowledgeOfRepaymentComfirm"> Confirm </button>
-          <button type="button" class="btn btn-danger w-20 mr-1" @click="funderAcknowledgeOfRepaymentDecline"> Decline </button>
+          <button type="button" class="btn btn-primary w-24 mr-1" @click="funderAcknowledgeOfRepaymentComfirm" :disabled="modalLoading"> Confirm </button>
+          <button type="button" class="btn btn-danger w-24 mr-1" @click="funderAcknowledgeOfRepaymentDecline"> Decline </button>
           <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
         </div> <!-- END: Modal Footer -->
       </div>
@@ -648,6 +679,8 @@ export default {
     const bidValue = ref(null)
     const files = ref()
     const verifyRequestBody = ref({})
+    const signatureLoading = ref(false)
+    const modalLoading = ref(false)
     const disbursementData = ref({
       paymentAdviceNumber: null,
       paymentAdviceAmount: null,
@@ -659,6 +692,11 @@ export default {
     const confirmAbleDisbursementData = ref()
     const confirmFunderAcknowledgeReceiveOfRepaymentData = ref()
     const paymentAdviceWorksStatus = ref([])
+    const loading = ref({
+      invoiceDetail: true,
+      provenance: true,
+      batchDetail: true
+    })
 
 
     const onDrop = (acceptFiles, rejectReasons) => {
@@ -753,12 +791,12 @@ export default {
       const paymentAdviceData = await appAxios.get(`/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`).then(res => {
         return res.data
       })
-      console.log("paymentAdviceData = ", paymentAdviceData)
+      // console.log("paymentAdviceData = ", paymentAdviceData)
       await Promise.all(
         provenance.value.map(async status => {
           var paymentAdvice = null
 
-          if(paymentAdviceWorksStatus.value.includes(status.statusName)) {
+          if(paymentAdviceWorksStatus.value.includes(status.statusName) && paymentAdviceData.length) {
             // _.find(paymentAdviceData, {})
             // sysAxios.get(`${_.find(paymentAdviceData, {workflowId: status.workflowStatusId}).paymentAdviceUri}/info`).then(res => {
             await sysAxios.get(`${paymentAdviceData[0].paymentAdviceUri}/info`).then(res => {
@@ -780,7 +818,8 @@ export default {
           }
         })
       )
-     
+      loading.value.provenance = false
+      console.log("loading.value.provenance = ", loading.value.provenance)
       console.log("verify request body = ", verifyRequestBody.value)
     }
     
@@ -836,6 +875,7 @@ export default {
     }
 
     const approveAcknowledge = () => {
+      modalLoading.value = true
       var api = ''
       if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
       if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
@@ -844,7 +884,9 @@ export default {
         remark: remark.value,
         signatureUri: signatureFileUrl.value
       }).then(res => {
+        modalLoading.value = false
         if(res.status === 200) {
+          cash("#approve-invoice-modal").modal("hide")
           visibleWorkflowActions.value.visibleApproveButton = false
           provenancePendingStatusIndex.value ++;
         }
@@ -866,6 +908,7 @@ export default {
     }
 
     const submitProposal = async () => {
+      modalLoading.value = true
       const api = `/bidding/v1/${batchDetails.value.workflowExecutionReferenceId}/vote`
       appAxios.put(api, {
         vote: {
@@ -874,11 +917,16 @@ export default {
           valueDate: moment(valueDate.value).format(),
         }
       }).then(res => {
-        console.log(res)
+        modalLoading.value = false
+        if(res.status === 201) {
+          console.log("submit proposal = ", res)
+          cash("#submit-proposal-modal").modal("hide")
+        }
       })
     }
 
     const submitDisbursmentAdvice = async () => {
+      modalLoading.value = true
       await uploadFile()
       var api = ''
       if(batchDetails.value.batchFrom === 'buyer') {
@@ -904,8 +952,10 @@ export default {
       }
 
       appAxios.post(api, request).then(res => {
-        console.log(res)
-        cash("#submit-disbursment-modal").model("hide")
+        modalLoading.value = false
+        if(res.status == '200') {
+          cash("#submit-disbursment-modal").modal("hide")
+        }
       })
     }
 
@@ -931,6 +981,7 @@ export default {
     }
 
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
+      modalLoading.value = true
       var api = ''
       if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10'
       else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
@@ -942,12 +993,16 @@ export default {
         remarks: remark.value
       }
       appAxios.post(api, request).then(res => {
+        modalLoading.value = false
         console.log(res)
-        cash("#seller-acknowledge-of-receive-disbursement").model("hide")
+        if(res.status === 200) {
+          cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
+        }
       })
     }
 
     const funderAcknowledgeOfRepaymentComfirm = async () => {
+      modalLoading.value = true
       var api = ''
       if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
       if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
@@ -957,8 +1012,11 @@ export default {
         remarks: remark.value
       }
       appAxios.post(api, request).then(res => {
+        modalLoading.value = false
         console.log(res)
-        cash("#funder-acknowledge-upload-repayment-advice").model("hide")
+        if(res.status === '200'){
+          cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
+        }
       })
     }
 
@@ -971,7 +1029,7 @@ export default {
       }
       appAxios.post(api, request).then(res => {
         console.log(res)
-        cash("#funder-acknowledge-upload-repayment-advice").model("hide")
+        cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
       })
     }
 
@@ -980,6 +1038,7 @@ export default {
     }
 
     const BuyerUploadRepaymentAdvice = async () => {
+      modalLoading.value = true
       await uploadFile()
       var api = ''
       if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20'
@@ -996,7 +1055,9 @@ export default {
         paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
       }
       appAxios.post(api, request).then(res => {
-        cash("#buyer-upload-repayment-advice").model("hide")
+        modalLoading.value = false
+        console.log(res)
+        if(res.status === '200') cash("#buyer-upload-repayment-advice").modal("hide")
       })
     }
 
@@ -1015,7 +1076,7 @@ export default {
         paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
       }
       appAxios.post(api, request).then(res => {
-        cash("#seller-upload-repayment-advice").model("hide")
+        cash("#seller-upload-repayment-advice").modal("hide")
       })
     }
 
@@ -1051,6 +1112,7 @@ export default {
     }
 
     const saveSignature = () => {
+      signatureLoading.value = true
       const signature = getSignaturePad().saveSignature();
       const fileUploadApi = 'uploads/v1/acknowledgement_signature';
       let formData = new FormData();
@@ -1061,6 +1123,7 @@ export default {
           }
       }).then(res => {
         signatureFileUrl.value = `https://authorization.bsg-api.tk/api/uploads/v1/${res.data}`
+        signatureLoading.value = false
       });
     }
 
@@ -1156,6 +1219,7 @@ export default {
     })
 
     return {
+      loading,
       journalBatchEntry,
       moment,
       provenance,
@@ -1194,6 +1258,8 @@ export default {
       undoSignature,
       saveSignature,
       onInput,
+      signatureLoading,
+      modalLoading
     }
   },
 }

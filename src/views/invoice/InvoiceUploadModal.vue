@@ -58,7 +58,15 @@
             </div>
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
             <div class="intro-y col-span-12 h-96 overflow-y-auto overflow-x-invisible bg-gray-200 p-1 mt-5">
-              <div id="basic-table" class="p-5">
+              <div v-if="loading" class="py-16 h-full flex">
+                <div class="w-full h-8 px-8 self-center flex justify-center">
+                  <span class="text-xl pr-2">Uploading</span>
+                  <div class="h-8">
+                    <LoadingIcon icon="spinning-circles" color="#9a428a" class="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+              <div v-if="!loading" id="basic-table" class="p-5">
                 <div class="preview">
                   <div class="overflow-x-auto">
                     <table class="table">
@@ -147,6 +155,7 @@ export default {
       'documentNumber', 'documentType', 'vendorDocumentReferenceNumber', 'postingDate', 'dueDate', 'currencyCode', 'amount'
     ]);
     const bidEndTime = ref(moment(new Date()).format("D MMM, YYYY"))
+    const loading = ref(false)
     console.log(store.state.account.company_uuid)
     console.log(store.state.auth)
 
@@ -197,6 +206,7 @@ export default {
       })
     }
     const submitInvoice = async () => {
+      loading.value = !loading.value
       if(store.state.auth === 'Buyer Admin') {
         const api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
         
@@ -218,8 +228,9 @@ export default {
           buyerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
           // bidEndTime: moment(bidEndTime.value).format()
-          bidEndTime: "2021-07-19T12:19:00.000Z"
+          bidEndTime: "2021-08-02T10:35:00.000Z"
         }).then(res => {
+          loading.value = !loading.value
           cash("#upload-invoice-modal").modal("hide");
         })      
       } else {
@@ -243,12 +254,12 @@ export default {
           sellerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
           // bidEndTime: moment(bidEndTime.value).format()
-          bidEndTime: "2021-07-22T10:20:00.000Z"
+          bidEndTime: "2021-08-02T10:35:00.000Z"
         }).then(res => {
+          loading.value = !loading.value
           cash("#upload-invoice-modal").modal("hide");
         })
-      }
-      
+      }   
     }
     
     const fileChoosen = (event) => {
@@ -328,6 +339,7 @@ export default {
     }
 
     return {
+      loading,
       xlsxRows,
       xlsxHeaders,
       jsonData,

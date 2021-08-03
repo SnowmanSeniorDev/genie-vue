@@ -46,6 +46,7 @@ import { sysAxios } from "@/plugins/axios";
 
 export default {
   setup() {
+    const store = useStore()
     const router = useRouter();
     const tableRef = ref();
     const tabulator = ref();
@@ -145,6 +146,11 @@ export default {
 
     }
     onMounted(async () => {
+      console.log(store.state.account.company_uuid)
+      const api = `/communications/v1/notification/${store.state.account.company_uuid}`
+      sysAxios.get(api).then(res => {
+        console.log("alerts = ", res.data)
+      })
       initTabulator()
       reInitOnResizeWindow();
     });
