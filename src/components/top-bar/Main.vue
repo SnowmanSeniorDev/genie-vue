@@ -19,7 +19,7 @@
             Alters Center
           </div>
           <hr />
-          <div class="cursor-pointer relative flex items-center py-2">
+          <div v-for="(alert, index) in alerts" class="cursor-pointer relative flex items-center py-2" :key="index">
             <div class="w-12 mr-1">
               <div class="w-8 mr-1 bg-pink-200 p-1 rounded-full text-center">
                 <FileTextIcon class="notification__icon dark:text-gray-300 text-pink-700 text-sm w-4" />
@@ -27,15 +27,15 @@
             </div>
             <div class="ml-2 overflow-hidden">
               <div class="flex items-center">
-                <a href="javascript:;" class="font-medium truncate mr-5">Corporate Document(s) status change</a>
+                <a href="javascript:;" class="font-medium truncate mr-5">{{alert.title}}</a>
               </div>
               <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                13 April 2021 09:26PM 
+                {{alert.when}}
               </div>
             </div>
           </div>
           <hr />
-          <div class="cursor-pointer relative flex items-center py-2">
+          <!-- <div class="cursor-pointer relative flex items-center py-2">
             <div class="w-12 mr-1">
               <div class="w-8 mr-1 bg-blue-200 p-1 rounded-full text-center">
                 <UserIcon class="notification__icon dark:text-gray-300 text-blue-700 text-sm w-4" />
@@ -82,8 +82,8 @@
               </div>
             </div>
           </div>
-          <hr />
-          <button class="btn btn-primary w-full px-2 mt-2">Show All Alerts</button>
+          <hr /> -->
+          <button class="btn btn-primary w-full px-2 mt-2" @click="gotoAlertCenter">Show All Alerts</button>
         </div>
       </div>
     </div>
@@ -162,13 +162,26 @@
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import { mapActions } from "vuex";
+import { sysAxios } from "@/plugins/axios";
+import { useStore } from 'vuex';
 
 export default defineComponent({
   setup() {
-
-    return {};
+    const store = useStore()
+    const alerts = ref([])
+    
+    onMounted(async () => {
+      const api = `/communications/v1/notification/${store.state.account.company_uuid}`
+      await sysAxios.get(api).then(res => {
+        console.log("alerts top bar = ", res.data)
+        alerts.value = res.data
+      })
+    })
+    return {
+      alerts
+    };
   },
   methods: {
     ...mapActions({
@@ -176,6 +189,9 @@ export default defineComponent({
     }),
     gotoUpdatePassword() {
       this.$router.push({path: "/update_password"});
+    },
+    gotoAlertCenter() {
+      this.$router.push({path: "/alerts"})
     }
   }
 });

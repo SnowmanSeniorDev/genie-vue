@@ -74,14 +74,14 @@ export default {
         columns: [
           {
             title: "NOTIFICATIONS",
-            field: "notification",
+            field: "content",
             hozAlign: "left",
             resizable: true,
             headerSort: false
           },
           {
             title: "EVENT DATE & TIME",
-            field: "eventTime",
+            field: "when",
             hozAlign: "left",
             resizable: true,
             headerSort: false
@@ -93,7 +93,7 @@ export default {
             resizable: true,
             headerSort: false,
             formatter(cell) {
-              const status = cell.getData().lastStatus
+              const status = cell.getData().status
               const a = `<div class="flex items-center">
                 <div class="alert show flex items-center h-5 p-3 w-32 text-sm justify-center text-green-700 bg-green-200" role="alert">
                   <span class="pr-3">${status}</span>
@@ -146,10 +146,9 @@ export default {
 
     }
     onMounted(async () => {
-      console.log(store.state.account.company_uuid)
       const api = `/communications/v1/notification/${store.state.account.company_uuid}`
-      sysAxios.get(api).then(res => {
-        console.log("alerts = ", res.data)
+      await sysAxios.get(api).then(res => {
+        notifications.value = res.data
       })
       initTabulator()
       reInitOnResizeWindow();

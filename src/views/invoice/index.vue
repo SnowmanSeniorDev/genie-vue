@@ -225,7 +225,6 @@ export default {
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
       appAxios.get(api).then(res => {
         invoiceOverview.value = res.data;
-        console.log(invoiceOverview.value);
         initTabulator()
       })
     }

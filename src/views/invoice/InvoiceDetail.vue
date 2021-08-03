@@ -791,15 +791,16 @@ export default {
       const paymentAdviceData = await appAxios.get(`/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`).then(res => {
         return res.data
       })
-      // console.log("paymentAdviceData = ", paymentAdviceData)
       await Promise.all(
         provenance.value.map(async status => {
           var paymentAdvice = null
 
           if(paymentAdviceWorksStatus.value.includes(status.statusName) && paymentAdviceData.length) {
-            // _.find(paymentAdviceData, {})
-            // sysAxios.get(`${_.find(paymentAdviceData, {workflowId: status.workflowStatusId}).paymentAdviceUri}/info`).then(res => {
-            await sysAxios.get(`${paymentAdviceData[0].paymentAdviceUri}/info`).then(res => {
+            let paymentAdviceEntity = paymentAdviceData.filter((workflow) => {
+              return workflow.extraData.workflowStatusName === status.statusName
+            })
+            console.log(paymentAdviceEntity[0].paymentAdviceUri)
+            await sysAxios.get(`${paymentAdviceEntity[0].paymentAdviceUri}/info`).then(res => {
               paymentAdvice = {paymentAdviceFileName: res.data.fileName, dataHash: {...res.data.dataHash}}
             })
             verifyRequestBody.value.TransactionWorkflowStatuses.push({
