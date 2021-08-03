@@ -4,8 +4,8 @@
       <h2 class="intro-y text-lg font-medium mr-auto">Account Settings</h2>
     </div>
     <!-- BEGIN: Wizard Layout -->
-    <div class="intro-y box sm:py-10 mt-5 flex divide-x divide-gray-500">
-			<div class="w-1/4 px-10 py-12">
+    <div class="intro-y box sm:py-10 mt-5 lg:flex lg:divide-x divide-gray-500">
+			<div class="w-full lg:w-1/4 px-10 py-12">
 				<div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10 pt-4">
           <button
 						:class="step === `profile-information` ? `w-full h-12 btn bg-theme-2` : `w-full h-12 btn dark:bg-dark-1`"
@@ -52,7 +52,7 @@
 					</button>
         </div>
 			</div>
-			<div class="w-3/4 px-10">
+			<div class="w-full lg:w-3/4 px-10">
 				<router-view></router-view>
 			</div>
     </div>
