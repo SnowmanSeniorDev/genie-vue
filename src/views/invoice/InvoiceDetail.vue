@@ -643,7 +643,7 @@ export default {
     const lastWorkStatus = ref()
     const batchDetails = ref({
       batchNumber: null,
-      batchFrom: 'buyer',
+      batchFrom: '',
       bankDetails: {
         bank: null,
       },
@@ -764,6 +764,7 @@ export default {
       var currentWorkflowStatusesApi = '/workflow/v1/statustransition/retrieve/byreferenceids'
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
         if(res.data[0].rootWorkflowId === initWorkflowId.value.sellerLedWorkflowId) batchDetails.value.batchFrom = 'seller'
+        if(res.data[0].rootWorkflowId === initWorkflowId.value.buyerLedWorkflowId) batchDetails.value.batchFrom = 'buyer'
         provenance.value = await getBranchLists(res.data[0].rootWorkflowId)
         paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames
 

@@ -207,9 +207,8 @@ export default {
     }
     const submitInvoice = async () => {
       loading.value = !loading.value
-      if(store.state.auth === 'Buyer Admin') {
+      if(store.state.auth.user_role === 'Buyer Admin') {
         const api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
-        
         let journalBatchEntries = [];
         await Promise.all(
           jsonData.value.map(async item => {
