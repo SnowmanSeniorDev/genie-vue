@@ -73,6 +73,13 @@ export default {
 		const step = computed(() => store.getters['account/getStep']);
 
 		onMounted(async () => {
+			onMounted(() => {
+      cash("body")
+        .removeClass("main")
+        .removeClass("error-page")
+        .removeClass("login")
+        .removeClass("register");
+    	});
 			const companyIdApi = `/company/v1/user/${store.state.auth.user_id}`;
 			await appAxios.get(companyIdApi).then(res => {
 				store.commit('account/SET_COMPANYID', {company_uuid: res.data});

@@ -80,10 +80,11 @@ export default {
     const loading = ref(false)
     const submit = () => {
       loading.value = true
-      appAxios.post("/company/v1/user", formData).then(res => {
-        loading.value = false
+      appAxios.post("/company/v1/user", formData).then(async res => {
         if(res.status === 201){
-          store.dispatch("auth/login", {userName: formData.userName, applicationDomain: formData.applicationDomain, secret: formData.secret})
+          await store.dispatch("auth/login", {userName: formData.userName, applicationDomain: formData.applicationDomain, secret: formData.secret})
+          cash("body").removeClass("register");
+          loading.value = false
         }
       })
     }
@@ -97,7 +98,7 @@ export default {
         .removeClass("main")
         .removeClass("error-page")
         .removeClass("login")
-        .addClass("register")
+        .addClass("register");
     });
     return {
       formData,

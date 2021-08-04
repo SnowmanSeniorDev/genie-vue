@@ -24,7 +24,7 @@
     }
     .side-menu {
       height: 40px;
-      @apply flex items-center bg-theme-2 text-theme-1 pl-5 text-white mb-1 relative rounded-md;
+      @apply flex items-center bg-theme-2 text-theme-1 pl-3 xl:pl-5 text-white mb-1 relative rounded-md;
       .side-menu__title {
         @apply w-full ml-3 flex items-center;
         .side-menu__sub-icon {

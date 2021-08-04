@@ -83,6 +83,7 @@ export default {
 				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
 			})
       await appAxios.get(getCompanyCurrencies).then(res => {
+        console.log("company currencies = ", res.data)
         if(res.data.length) {
           requestMethod.value = 'put';
           res.data.forEach(item => {
@@ -106,8 +107,11 @@ export default {
       })
       console.log(currencyInfo.value)
 			const currencyRegister = `/company/v1/${store.state.account.company_uuid}/currencies`;
+      console.log("requestMethod.value = ", requestMethod.value)
 			appAxios[requestMethod.value](currencyRegister, currencyInfo.value).then(res => {
-        if(res.status === 200) {
+        console.log("currency updated data = ", res.status)
+        if(res.status === 201 || res.status === 200) {
+          console.log("1231231231231231312")
 					Toastify({
           node: cash("#success-notification-content").clone().removeClass("hidden")[0],
 						duration: 3000,
