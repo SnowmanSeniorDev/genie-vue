@@ -1,6 +1,6 @@
 @layer components {
   .mobile-menu {
-    @apply border-b border-theme-29 -mt-5 -mx-8 mb-6;
+    @apply border-b border-theme-1 -mt-5 -mx-8 mb-6 text-theme-1;
     @include media-breakpoint-down(sm) {
       @apply -mx-3;
     }

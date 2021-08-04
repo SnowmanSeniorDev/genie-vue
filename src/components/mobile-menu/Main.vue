@@ -3,12 +3,9 @@
   <div class="mobile-menu md:hidden">
     <div class="mobile-menu-bar">
       <a href class="flex mr-auto">
-        <img alt="Midone Tailwind HTML Admin Template" class="w-6" src="@/assets/images/logo.svg"/>
+        <img alt="Midone Tailwind HTML Admin Template" class="w-32 h-8" src="@/assets/images/logo.svg"/>
       </a>
-      <BarChart2Icon
-        class="w-8 h-8 text-white transform -rotate-90"
-        @click="toggleMobileMenu"
-      />
+      <BarChart2Icon class="w-8 h-8 text-white transform -rotate-90 text-theme-1" @click="toggleMobileMenu"/>
     </div>
     <transition @enter="enter" @leave="leave">
       <ul v-if="activeMobileMenu" class="border-t border-theme-29 py-5">

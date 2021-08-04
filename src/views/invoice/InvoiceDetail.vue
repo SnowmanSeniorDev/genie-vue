@@ -796,19 +796,21 @@ export default {
           var paymentAdvice = null
 
           if(paymentAdviceWorksStatus.value.includes(status.statusName) && paymentAdviceData.length) {
+            
             let paymentAdviceEntity = paymentAdviceData.filter((workflow) => {
               return workflow.extraData.workflowStatusName === status.statusName
             })
-            console.log(paymentAdviceEntity[0].paymentAdviceUri)
-            await sysAxios.get(`${paymentAdviceEntity[0].paymentAdviceUri}/info`).then(res => {
-              paymentAdvice = {paymentAdviceFileName: res.data.fileName, dataHash: {...res.data.dataHash}}
-            })
-            verifyRequestBody.value.TransactionWorkflowStatuses.push({
-              "status": status.statusName,
-              "datetimeutc": moment.utc(status.updateTime).valueOf(),
-              "identity": status.updateBy,
-              "paymentAdvice": {...paymentAdvice},
-            })
+            if(paymentAdviceEntity.length){
+              await sysAxios.get(`${paymentAdviceEntity[0].paymentAdviceUri}/info`).then(res => {
+                paymentAdvice = {paymentAdviceFileName: res.data.fileName, dataHash: {...res.data.dataHash}}
+              })
+              verifyRequestBody.value.TransactionWorkflowStatuses.push({
+                "status": status.statusName,
+                "datetimeutc": moment.utc(status.updateTime).valueOf(),
+                "identity": status.updateBy,
+                "paymentAdvice": {...paymentAdvice},
+              })
+            }
           } else {
             verifyRequestBody.value.TransactionWorkflowStatuses.push({
               "status": status.statusName,
