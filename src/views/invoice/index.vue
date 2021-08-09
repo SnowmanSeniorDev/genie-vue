@@ -125,20 +125,22 @@ export default {
             title: "BATCH NO.",
             field: "batchNumber",
             minWidth: 50,
-            maxWidth: 150,
+            maxWidth: 200,
             resizable: false,
             headerSort: false
           },
           {
             title: "BUYER",
-            field: "buyerCompanyId",
+            field: "buyerCompanyName",
+            headerHozAlign: 'center',
             hozAlign: "center",
             resizable: false,
             headerSort: false
           },
           {
             title: "SELLER",
-            field: "sellerCompanyId",
+            field: "sellerCompanyName",
+            headerHozAlign: 'center',
             hozAlign: "center",
             resizable: false,
             headerSort: false
@@ -175,6 +177,7 @@ export default {
             maxWidth: 150,
             field: "actions",
             responsive: 1,
+            headerHozAlign: "center",
             hozAlign: "center",
             vertAlign: "middle",
             formatter(cell) {
@@ -224,6 +227,7 @@ export default {
     const getInvoiceOverview = () => {
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
       appAxios.get(api).then(res => {
+        console.log("invoices = ", res.data)
         invoiceOverview.value = res.data;
         initTabulator()
       })

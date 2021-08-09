@@ -125,10 +125,6 @@
               <td class="border">{{batchDetails.formula.interestRate}}</td>
             </tr>
             <tr class="hover:bg-gray-200">
-              <td class="border">Processing Fee Rate</td>
-              <td class="border">{{batchDetails.formula.processingFeeRate}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200">
               <td class="border">Processing Fee Amount</td>
               <td class="border">{{batchDetails.formula.processingFeeAmount}}</td>
             </tr>
@@ -139,18 +135,6 @@
             <tr class="hover:bg-gray-200">
               <td class="border">Disbursable Date</td>
               <td class="border">{{batchDetails.formula.disbursableDate}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
-              <td class="border">Misc Fee Rate</td>
-              <td class="border">{{batchDetails.formula.miscFeeRate}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
-              <td class="border">Misc Fee Amount</td>
-              <td class="border">{{batchDetails.formula.miscFeeAmount}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200">
-              <td class="border">Misc Fee Date</td>
-              <td class="border">{{batchDetails.formula.miscFeeDate}}</td>
             </tr>
             <tr class="hover:bg-gray-200" v-if="user.user_role === 'Funder Admin' || user.user_role === 'Genie Admin'">
               <td class="border">Platform Fee Rate</td>
@@ -659,13 +643,9 @@ export default {
       },
       formula: {
         interestRate: null,
-        processingFeeRate: null,
         processingFeeAmount: null,
         disbursableAmountToSeller: null,
         disbursableDate: null,
-        miscFeeRate: null,
-        miscFeeAmount: null,
-        miscFeeDate: null,
         platformFeeRate: null,
         platformFeeAmount: null,
         platformFeeDate: null,
@@ -742,13 +722,8 @@ export default {
       await appAxios.get(processingFeeApi).then(res => {
 
         var tax = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId})
-        batchDetails.value.formula.processingFeeAmount = batchDetails.value.totalAmount - tax.amountBeforeTax
         batchDetails.value.formula.disbursableAmountToSeller = tax.amountBeforeTax
         batchDetails.value.formula.disbursableDate = moment(tax.dueDate).format('DD/MM/YYYY')
-
-        var misc = _.find(res.data, {fromCompanyId: adminCompany.value, toCompanyId: batchDetails.value.buyerCompanyId})
-        batchDetails.value.formula.miscFeeAmount = misc.amountBeforeTax
-        batchDetails.value.formula.miscFeeDate = misc.dueDate
 
         var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
         batchDetails.value.formula.platformFeeAmount = platformFee.amountBeforeTax
@@ -1158,8 +1133,6 @@ export default {
           },
           formula: {
             interestRate: res.data.interestRate,
-            processingFeeRate: res.data.processingFeeRateForSeller + res.data.processingFeeRateForFunder,
-            miscFeeRate: res.data.processingFeeRateForBuyer,
             platformFeeRate: res.data.processingFeeRateForFunder,
             repaymentAmountToFunder: res.data.totalAmount,
             repaymentDate: moment(res.data.paymentDueDate).format('DD/MM/YYYY')

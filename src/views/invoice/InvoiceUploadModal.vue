@@ -35,6 +35,8 @@
                 <UploadIcon class="w-4 h-4 mr-2" />
                 Upload Invoice
               </button>
+              <!-- <v-date-picker v-model='bidEndTime' /> -->
+
               <div id="basic-datepicker" class="p-5">
                 <div class="preview">
                   <Litepicker
@@ -54,6 +56,9 @@
                     class="form-control w-56 block mx-auto"
                   />
                 </div>
+              </div>
+              <div>
+                <input data-timepicker="true" class="datepicker input w-56 border block mx-auto">
               </div>
             </div>
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">

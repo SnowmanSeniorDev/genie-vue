@@ -121,6 +121,9 @@
       </div>
     </div>
     <!-- END: Calendar -->
+    <div class="pr-2">
+      <span>Hi, {{user.display_name}}!</span>
+    </div>
     <!-- BEGIN: Account Menu -->
     <div class="intro-x dropdown w-8 h-8">
       <div class="dropdown-toggle w-8 h-8 rounded-full overflow-hidden shadow-lg image-fit zoom-in" role="button" aria-expanded="false">
@@ -129,23 +132,17 @@
       <div class="dropdown-menu w-56">
         <div class="dropdown-menu__content box bg-theme-26 dark:bg-dark-6 text-white">
           <div class="p-4 border-b border-theme-27 dark:border-dark-3">
-            <div class="font-medium">{{ $f()[0].users[0].name }}</div>
+            <div class="font-medium">{{ user.display_name }}</div>
             <div class="text-xs text-theme-28 mt-0.5 dark:text-gray-600">
-              {{ $f()[0].jobs[0] }}
+              <!-- {{ $f()[0].jobs[0] }} -->
             </div>
           </div>
           <div class="p-2">
             <a href="javascript:;" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md">
               <UserIcon class="w-4 h-4 mr-2" /> Profile
             </a>
-            <a href="javascript:;" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md">
-              <EditIcon class="w-4 h-4 mr-2" /> Add Account
-            </a>
             <a href="javascript:;" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md" @click="gotoUpdatePassword" >
               <LockIcon class="w-4 h-4 mr-2" /> Update Password
-            </a>
-            <a href="javascript:;" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md">
-              <HelpCircleIcon class="w-4 h-4 mr-2" /> Help
             </a>
           </div>
           <div class="p-2 border-t border-theme-27 dark:border-dark-3">
@@ -171,18 +168,20 @@ export default defineComponent({
   setup() {
     const store = useStore()
     const alerts = ref([])
-    
+    const user = ref(store.state.auth)
+    console.log(user.value)
     onMounted(async () => {
-      const api = `/communications/v1/notification/${store.state.account.company_uuid}`
+      const company_uuid = store.state.account.company_uuid
+      const api = `/communications/v1/notification/${company_uuid}`
       if(company_uuid !== "00000000-0000-0000-0000-000000000000") {
         await sysAxios.get(api).then(res => {
-          console.log("alerts top bar = ", res.data)
-          alerts.value = res.data
+          alerts.value = res.data.slice(0, 5)
         })
       }
     })
     return {
-      alerts
+      alerts,
+      user
     };
   },
   methods: {
