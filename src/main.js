@@ -7,7 +7,7 @@ import globalComponents from "./global-components";
 import i18n from "./plugins/i18n";
 import utils from "./utils";
 import "./libs";
-
+import {SetupCalendar} from "v-calendar"
 // Midone Theme
 import "./assets/sass/app.scss";
 
@@ -17,6 +17,7 @@ const app = createApp(App)
 app.use(i18n);
 app.use(store);
 app.use(router);
+app.use(SetupCalendar, {});
 app.use(VueReCaptcha, { siteKey: process.env.VUE_APP_RECAPTCHA_SITE_KEY });
 
 

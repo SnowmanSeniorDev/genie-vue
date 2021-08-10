@@ -35,34 +35,19 @@
                 <UploadIcon class="w-4 h-4 mr-2" />
                 Upload Invoice
               </button>
-              <!-- <v-date-picker v-model='bidEndTime' /> -->
-
-              <div id="basic-datepicker" class="p-5">
-                <div class="preview">
-                  <Litepicker
-                    v-model="bidEndTime"
-                    @change="changedDate"
-                    :options="{
-                      autoApply: false,
-                      showWeekNumbers: true,
-                      zIndex: 10001,
-                      dropdowns: {
-                        minYear: 1990,
-                        maxYear: null,
-                        months: true,
-                        years: true
-                      }
-                    }"
-                    class="form-control w-56 block mx-auto"
+              <!-- <DatePicker v-model="bidEndTime" /> -->
+              <DatePicker v-model="bidEndTime" mode="dateTime" :timezone="timezone" :attributes="[{order: 10000}]">
+                <template v-slot="{ inputValue, inputEvents }">
+                  <input
+                    class="form-control ml-2 w-56 block mx-auto border rounded focus:outline-none focus:border-blue-300"
+                    :value="inputValue"
+                    v-on="inputEvents"
                   />
-                </div>
-              </div>
-              <div>
-                <input data-timepicker="true" class="datepicker input w-56 border block mx-auto">
-              </div>
+                </template>
+              </DatePicker>
             </div>
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
-            <div class="intro-y col-span-12 h-96 overflow-y-auto overflow-x-invisible bg-gray-200 p-1 mt-5">
+            <div class="col-span-12 h-96 overflow-y-auto overflow-x-invisible bg-gray-200 p-1 mt-5">
               <div v-if="loading" class="py-16 h-full flex">
                 <div class="w-full h-8 px-8 self-center flex justify-center">
                   <span class="text-xl pr-2">Uploading</span>
@@ -142,11 +127,11 @@ import xlsx from "xlsx";
 import moment from "moment";
 import _ from "lodash";
 import { appAxios, sysAxios } from "@/plugins/axios";
-import SupportDropzone from "./SupportFileDropzone";
+// import SupportDropzone from "./SupportFileDropzone";
 
 export default {
   components: {
-    SupportDropzone
+    // SupportDropzone
   },
   setup(){
     const store = useStore();
@@ -159,7 +144,7 @@ export default {
     const jsonHeaders = ref([
       'documentNumber', 'documentType', 'vendorDocumentReferenceNumber', 'postingDate', 'dueDate', 'currencyCode', 'amount'
     ]);
-    const bidEndTime = ref(moment(new Date()).format("D MMM, YYYY"))
+    const bidEndTime = new Date();
     const loading = ref(false)
     console.log(store.state.account.company_uuid)
     console.log(store.state.auth)
@@ -231,8 +216,7 @@ export default {
         appAxios.post(api, {
           buyerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
-          // bidEndTime: moment(bidEndTime.value).format()
-          bidEndTime: "2021-08-02T10:35:00.000Z"
+          bidEndTime: moment(bidEndTime.value).format()
         }).then(res => {
           loading.value = !loading.value
           cash("#upload-invoice-modal").modal("hide");

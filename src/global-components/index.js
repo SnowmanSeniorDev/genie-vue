@@ -13,8 +13,7 @@ import FullCalendarDraggable from "./calendar/Draggable.vue";
 import * as featherIcons from "@zhuowenli/vue-feather-icons";
 import ArrayInput from "./arrayInput/Main.vue";
 import JsonEditor from "./jsonEditor/Main.vue";
-import Calendar from "v-calendar/lib/components/calendar.umd";
-// import DatePicker from "v-calendar/lib/components/date-picker.umd"
+import { Calendar, DatePicker } from 'v-calendar';
 
 export default app => {
   app.component("Chart", Chart);
@@ -31,8 +30,8 @@ export default app => {
   app.component("FullCalendarDraggable", FullCalendarDraggable);
   app.component('ArrayInput', ArrayInput);
   app.component('JsonEditor', JsonEditor);
-  // app.component('calendar', Calendar);
-  // app.component('date-picker', DatePicker);
+  app.component('Calendar', Calendar);
+  app.component('DatePicker', DatePicker);
   for (const [key, icon] of Object.entries(featherIcons)) {
     icon.props.size.default = "24";
     app.component(key, icon);
