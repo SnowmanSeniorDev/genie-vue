@@ -81,7 +81,7 @@
         <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
       </div>
     </div>
-    <InvoiceUploadModal />
+    <InvoiceUploadModal :callback="getInvoiceOverview"/>
   </div>
 </template>
 <script>
@@ -92,6 +92,7 @@ import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
 import InvoiceUploadModal from "./InvoiceUploadModal";
 import { sysAxios, appAxios } from "@/plugins/axios";
+import _ from "lodash";
 
 export default {
   components: {
@@ -225,10 +226,11 @@ export default {
     };
 
     const getInvoiceOverview = () => {
+      console.log("123123123")
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
       appAxios.get(api).then(res => {
         console.log("invoices = ", res.data)
-        invoiceOverview.value = res.data;
+        invoiceOverview.value = _.sortBy(res.data, ['documentDate', 'paymentDueDate']) ;
         initTabulator()
       })
     }
@@ -245,6 +247,7 @@ export default {
       filter,
       onFilter,
       onResetFilter,
+      getInvoiceOverview
     };
   },
 }

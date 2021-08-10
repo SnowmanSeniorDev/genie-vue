@@ -35,8 +35,7 @@
                 <UploadIcon class="w-4 h-4 mr-2" />
                 Upload Invoice
               </button>
-              <!-- <DatePicker v-model="bidEndTime" /> -->
-              <DatePicker v-model="bidEndTime" mode="dateTime" :timezone="timezone" :attributes="[{order: 10000}]">
+              <DatePicker v-model="bidEndTime" mode="dateTime">
                 <template v-slot="{ inputValue, inputEvents }">
                   <input
                     class="form-control ml-2 w-56 block mx-auto border rounded focus:outline-none focus:border-blue-300"
@@ -84,22 +83,64 @@
                           </td>
                         </tr>
                         <tr v-for="(item, index) in jsonData" :key="index">
-                          <td class="border-b dark:border-dark-5">{{item.documentNumber}}</td>
-                          <td class="border-b dark:border-dark-5">{{item.documentType}}</td>
-                          <td class="border-b dark:border-dark-5">{{item.sellerCompanyId}}</td>
-                          <td class="border-b dark:border-dark-5">{{item.documentDate}}</td>
-                          <td class="border-b dark:border-dark-5">{{item.paymentDueDate}}</td>
-                          <td class="border-b dark:border-dark-5">{{item.currencyCode}}</td>
-                          <td class="border-b dark:border-dark-5">{{item.amount}}</td>
+                          <td class="border-b dark:border-dark-5">
+                            <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].documentNumber"/>
+                            <span v-else>{{item.documentNumber}}</span>
+                          </td>
+                          <td class="border-b dark:border-dark-5">
+                            <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].documentType" size="5"/>
+                            <span v-else>{{item.documentType}}</span>
+                          </td>
+                          <td class="border-b dark:border-dark-5">
+                            <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].sellerCompanyId"/>
+                            <span v-else>{{item.sellerCompanyId}}</span>
+                          </td>
+                          <td class="border-b dark:border-dark-5">
+                            <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].documentDate" mode="date">
+                              <template v-slot="{ inputValue, inputEvents }">
+                                <input
+                                  class="block mx-auto border rounded focus:outline-none focus:border-blue-300"
+                                  :value="inputValue"
+                                  v-on="inputEvents"
+                                  size="11"
+                                />
+                              </template>
+                            </DatePicker>
+                            <span v-else>{{moment(item.documentDate).format('MM/DD/YYYY') }}</span>
+                          </td>
+                          <td class="border-b dark:border-dark-5">
+                            <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].paymentDueDate" mode="date">
+                              <template v-slot="{ inputValue, inputEvents }">
+                                <input
+                                  class="block mx-auto border rounded focus:outline-none focus:border-blue-300"
+                                  :value="inputValue"
+                                  v-on="inputEvents"
+                                  size="11"
+                                />
+                              </template>
+                            </DatePicker>
+                            <span v-else>{{moment(item.paymentDueDate).format('MM/DD/YYYY') }}</span>
+                          </td>
+                          <td class="border-b dark:border-dark-5">
+                            <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].currencyCode" size="5"/>
+                            <span v-else>{{item.currencyCode}}</span>
+                          </td>
+                          <td class="border-b dark:border-dark-5">
+                            <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].amount" size="8"/>
+                            <span v-else>{{item.amount}}</span>
+                          </td>
                           <td class="border-b dark:border-dark-5 fileupload-col">
                             <SupportDropzone :index="index" :addSupportDoc="addSupportDoc" :removeSupportDoc="removeSupportDoc"/>
                           </td>
                           <td class="flex">
                             <button class="btn btn-sm btn-danger" @click="removeRow(index)">
-                              <Trash2Icon class="w-5 h-5" />
+                              <Trash2Icon class="w-4 h-4" />
                             </button>
-                            <button class="btn btn-sm ml-2 btn-primary" @click="editRow(index)">
-                              <EditIcon class="w-5 h-5" />
+                            <button v-if="index === editRowIndex" class="btn btn-sm ml-2 btn-primary" @click="saveRow(index)">
+                              <SaveIcon class="w-4 h-4" />
+                            </button>
+                            <button v-else class="btn btn-sm ml-2 btn-primary" @click="editRow(index)">
+                              <EditIcon class="w-4 h-4" />
                             </button>
                           </td>
                         </tr>
@@ -126,14 +167,19 @@ import { useStore } from 'vuex';
 import xlsx from "xlsx";
 import moment from "moment";
 import _ from "lodash";
-import { appAxios, sysAxios } from "@/plugins/axios";
-// import SupportDropzone from "./SupportFileDropzone";
+import { appAxios } from "@/plugins/axios";
+import SupportDropzone from "./SupportFileDropzone";
 
 export default {
   components: {
-    // SupportDropzone
+    SupportDropzone
   },
-  setup(){
+  props: {
+    callback: {
+      type: Function,
+    }
+  },
+  setup(props){
     const store = useStore();
     const xlsxRows = ref();
     const xlsxHeaders = ref();
@@ -144,10 +190,9 @@ export default {
     const jsonHeaders = ref([
       'documentNumber', 'documentType', 'vendorDocumentReferenceNumber', 'postingDate', 'dueDate', 'currencyCode', 'amount'
     ]);
-    const bidEndTime = new Date();
-    const loading = ref(false)
-    console.log(store.state.account.company_uuid)
-    console.log(store.state.auth)
+    const bidEndTime = ref(new Date());
+    const loading = ref(false);
+    const editRowIndex = ref(null);
 
     const changedDate = (evt) => {
       console.log(evt)
@@ -172,6 +217,10 @@ export default {
       console.log(xlsxRows.value)
     }
 
+    const editRow = (index) => editRowIndex.value = index
+
+    const saveRow = () => editRowIndex.value = null
+
     const addSupportDoc = (index, documentId, documentName) => {
       jsonData.value[index].supportingDocuments.push({
           documentName: documentName,
@@ -195,6 +244,7 @@ export default {
         })
       })
     }
+
     const submitInvoice = async () => {
       loading.value = !loading.value
       if(store.state.auth.user_role === 'Buyer Admin') {
@@ -223,7 +273,6 @@ export default {
         })      
       } else {
         const api = "/workflow/v1/seller-led-invoice-financing-workflow-1/0"
-        
         let journalBatchEntries = [];
         await Promise.all(
           jsonData.value.map(async item => {
@@ -241,11 +290,12 @@ export default {
         appAxios.post(api, {
           sellerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
-          // bidEndTime: moment(bidEndTime.value).format()
-          bidEndTime: "2021-08-02T10:35:00.000Z"
+          bidEndTime: moment(bidEndTime.value).format()
         }).then(res => {
-          loading.value = !loading.value
+          loading.value = !loading.value;
           cash("#upload-invoice-modal").modal("hide");
+          console.log("props = ", props)
+          props.callback()
         })
       }   
     }
@@ -325,7 +375,6 @@ export default {
       };
       reader.readAsArrayBuffer(event.target.files[0]);
     }
-
     return {
       loading,
       xlsxRows,
@@ -338,13 +387,17 @@ export default {
       setDocumentFromat,
       changeHeader,
       removeRow,
+      editRow,
+      saveRow,
       chooseFiles,
       submitInvoice,
       fileChoosen,
       addSupportDoc,
       removeSupportDoc,
       bidEndTime,
-      changedDate
+      changedDate,
+      editRowIndex,
+      moment
     }
   }
 }

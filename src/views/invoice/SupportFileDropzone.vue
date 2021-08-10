@@ -3,9 +3,9 @@
     <div v-if="!files.length">
       <input v-bind="getInputProps()" :id="index">
       <UploadCloudIcon v-if="!uploadingFiles" class="w-4 h-4 text-red-400" />
-      <div v-if="uploadingFiles" class="w-4, h-4">
+      <div v-if="uploadingFiles" class="w-4, h-4 flex items-center">
         uploading
-        <LoadingIcon icon="oval" color="white" class="w-4 h-4 ml-2" />
+        <LoadingIcon icon="oval" color="red" class="w-3 h-3 ml-2" />
       </div>
     </div>
     <div v-else  class="dropzone-document-title">
