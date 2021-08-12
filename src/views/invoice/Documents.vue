@@ -1,5 +1,5 @@
 <template>
-    <tr class="odd:bg-gray-200 font-bold">
+    <tr class="odd:bg-gray-200 font-bold" v-bind="$attrs">
       <td class="dark:border-dark-5">SUPPORTING DOCUMENTS</td>
       <td class="dark:border-dark-5">DATE UPLOADED</td>
       <td class="dark:border-dark-5">UPLOADED BY</td>
@@ -7,7 +7,7 @@
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
     </tr>
-    <tr v-for="doc in documents" class="odd:bg-gray-200" :key="doc.documentURL  ">
+    <tr v-for="doc in documents" class="odd:bg-gray-200 intro-y" :key="doc.documentURL  ">
       <td class="dark:border-dark-5 text-blue-500">{{doc.documentName}}</td>
       <td class="dark:border-dark-5">{{moment(doc.uploadTime).format("DD/MM/YYYY")}}</td>
       <td class="dark:border-dark-5"></td>

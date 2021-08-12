@@ -33,12 +33,13 @@
               </div>
             </td>
             <td class="dark:border-dark-5">
-              <div class="alert show flex items-center h-5 p-3 text-sm justify-center text-blue-700 bg-blue-200" role="alert">
-                View Less
-              </div>
+              <button class="btn btn-primary h-6" @click="accordion(index)">
+                <span v-if="supportingDocumentAccordionIndex.includes(index)">View Less</span>
+                <span v-else>View More</span>
+              </button>
             </td>
           </tr>
-          <Docments :journalBatchHeaderId="item.journalBatchHeaderId" :journalBatchEntryId="item.journalBatchEntryId"/>
+          <Docments v-if="!supportingDocumentAccordionIndex.includes(index)" :journalBatchHeaderId="item.journalBatchHeaderId" :journalBatchEntryId="item.journalBatchEntryId"/>
         </tbody>
       </table>
     </div>
@@ -67,7 +68,7 @@
                   <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
                     Not Started
                   </div>
-                  <span class="ml-3 text-gray-500">{{item.statusName}}</span>
+                  <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}</span>
                 </div>
                 <hr class="mt-5">
               </div>
@@ -117,7 +118,7 @@
             </tr>
           </table>
         </div>
-        <div class="mt-5">
+        <div class="mt-5" v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
           <span>Formular</span>
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
@@ -591,7 +592,7 @@ import _ from 'lodash'
 import { sysAxios, appAxios } from '@/plugins/axios'
 import Docments from './Documents'
 import { useDropzone } from 'vue3-dropzone';
-
+import ProvenanceLang from '@/utils/provenanceLanguage'
 export default {
   props: {
     workflowExecutionReferenceId: {
@@ -677,7 +678,7 @@ export default {
       provenance: true,
       batchDetail: true
     })
-
+    const supportingDocumentAccordionIndex = ref([])
 
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles;
@@ -691,8 +692,6 @@ export default {
 
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
-    // console.log('user = ', user)
-    // console.log("company uuid = ", store.state.account)
     const invoiceDetailApi = async() => {
       const bankApi = `/company/v1/${store.state.account.company_uuid}/bankaccounts`
       await appAxios.get(bankApi).then(res => {
@@ -800,6 +799,10 @@ export default {
       loading.value.provenance = false
       console.log("loading.value.provenance = ", loading.value.provenance)
       console.log("verify request body = ", verifyRequestBody.value)
+
+      appAxios(`https://blockchain.bsg-api.tk/api/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`).then(res => {
+        console.log("verification res = ", res.data)
+      })
     }
     
     const getBranchLists = async (rootWorkflowId) => {
@@ -1071,9 +1074,7 @@ export default {
       disbursementData.value.paymentAdviceUri = 'https://authorization.bsg-api.tk/api/uploads/v1/' + res.data
     }
 
-    const removeFile = () => {
-      files.value = null;
-    }
+    const removeFile = () => files.value = null
 
     const getSignaturePad = () => {
       if (!signaturePad.value) {
@@ -1117,6 +1118,13 @@ export default {
         signatureDataURL.value = value;
         signatureFile.value = null;
       }
+    }
+
+    const accordion = (index) => {
+      if(supportingDocumentAccordionIndex.value.includes(index)) _.remove(supportingDocumentAccordionIndex.value, (item) => {
+        return item == index
+      })
+      else supportingDocumentAccordionIndex.value.push(index)
     }
 
     onMounted(async () => {
@@ -1236,7 +1244,11 @@ export default {
       saveSignature,
       onInput,
       signatureLoading,
-      modalLoading
+      modalLoading,
+      supportingDocumentAccordionIndex,
+      accordion,
+      _,
+      ProvenanceLang
     }
   },
 }

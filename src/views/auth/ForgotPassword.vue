@@ -1,17 +1,9 @@
 <template>
   <div>
-    <DarkModeSwitcher />
     <div class="container sm:px-10">
       <div class="block xl:grid grid-cols-2 gap-4">
         <!-- BEGIN: Login Info -->
         <div class="hidden xl:flex flex-col min-h-screen">
-          <a href="" class="-intro-x flex items-center pt-5">
-            <img alt="Midone Tailwind HTML Admin Template" class="w-6" :src="require(`@/assets/images/logo.svg`)"/>
-            <span class="text-white text-lg ml-3">Mid<span class="font-medium">One</span></span>
-          </a>
-          <div class="my-auto">
-            <img alt="Midone Tailwind HTML Admin Template" class="-intro-x w-1/2 -mt-16" :src="require(`@/assets/images/illustration.svg`)"/>
-          </div>
         </div>
         <!-- END: Login Info -->
         <!-- BEGIN: Login Form -->
@@ -43,17 +35,13 @@
 import { ref, onMounted } from "vue";
 import { sysAxios } from "@/plugins/axios";
 import Toastify from "toastify-js";
-import DarkModeSwitcher from "@/components/dark-mode-switcher/Main.vue";
 
 export default {
-  components: {
-    DarkModeSwitcher,
-  },
   setup() {
     const emailAddress = ref('');
     const sendPasswordResetEmail = () => {
       const api = `user/v1/${emailAddress.value}/resetpassword`;
-      sysAxios.post(api).then(res => {
+      sysAxios.post(api, {applicationDomain: 'genie'}).then(res => {
         if(res.status === 200) {
           console.log(res)
           if(res.status === 200){
@@ -75,6 +63,7 @@ export default {
       cash("body")
         .removeClass("main")
         .removeClass("error-page")
+        .removeClass("register")
         .addClass("login");
     });
     

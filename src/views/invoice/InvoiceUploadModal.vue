@@ -8,42 +8,49 @@
             <h2 class="font-medium text-base mr-auto"> Upload Invoice </h2>
           </div> <!-- END: Modal Header -->
           <div class="m-8">
-            <div class="form-inline w-128">
-              <label for="role-name" class="form-label">Document Type</label>
-              <div class="dropdown inline-block" data-placement="bottom">
-                <button class="dropdown-toggle btn btn-primary w-32 mr-1" aria-expanded="false"> {{documentFormat}} </button>
-                <div class="dropdown-menu w-40">
-                  <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
-                    <a 
-                      href="javascript:;"
-                      class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                      @click="setDocumentFromat('RVS WMS')"
-                    >
-                      RVS WMS
-                    </a>
-                    <a
-                      href="javascript:;"
-                      class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                      @click="setDocumentFromat('Standard/TF Format')"
-                    >
-                      Standard/TF Format
-                    </a>
+            <div class="form-inline block md:flex">
+              <div>
+                <label for="role-name" class="pr-4">Document Type</label>
+                <div class="dropdown inline-block" data-placement="bottom">
+                  <button class="dropdown-toggle btn btn-primary w-32 mr-1" aria-expanded="false"> {{documentFormat}} </button>
+                  <div class="dropdown-menu w-40">
+                    <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
+                      <a 
+                        href="javascript:;"
+                        class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                        @click="setDocumentFromat('RVS WMS')"
+                      >
+                        RVS WMS
+                      </a>
+                      <a
+                        href="javascript:;"
+                        class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                        @click="setDocumentFromat('Standard/TF Format')"
+                      >
+                        Standard/TF Format
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>              
-              <button class="btn btn-outline-primary" @click="chooseFiles">
+                        
+              </div>
+              <button class="btn btn-outline-primary mt-2 md:mt-0" @click="chooseFiles">
                 <UploadIcon class="w-4 h-4 mr-2" />
                 Upload Invoice
               </button>
-              <DatePicker v-model="bidEndTime" mode="dateTime">
-                <template v-slot="{ inputValue, inputEvents }">
-                  <input
-                    class="form-control ml-2 w-56 block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                    :value="inputValue"
-                    v-on="inputEvents"
-                  />
-                </template>
-              </DatePicker>
+              <div class="flex items-center mt-2 md:mt-0">
+                <label for="bid-end-time" class="md:pl-4 pr-4">Bid EndTime</label>
+                <DatePicker v-model="bidEndTime" mode="dateTime">
+                  <template v-slot="{ inputValue, inputEvents }">
+                    <input
+                      id="bid-end-time"
+                      class="form-control w-56 block mx-auto border rounded focus:outline-none focus:border-blue-300"
+                      :value="inputValue"
+                      v-on="inputEvents"
+                    />
+                  </template>
+                </DatePicker>
+              </div>
             </div>
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
             <div class="col-span-12 h-96 overflow-y-auto overflow-x-invisible bg-gray-200 p-1 mt-5">
@@ -270,6 +277,7 @@ export default {
         }).then(res => {
           loading.value = !loading.value
           cash("#upload-invoice-modal").modal("hide");
+          props.callback()
         })      
       } else {
         const api = "/workflow/v1/seller-led-invoice-financing-workflow-1/0"
@@ -294,7 +302,6 @@ export default {
         }).then(res => {
           loading.value = !loading.value;
           cash("#upload-invoice-modal").modal("hide");
-          console.log("props = ", props)
           props.callback()
         })
       }   

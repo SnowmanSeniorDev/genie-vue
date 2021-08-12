@@ -43,6 +43,7 @@ import { useRouter } from "vue-router";
 import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
 import { sysAxios } from "@/plugins/axios";
+import moment from "moment";
 
 export default {
   setup() {
@@ -81,10 +82,14 @@ export default {
           },
           {
             title: "EVENT DATE & TIME",
-            field: "when",
+            maxWidth: 300,
             hozAlign: "left",
             resizable: true,
-            headerSort: false
+            headerSort: false,
+            formatter(cell) {
+              const dateTime = cell.getData().when
+              return moment(dateTime).format("LLLL")
+            }
           },
           {
             title: "LAST STATUS / PHASE",
@@ -100,26 +105,6 @@ export default {
                 </div>
               </div>`
               return a
-            }
-          },
-          {
-            title: "ACTIONS",
-            minWidth: 100,
-            maxWidth: 150,
-            field: "actions",
-            responsive: 1,
-            hozAlign: "center",
-            vertAlign: "middle",
-            formatter(cell) {
-              const a = cash(`<div class="flex lg:justify-center items-center">
-                <a class="flex items-center btn btn-sm btn-primary" href="javascript:;">
-                  View
-                </a>
-              </div>`);
-              cash(a).on("click", function() {
-                router.push({name: "batchDetail", params: {'batchData': JSON.stringify(cell.getData())}});
-              })
-              return a[0];
             }
           },
         ],

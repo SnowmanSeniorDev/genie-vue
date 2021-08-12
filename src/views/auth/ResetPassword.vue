@@ -4,20 +4,6 @@
       <div class="block xl:grid grid-cols-2 gap-4">
         <!-- BEGIN: Login Info -->
         <div class="hidden xl:flex flex-col min-h-screen">
-          <a href="" class="-intro-x flex items-center pt-5">
-            <img alt="Midone Tailwind HTML Admin Template" class="w-6" :src="require(`@/assets/images/logo.svg`)"/>
-            <span class="text-white text-lg ml-3">Mid<span class="font-medium">One</span></span>
-          </a>
-          <div class="my-auto">
-            <img alt="Midone Tailwind HTML Admin Template" class="-intro-x w-1/2 -mt-16" :src="require(`@/assets/images/illustration.svg`)"/>
-            <div class="-intro-x text-white font-medium text-4xl leading-tight mt-10">
-              A few more clicks to <br />
-              sign in to your account.
-            </div>
-            <div class="-intro-x mt-5 text-lg text-white text-opacity-70 dark:text-gray-500">
-              Manage all your e-commerce accounts in one place
-            </div>
-          </div>
         </div>
         <!-- END: Login Info -->
         <!-- BEGIN: Login Form -->
@@ -33,7 +19,9 @@
             </div>
             <div class="intro-x mt-5 xl:mt-8 text-center xl:text-left">
               <button class="btn btn-primary py-3 px-4 w-full xl:mr-3 align-top" @click="resetPassword"> Reset Password </button>
-              <router-link to="login">Sign in instead</router-link>
+              <div class="mt-2 text-center">
+                <router-link to="/login" class="text-theme-1 text-center">Sign in instead</router-link>
+              </div>
             </div>
           </div>
         </div>
@@ -57,7 +45,6 @@ import { useRoute } from "vue-router";
 import Toastify from "toastify-js";
 
 import { sysAxios } from "@/plugins/axios";
-import axios from "axios";
 
 export default {
   setup() {
@@ -70,8 +57,9 @@ export default {
       cash("body").removeClass("main").removeClass("error-page").addClass("login");
       const api = `user/v1/resetpassword/${route.params.checkValidity}/checkvalidity`;
       sysAxios.post(api).then( res => {
+        console.log("res = ", res.data)
         userId.value = res.data.userId
-        axios.defaults.headers.common['Authorization'] = "Bearer " + res.data.token;
+        sysAxios.defaults.headers.common['Authorization'] = "Bearer " + res.data.token;
       })
     });
 
@@ -79,15 +67,15 @@ export default {
       const api = `/user/v1/${userId.value}/updatesecret`;
       sysAxios.put(api, {newSecret: newPassword.value}).then(res => {
         if(res.status === 200){
-            Toastify({
-              node: cash("#success-notification-update-password").clone().removeClass("hidden")[0],
-              duration: 3000,
-              newWindow: true,
-              close: true,
-              gravity: "top",
-              position: "right",
-              stopOnFocus: true
-            }).showToast();
+          Toastify({
+            node: cash("#success-notification-update-password").clone().removeClass("hidden")[0],
+            duration: 3000,
+            newWindow: true,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true
+          }).showToast();
         }
       })
     }

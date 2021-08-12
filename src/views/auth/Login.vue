@@ -45,12 +45,20 @@
         <!-- END: Login Form -->
       </div>
     </div>
+    <div id="failed-notification-content" class="toastify-content hidden flex">
+      <XCircleIcon class="text-theme-6" />
+      <div class="ml-4 mr-4">
+        <div class="font-medium">Sign In failed!</div>
+        <div class="text-gray-600 mt-1">Wrong user name and password.</div>
+      </div>
+		</div>
   </div>
 </template>
 
 <script>
 import { onMounted, ref } from "vue";
 import { useStore } from "vuex"
+import Toastify from "toastify-js";
 // import { useRecaptcha } from "vue-recaptcha-v3";
 
 export default {
@@ -69,9 +77,23 @@ export default {
       // Do stuff with the received token.
     }
  
-    const login = (userName, applicationDomain, secret) => {
+    const login = async (userName, applicationDomain, secret) => {
       loading.value = !loading.value
-      store.dispatch("auth/login", userName, applicationDomain, secret)
+      store.dispatch("auth/login", userName, applicationDomain, secret).then(res => {
+        console.log('res = ', res)
+        if(res.status === 'error') {
+          Toastify({
+            node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+            duration: 3000,
+            newWindow: true,
+            close: true,
+            gravity: "top",
+            position: "right",
+            stopOnFocus: true
+          }).showToast();
+        }
+        loading.value = !loading.value
+      })
     }
     onMounted(() => {
       cash("body")

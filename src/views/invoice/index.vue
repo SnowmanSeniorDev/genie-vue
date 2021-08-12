@@ -226,11 +226,10 @@ export default {
     };
 
     const getInvoiceOverview = () => {
-      console.log("123123123")
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
       appAxios.get(api).then(res => {
         console.log("invoices = ", res.data)
-        invoiceOverview.value = _.sortBy(res.data, ['documentDate', 'paymentDueDate']) ;
+        invoiceOverview.value = _.sortBy(res.data, ['documentDate', 'paymentDueDate']);
         initTabulator()
       })
     }
