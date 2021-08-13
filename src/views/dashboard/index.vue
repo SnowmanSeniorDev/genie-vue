@@ -126,25 +126,18 @@
               <div class="box p-8">
                 <h4 class="text-lg font-bold">Upcomming Holiday Calender</h4>
                 <div class="mt-3 overflow-y-auto h-48 scroll-primary">
-                  <div
-                    v-for="(faker, fakerKey) in $_.take($f(), 5)"
-                    :key="fakerKey"
-                    class="cursor-pointer relative flex items-center"
-                    :class="{ 'mt-5': fakerKey }"
-                  >
+                  <div v-for="holiday in holidays" :key="holiday.holidayCalendarEntryId" class="cursor-pointer relative flex items-center mt-2">
                     <div class="w-8 mr-1 bg-pink-200 p-1 rounded-md">
                       <CalendarIcon class="notification__icon dark:text-gray-300 text-pink-700 text-sm" />
                     </div>
                     <div class="ml-2 overflow-hidden">
                       <div class="flex items-center">
-                        <a href="javascript:;" class="truncate mr-5">31 May 2021, Monday</a>
+                        <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format('LL')}}</a>
                       </div>
                       <div class="flex items-center">
-                        <a href="javascript:;" class="font-medium truncate mr-5">Memorial Day</a>
+                        <a href="javascript:;" class="font-medium truncate mr-5">{{holiday.description}}</a>
                       </div>
-                      <div class="w-full truncate text-gray-600 mt-0.5">
-                        Public Holiday applicable to Japan
-                      </div>
+                      <div class="w-full truncate text-gray-600 mt-0.5">{{holiday.label}}</div>
                     </div>
                   </div>
                 </div>
@@ -211,16 +204,31 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
 import StackedBarChart from "@/components/stacked-bar-chart/Main.vue";
+import { useStore } from 'vuex';
+import moment from 'moment';
+import _ from 'lodash';
+import { appAxios } from '@/plugins/axios';
 
 export default defineComponent({
   components: {
     StackedBarChart,
   },
   setup() {
+    const store = useStore()
+    const holidays = ref([]);
 
-    return {};
+    onMounted(async () => {
+      const company_uuid = store.state.account.company_uuid
+      const api = `/communications/v1/notification/${company_uuid}`
+      if(company_uuid !== "00000000-0000-0000-0000-000000000000") {
+        await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
+          holidays.value = _.filter(res.data, (holiday) => {return new Date(holiday.date) > new Date()})
+        })
+      }
+    })
+    return {holidays, moment};
   }
 });
 </script>

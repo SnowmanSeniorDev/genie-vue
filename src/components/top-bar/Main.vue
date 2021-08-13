@@ -96,25 +96,18 @@
       <div class="notification-content pt-2 dropdown-menu">
         <div class="notification-content__box dropdown-menu__content box dark:bg-dark-6">
           <div class="notification-content__title">Upcomming Holiday Calendar</div>
-          <div
-            v-for="(faker, fakerKey) in $_.take($f(), 3)"
-            :key="fakerKey"
-            class="cursor-pointer relative flex items-center"
-            :class="{ 'mt-5': fakerKey }"
-          >
+          <div v-for="holiday in holidays" :key="holiday.holidayCalendarEntryId" class="cursor-pointer relative flex items-center mt-2">
             <div class="w-8 mr-1 bg-pink-200 p-1 rounded-md">
               <CalendarIcon class="notification__icon dark:text-gray-300 text-pink-700 text-sm" />
             </div>
             <div class="ml-2 overflow-hidden">
               <div class="flex items-center">
-                <a href="javascript:;" class="truncate mr-5">31 May 2021, Monday</a>
+                <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format('LL')}}</a>
               </div>
               <div class="flex items-center">
-                <a href="javascript:;" class="font-medium truncate mr-5">Memorial Day</a>
+                <a href="javascript:;" class="font-medium truncate mr-5">{{holiday.description}}</a>
               </div>
-              <div class="w-full truncate text-gray-600 mt-0.5">
-                Public Holiday applicable to Japan
-              </div>
+              <div class="w-full truncate text-gray-600 mt-0.5">{{holiday.label}}</div>
             </div>
           </div>
         </div>
@@ -134,7 +127,7 @@
           <div class="p-4 border-b border-theme-27 dark:border-dark-3">
             <div class="font-medium">{{ user.display_name }}</div>
             <div class="text-xs text-theme-28 mt-0.5 dark:text-gray-600">
-              <!-- {{ $f()[0].jobs[0] }} -->
+              {{ user.user_role }}
             </div>
           </div>
           <div class="p-2">
@@ -161,15 +154,17 @@
 <script>
 import { defineComponent, ref, onMounted } from "vue";
 import { mapActions } from "vuex";
-import { sysAxios } from "@/plugins/axios";
+import { sysAxios, appAxios } from "@/plugins/axios";
 import { useStore } from 'vuex';
+import moment from 'moment';
+import _ from 'lodash';
 
 export default defineComponent({
   setup() {
     const store = useStore()
     const alerts = ref([])
+    const holidays = ref([])
     const user = ref(store.state.auth)
-    console.log(user.value)
     onMounted(async () => {
       const company_uuid = store.state.account.company_uuid
       const api = `/communications/v1/notification/${company_uuid}`
@@ -177,10 +172,15 @@ export default defineComponent({
         await sysAxios.get(api).then(res => {
           alerts.value = res.data.slice(0, 5)
         })
+        await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
+          holidays.value = _.filter(res.data, (holiday) => {return new Date(holiday.date) > new Date()}).slice(0, 3)
+        })
       }
     })
     return {
       alerts,
+      holidays,
+      moment,
       user
     };
   },

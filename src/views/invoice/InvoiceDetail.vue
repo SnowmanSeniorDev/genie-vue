@@ -679,6 +679,7 @@ export default {
       batchDetail: true
     })
     const supportingDocumentAccordionIndex = ref([])
+    const blackDays = ref([])
 
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles;
@@ -800,11 +801,30 @@ export default {
       console.log("loading.value.provenance = ", loading.value.provenance)
       console.log("verify request body = ", verifyRequestBody.value)
 
-      appAxios(`https://blockchain.bsg-api.tk/api/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`).then(res => {
+      sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}`, verifyRequestBody.value).then(res => {
         console.log("verification res = ", res.data)
       })
     }
     
+    const getBlackDays = async () => {
+      console.log(batchDetails.value)
+      await appAxios.get(`/company/v1/${batchDetails.value.buyerCompanyId}/holidays`).then(res => {
+        console.log(res.data)
+        blackDays.value.push(...res.data.map(holiday => {if(!blackDays.value.includes(holiday.date)) return holiday.date}))
+      })
+      await appAxios.get(`/company/v1/${batchDetails.value.sellerCompanyId}/holidays`).then(res => {
+        console.log(res.data)
+        blackDays.value.push(...res.data.map(holiday => {if(!blackDays.value.includes(holiday.date)) return holiday.date}))
+      })
+      if(batchDetails.value.funderCompanyId != '00000000-0000-0000-0000-000000000000') {
+        await appAxios.get(`/company/v1/${batchDetails.value.funderCompanyId}/holidays`).then(res => {
+          console.log(res.data)
+          blackDays.value.push(...res.data.map(holiday => {if(!blackDays.value.includes(holiday.date)) return holiday.date}))
+        })
+      }
+      console.log(blackDays.value)
+    }
+
     const getBranchLists = async (rootWorkflowId) => {
       return new Promise((resolve, reject) => {
         var workflowQueue = [_.find(provenance.value, {workflowId: rootWorkflowId})]
@@ -1154,7 +1174,7 @@ export default {
         batchTotal: batchDetails.value.batchInformation.totalAmount,
         batchCurrency: batchDetails.value.currencyCode,
         batchEntriesBreakup: [{
-          entryType: null,
+          entryType: "INV",
           entryQuantity: batchDetails.value.numberOfBatchEntries
         }],
         batchEntries: [],
@@ -1176,7 +1196,7 @@ export default {
                 "supportingdocumentname": document.documentName,
                 "supportingdocumentcategory": 'Supporting Document',
                 "identity": fileData.uploadByUserId,
-                "datetimeutc": moment.utc(document.uploadTime).valueOf(),
+                "datetimeutc": moment(document.uploadTime).format("X"),
                 "dataHash": fileData.dataHash,
               })
             })
@@ -1196,11 +1216,11 @@ export default {
         paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow Status With Payment Advice'}).value)
       })
 
-
       invoiceDetailApi()
       provenanceApi()
       getLastWorkflowStatus()
       getCurrencyCode()
+      getBlackDays()
     })
 
     return {
