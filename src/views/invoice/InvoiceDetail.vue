@@ -43,7 +43,6 @@
         </tbody>
       </table>
     </div>
-
     <div class="grid grid-cols-2 gap-4 mt-6">
       <div class="intro-y box p-5 mt-5">
         <div class="flex items-center">
@@ -158,25 +157,26 @@
               <td class="border">{{batchDetails.formula.repaymentDate}}</td>
             </tr>
           </table>
-          <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center">
-            <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
-            <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
-          </div>
-          <div v-if="visibleWorkflowActions.visibleSubmitProposal" class="pt-8 flex justify-center">
-            <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Proposal</a>
-          </div>
-          <div v-if="visibleWorkflowActions.visibleSubmitDisbursmentAdvice" class="pt-8 flex justify-center">
-            <a href="javascript:;" data-toggle="modal" data-target="#submit-disbursment-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Disbursment</a>
-          </div>
-          <div v-if="visibleWorkflowActions.visibleSellerAcknowledgeOfReceiveDisbursement" class="pt-8 flex justify-center">
-            <a href="javascript:;" @click="openSellerAcknowledgeOfReceiveDisbursementModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Receive of Disbursement</a>
-          </div>
-          <div v-if="visibleWorkflowActions.visibleBuyerUploadRepaymentAdvice" class="pt-8 flex justify-center">
-            <a href="javascript:;" data-toggle="modal" data-target="#buyer-upload-repayment-advice" class="btn btn-primary w-48 sm:w-auto mr-2" >Upload Repayment Advice</a>
-          </div>
-          <div v-if="visibleWorkflowActions.visibleFunderAcknowledgeRepaymentAdvice" class="pt-8 flex justify-center">
-            <a href="javascript:;" @click="openFunderAcknowledgeUploadRepaymentAdviceModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Repayment Advice</a>
-          </div>
+        </div>
+        <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center">
+          <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
+          <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
+        </div>
+        <!-- <div v-if="visibleWorkflowActions.visibleSubmitProposal" class="pt-8 flex justify-center"> -->
+        <div class="pt-8 flex justify-center">
+          <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Proposal</a>
+        </div>
+        <div v-if="visibleWorkflowActions.visibleSubmitDisbursmentAdvice" class="pt-8 flex justify-center">
+          <a href="javascript:;" data-toggle="modal" data-target="#submit-disbursment-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Disbursment</a>
+        </div>
+        <div v-if="visibleWorkflowActions.visibleSellerAcknowledgeOfReceiveDisbursement" class="pt-8 flex justify-center">
+          <a href="javascript:;" @click="openSellerAcknowledgeOfReceiveDisbursementModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Receive of Disbursement</a>
+        </div>
+        <div v-if="visibleWorkflowActions.visibleBuyerUploadRepaymentAdvice" class="pt-8 flex justify-center">
+          <a href="javascript:;" data-toggle="modal" data-target="#buyer-upload-repayment-advice" class="btn btn-primary w-48 sm:w-auto mr-2" >Upload Repayment Advice</a>
+        </div>
+        <div v-if="visibleWorkflowActions.visibleFunderAcknowledgeRepaymentAdvice" class="pt-8 flex justify-center">
+          <a href="javascript:;" @click="openFunderAcknowledgeUploadRepaymentAdviceModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Repayment Advice</a>
         </div>
       </div>
     </div>
@@ -262,7 +262,7 @@
       </div>
     </div>
   </div>
-  <div id="submit-proposal-modal" class="modal" tabindex="-1" aria-hidden="true">
+  <div id="submit-proposal-modal" class="modal" tabindex="-1" aria-hidden="true" v-if="initValues">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <!-- BEGIN: Modal Header -->
@@ -290,7 +290,8 @@
                     maxYear: null,
                     months: true,
                     years: true
-                  }
+                  },
+                  lockDays: lockDays
                 }"
                 class="form-control"
               />
@@ -679,7 +680,8 @@ export default {
       batchDetail: true
     })
     const supportingDocumentAccordionIndex = ref([])
-    const blackDays = ref([])
+    const lockDays = ref([])
+    const initValues = ref(false)
 
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles;
@@ -809,20 +811,24 @@ export default {
     const getBlackDays = async () => {
       console.log(batchDetails.value)
       await appAxios.get(`/company/v1/${batchDetails.value.buyerCompanyId}/holidays`).then(res => {
-        console.log(res.data)
-        blackDays.value.push(...res.data.map(holiday => {if(!blackDays.value.includes(holiday.date)) return holiday.date}))
+        res.data.forEach(item => {
+          if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
+        })
       })
       await appAxios.get(`/company/v1/${batchDetails.value.sellerCompanyId}/holidays`).then(res => {
-        console.log(res.data)
-        blackDays.value.push(...res.data.map(holiday => {if(!blackDays.value.includes(holiday.date)) return holiday.date}))
+        res.data.forEach(item => {
+          if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
+        })
       })
       if(batchDetails.value.funderCompanyId != '00000000-0000-0000-0000-000000000000') {
         await appAxios.get(`/company/v1/${batchDetails.value.funderCompanyId}/holidays`).then(res => {
-          console.log(res.data)
-          blackDays.value.push(...res.data.map(holiday => {if(!blackDays.value.includes(holiday.date)) return holiday.date}))
+          res.data.forEach(item => {
+            if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
+          })
         })
       }
-      console.log(blackDays.value)
+      console.log("lockDays = ", lockDays.value)
+      initValues.value = true
     }
 
     const getBranchLists = async (rootWorkflowId) => {
@@ -1268,7 +1274,9 @@ export default {
       supportingDocumentAccordionIndex,
       accordion,
       _,
-      ProvenanceLang
+      ProvenanceLang,
+      initValues,
+      lockDays
     }
   },
 }
