@@ -1,0 +1,19 @@
+@layer components {
+  .register {
+    background-repeat: no-repeat;
+    background-color: white;
+    background-image: url(../images/register-bg.png);
+    background-size: contain;
+    background-position: center;
+    height: 100vh;
+    #app {
+      height: 100%;
+    }
+    @include media-breakpoint-down(xl) {
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+    &:before {
+    }
+  }
+}

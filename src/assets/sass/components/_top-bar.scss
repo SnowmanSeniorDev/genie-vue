@@ -1,0 +1,7 @@
+@layer components {
+    .top-bar {
+        height: 50px;
+        z-index: 51;
+        @apply flex items-center relative shadow-md rounded-md bg-white px-5 mt-5;
+    }
+}

@@ -1,0 +1,17 @@
+.icon-input {
+  width: 100%;
+  margin-bottom: 10px;
+
+  .icon {
+    position: absolute;
+    padding: 8.5px;
+    min-width: 35px;
+    background-color: gray;
+    opacity: 0.5;
+    @apply rounded-l-md text-black;
+  }
+  input {
+    width: 100%;
+    padding-left: 40px;
+  }
+}
