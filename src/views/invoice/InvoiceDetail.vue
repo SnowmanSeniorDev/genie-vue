@@ -162,8 +162,7 @@
           <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
           <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
         </div>
-        <!-- <div v-if="visibleWorkflowActions.visibleSubmitProposal" class="pt-8 flex justify-center"> -->
-        <div class="pt-8 flex justify-center">
+        <div v-if="visibleWorkflowActions.visibleSubmitProposal" class="pt-8 flex justify-center">
           <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Proposal</a>
         </div>
         <div v-if="visibleWorkflowActions.visibleSubmitDisbursmentAdvice" class="pt-8 flex justify-center">
@@ -262,7 +261,7 @@
       </div>
     </div>
   </div>
-  <div id="submit-proposal-modal" class="modal" tabindex="-1" aria-hidden="true" v-if="initValues">
+  <div id="submit-proposal-modal" class="modal" tabindex="-1" aria-hidden="true" v-if="initComponent">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <!-- BEGIN: Modal Header -->
@@ -681,7 +680,7 @@ export default {
     })
     const supportingDocumentAccordionIndex = ref([])
     const lockDays = ref([])
-    const initValues = ref(false)
+    const initComponent = ref(false)
 
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles;
@@ -731,6 +730,8 @@ export default {
         batchDetails.value.formula.platformFeeAmount = platformFee.amountBeforeTax
         batchDetails.value.formula.platformFeeDate = platformFee.dueDate
       })
+
+      return new Promise(resolve => resolve('invoice Detail Api Done'))
     }
 
     const provenanceApi = async () => {
@@ -806,10 +807,11 @@ export default {
       sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}`, verifyRequestBody.value).then(res => {
         console.log("verification res = ", res.data)
       })
+
+      return new Promise(resolve => resolve("provenance api function done"))
     }
     
-    const getBlackDays = async () => {
-      console.log(batchDetails.value)
+    const getLockDays = async () => {
       await appAxios.get(`/company/v1/${batchDetails.value.buyerCompanyId}/holidays`).then(res => {
         res.data.forEach(item => {
           if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
@@ -827,8 +829,7 @@ export default {
           })
         })
       }
-      console.log("lockDays = ", lockDays.value)
-      initValues.value = true
+      return new Promise(resolve => resolve(lockDays.value))
     }
 
     const getBranchLists = async (rootWorkflowId) => {
@@ -863,6 +864,8 @@ export default {
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_BUYER_REPAYMENT_ON_DUE_DATE" && user.user_role === "Buyer Admin") visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT" && user.user_role === "Funder Admin") visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
       })
+
+      return new Promise(resolve => resolve('get last workflow status done'))
     }
 
     const getCurrencyCode = async() => {
@@ -870,6 +873,8 @@ export default {
       await sysAxios.get(companyProfileSystemConfig).then(res => {
 				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
 			})
+
+      return new Promise(resolve => resolve(currencies.value))
     }
 
     const getpaymentInstructionId = async (label) => {
@@ -1222,11 +1227,12 @@ export default {
         paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow Status With Payment Advice'}).value)
       })
 
-      invoiceDetailApi()
-      provenanceApi()
-      getLastWorkflowStatus()
-      getCurrencyCode()
-      getBlackDays()
+      await invoiceDetailApi()
+      await provenanceApi()
+      await getLastWorkflowStatus()
+      await getCurrencyCode()
+      await getLockDays()
+      initComponent.value = true
     })
 
     return {
@@ -1275,7 +1281,7 @@ export default {
       accordion,
       _,
       ProvenanceLang,
-      initValues,
+      initComponent,
       lockDays
     }
   },
