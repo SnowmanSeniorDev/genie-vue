@@ -133,9 +133,6 @@ export default {
       users
     }
   },
-  mounted() {
-    console.log("mounted = ", this.users)
-  },
   methods: {
     gotoCreatUser() {
       this.$router.push({path: '/users/creat'})

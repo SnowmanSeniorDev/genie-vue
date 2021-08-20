@@ -6,6 +6,9 @@
         <div class="col-span-12 mt-8">
           <div class="intro-y flex items-center h-10">
             <h2 class="text-lg font-medium truncate mr-5">General Report</h2>
+            <a href="javascript:;" data-toggle="modal" data-target="#upload-invoice-modal" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2" >
+              <UploadIcon class="w-4 h-4 mr-2" /> Upload&nbsp;Invoice
+            </a>
             <a href="" class="ml-auto flex text-theme-1 dark:text-theme-10">
               <RefreshCcwIcon class="w-4 h-4 mr-3" /> Reload Data
             </a>
@@ -200,6 +203,7 @@
         <!-- END: Stock Chart -->
       </div>
     </div>
+    <InvoiceUploadModal />
   </div>
 </template>
 
@@ -210,11 +214,15 @@ import { useStore } from 'vuex';
 import moment from 'moment';
 import _ from 'lodash';
 import { appAxios } from '@/plugins/axios';
+import InvoiceUploadModal from "../invoice/InvoiceUploadModal";
+
 
 export default defineComponent({
   components: {
     StackedBarChart,
+    InvoiceUploadModal
   },
+ 
   setup() {
     const store = useStore()
     const holidays = ref([]);

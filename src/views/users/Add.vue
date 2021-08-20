@@ -288,9 +288,7 @@ export default {
           console.log(selectedRoles);
           const grantUserRoleAPI = "/access/v1/authorization";
           if(res.status === 201){
-            sysAxios.post(grantUserRoleAPI, {userId: res.data, applicationDomain: "genie", roleIds: selectedRoles.value}).then(res => {
-              console.log("grant user role return = ", res)
-            })
+            sysAxios.post(grantUserRoleAPI, {userId: res.data, applicationDomain: "genie", roleIds: selectedRoles.value}).then(res => {})
             Toastify({
               node: cash("#success-notification-content").clone().removeClass("hidden")[0],
               duration: 3000,

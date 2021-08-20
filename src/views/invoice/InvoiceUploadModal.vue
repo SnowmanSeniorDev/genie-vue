@@ -80,15 +80,6 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td v-for="(item, index) in tableHeader" :key="index">
-                            <select :value="tableHeader[index]" class="header-Table" @change="changeHeader(index, $event)">
-                              <option v-for="(header, header_index) in xlsxHeaders" :key="header_index">
-                                {{header}}
-                              </option>
-                            </select>
-                          </td>
-                        </tr>
                         <tr v-for="(item, index) in jsonData" :key="index">
                           <td class="border-b dark:border-dark-5">
                             <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].documentNumber"/>
@@ -192,36 +183,19 @@ export default {
     const xlsxHeaders = ref();
     const jsonData = ref([]);
     const fileUpload = ref(null);
-    const tableHeader = ref([]);
     const documentFormat = ref("RVS WMS");
-    const jsonHeaders = ref([
-      'documentNumber', 'documentType', 'vendorDocumentReferenceNumber', 'postingDate', 'dueDate', 'currencyCode', 'amount'
-    ]);
     const bidEndTime = ref(new Date());
     const loading = ref(false);
     const editRowIndex = ref(null);
-
-    const changedDate = (evt) => {
-      console.log(evt)
-    }
 
     const setDocumentFromat = (format) => {
       documentFormat.value = format
       cash(".dropdown-menu").dropdown("hide");
     }
     
-    const changeHeader = (index, event) => {
-      tableHeader.value[index] = event.target.value;
-      for(var i = 0; i < jsonData.value.length; i++) {
-        jsonData.value[i][jsonHeaders.value[index]] = xlsxRows.value[i][event.target.value]
-      }
-    }
-
     const removeRow = (index) => {
       jsonData.value.splice(index, 1)
       xlsxRows.value.splice(index, 1)
-      console.log(jsonData.value)
-      console.log(xlsxRows.value)
     }
 
     const editRow = (index) => editRowIndex.value = index
@@ -261,11 +235,12 @@ export default {
           jsonData.value.map(async item => {
             const companyId = await getCompanyIdByCompanyName("Seller company Display Name");
             console.log(moment(item.documentDate).format());
+            console.log(moment.utc(item.documentDate).format());
             journalBatchEntries.push({
               ...item,
               sellerCompanyId: companyId,
-              documentDate: moment(item.documentDate).format(),
-              paymentDueDate: moment(item.paymentDueDate).format()
+              documentDate: moment.utc(item.documentDate).format(),
+              paymentDueDate: moment.utc(item.paymentDueDate).format()
             });
           })
         )
@@ -289,8 +264,8 @@ export default {
             journalBatchEntries.push({
               ...item,
               buyerCompanyId: companyId,
-              documentDate: moment(item.documentDate).format(),
-              paymentDueDate: moment(item.paymentDueDate).format()
+              documentDate: moment.utc(item.documentDate).format(),
+              paymentDueDate: moment.utc(item.paymentDueDate).format()
             });
           })
         )
@@ -319,80 +294,47 @@ export default {
         /* DO SOMETHING WITH workbook HERE */
         let worksheet = workbook.Sheets[sheetName];
         xlsxRows.value = xlsx.utils.sheet_to_json(worksheet);
-        console.log(xlsx.utils.sheet_to_json(worksheet));
-        var xlsxData = []
-        xlsxRows.value.map((row) => {
-          xlsxHeaders.value = _.union(Object.keys(row), xlsxHeaders.value);
-          if(Object.keys(row).length >= jsonHeaders.value.length){
-            var jsonRow = {};
-            for(var i = 0; i < jsonHeaders.value.length; i++)  {
-              jsonRow[jsonHeaders.value[i]] = Object.values(row)[i];
-            }
-            jsonData.value.push(jsonRow);
-            xlsxData.push(row);
+        
+        let sellerCompanyId = ''
+        let dueDate = 0
+        let currencyCode = ''
+        xlsxRows.value.forEach((row) => {
+          if(row['Wonka Industries'] === 'INV') {
+
+            jsonData.value.push({
+              documentNumber: row['__EMPTY'],
+              documentType: row['Wonka Industries'],
+              sellerCompanyId: sellerCompanyId,
+              documentDate: row['__EMPTY_2'],
+              paymentDueDate: moment(row['__EMPTY_2']).add(dueDate, 'days'),
+              currencyCode: currencyCode,
+              amount: row['__EMPTY_9'].replace(',', ''),
+              supportingDocuments: []
+            })
+          }
+          else if(row['Wonka Industries'] === 'CURRENCY') {
+            currencyCode = row['__EMPTY']
+          } else {
+            sellerCompanyId = row['__EMPTY']
+            if(row['__EMPTY_1']) dueDate = row['__EMPTY_1'].split(' ')[0]
           }
         })
         /**
          * for the test will add the fixed to jsonData 
         */
-       jsonData.value = [
-        {
-          documentNumber: "INV-UATZ10001",
-          documentType: "INV",
-          sellerCompanyId: "MonsterInc01",
-          documentDate: "11/01/2021",
-          paymentDueDate: "12/03/2021",
-          currencyCode: "USD",
-          amount: 300.00,
-          supportingDocuments: []
-        }, {
-          documentNumber: "INV-UATZ10002",
-          documentType: "INV",
-          sellerCompanyId: "MonsterInc01",
-          documentDate: "11/01/2021",
-          paymentDueDate: "12/03/2021",
-          currencyCode: "USD",
-          amount: 862.00,
-          supportingDocuments: []
-        }, {
-          documentNumber: "INV-UATZ10003",
-          documentType: "INV",
-          sellerCompanyId: "MonsterInc01",
-          documentDate: "11/01/2021",
-          paymentDueDate: "12/03/2021",
-          currencyCode: "USD",
-          amount: 4325.00,
-          supportingDocuments: []
-        }, {
-          documentNumber: "INV-UATZ10004",
-          documentType: "INV",
-          sellerCompanyId: "MonsterInc01",
-          documentDate: "11/01/2021",
-          paymentDueDate: "12/03/2021",
-          currencyCode: "USD",
-          amount: 4575.00,
-          supportingDocuments: []
-        },
-       ]
+       console.log('jsonData = ', jsonData.value)
        /**
         * end of fillin testing data
         */
-        xlsxRows.value = xlsxData;
-        tableHeader.value = xlsxHeaders.value.slice(0, jsonHeaders.value.length)
       };
       reader.readAsArrayBuffer(event.target.files[0]);
     }
     return {
       loading,
-      xlsxRows,
-      xlsxHeaders,
       jsonData,
       fileUpload,
-      tableHeader,
       documentFormat,
-      jsonHeaders,
       setDocumentFromat,
-      changeHeader,
       removeRow,
       editRow,
       saveRow,
@@ -402,7 +344,6 @@ export default {
       addSupportDoc,
       removeSupportDoc,
       bidEndTime,
-      changedDate,
       editRowIndex,
       moment
     }

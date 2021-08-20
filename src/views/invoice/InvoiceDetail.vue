@@ -54,23 +54,21 @@
             <LoadingIcon icon="spinning-circles" color="gray" class="w-4 h-4 py-8" />
           </div>
         </div>
-        <div class="report-timeline mt-5 relative">
-          <div v-if="!loading.provenance">
-            <div v-for="(item, index) in provenance" class="intro-x relative flex items-start pb-5" :key="index">
-              <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-              <div class="px-5 ml-4 flex-1">
-                <div class="flex items-center">
-                  <div v-if="item.passed" :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'text-green-700 bg-green-200'} `" role="alert">
-                    <CheckCircleIcon class="w-3 h-3 mr-3" />
-                    <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Passed'}}</span>
-                  </div>
-                  <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                    Not Started
-                  </div>
-                  <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}</span>
+        <div v-else class="report-timeline mt-5 relative">
+          <div v-for="(item, index) in provenance" class="intro-x relative flex items-start pb-5" :key="index">
+            <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
+            <div class="px-5 ml-4 flex-1">
+              <div class="flex items-center">
+                <div v-if="item.passed" :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'text-green-700 bg-green-200'} `" role="alert">
+                  <CheckCircleIcon class="w-3 h-3 mr-3" />
+                  <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Passed'}}</span>
                 </div>
-                <hr class="mt-5">
+                <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
+                  Not Started
+                </div>
+                <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}</span>
               </div>
+              <hr class="mt-5">
             </div>
           </div>
         </div>
@@ -158,24 +156,26 @@
             </tr>
           </table>
         </div>
-        <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center">
-          <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
-          <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
-        </div>
-        <div v-if="visibleWorkflowActions.visibleSubmitProposal" class="pt-8 flex justify-center">
-          <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Proposal</a>
-        </div>
-        <div v-if="visibleWorkflowActions.visibleSubmitDisbursmentAdvice" class="pt-8 flex justify-center">
-          <a href="javascript:;" data-toggle="modal" data-target="#submit-disbursment-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Disbursment</a>
-        </div>
-        <div v-if="visibleWorkflowActions.visibleSellerAcknowledgeOfReceiveDisbursement" class="pt-8 flex justify-center">
-          <a href="javascript:;" @click="openSellerAcknowledgeOfReceiveDisbursementModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Receive of Disbursement</a>
-        </div>
-        <div v-if="visibleWorkflowActions.visibleBuyerUploadRepaymentAdvice" class="pt-8 flex justify-center">
-          <a href="javascript:;" data-toggle="modal" data-target="#buyer-upload-repayment-advice" class="btn btn-primary w-48 sm:w-auto mr-2" >Upload Repayment Advice</a>
-        </div>
-        <div v-if="visibleWorkflowActions.visibleFunderAcknowledgeRepaymentAdvice" class="pt-8 flex justify-center">
-          <a href="javascript:;" @click="openFunderAcknowledgeUploadRepaymentAdviceModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Repayment Advice</a>
+        <div v-if="initComponent">
+          <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center">
+            <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
+            <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
+          </div>
+          <div v-if="visibleWorkflowActions.visibleSubmitProposal" class="pt-8 flex justify-center">
+            <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Proposal</a>
+          </div>
+          <div v-if="visibleWorkflowActions.visibleSubmitDisbursmentAdvice" class="pt-8 flex justify-center">
+            <a href="javascript:;" data-toggle="modal" data-target="#submit-disbursment-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Disbursment</a>
+          </div>
+          <div v-if="visibleWorkflowActions.visibleSellerAcknowledgeOfReceiveDisbursement" class="pt-8 flex justify-center">
+            <a href="javascript:;" @click="openSellerAcknowledgeOfReceiveDisbursementModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Receive of Disbursement</a>
+          </div>
+          <div v-if="visibleWorkflowActions.visibleBuyerUploadRepaymentAdvice" class="pt-8 flex justify-center">
+            <a href="javascript:;" data-toggle="modal" data-target="#buyer-upload-repayment-advice" class="btn btn-primary w-48 sm:w-auto mr-2" >Upload Repayment Advice</a>
+          </div>
+          <div v-if="visibleWorkflowActions.visibleFunderAcknowledgeRepaymentAdvice" class="pt-8 flex justify-center">
+            <a href="javascript:;" @click="openFunderAcknowledgeUploadRepaymentAdviceModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Repayment Advice</a>
+          </div>
         </div>
       </div>
     </div>
@@ -667,7 +667,7 @@ export default {
       paymentAdviceAmount: null,
       paymentInstructionId: null,
       currencyCode: 'USD',
-      paymentAdviceDate: moment(new Date()).format("DD MMM, YYYY"),
+      paymentAdviceDate: moment.utc(new Date()).format("DD MMM, YYYY"),
       paymentAdviceUri: null
     })
     const confirmAbleDisbursementData = ref()
@@ -724,7 +724,7 @@ export default {
 
         var tax = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId})
         batchDetails.value.formula.disbursableAmountToSeller = tax?.amountBeforeTax
-        batchDetails.value.formula.disbursableDate = moment(tax?.dueDate).format('DD/MM/YYYY')
+        batchDetails.value.formula.disbursableDate = moment.utc(tax?.dueDate).format('DD/MM/YYYY')
 
         var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
         batchDetails.value.formula.platformFeeAmount = platformFee?.amountBeforeTax
@@ -785,7 +785,7 @@ export default {
               })
               verifyRequestBody.value.TransactionWorkflowStatuses.push({
                 "status": status.statusName,
-                "datetimeutc": moment.utc(status.updateTime).valueOf(),
+                "datetimeutc": moment(status.updateTime).valueOf(),
                 "identity": status.updateBy,
                 "paymentAdvice": {...paymentAdvice},
               })
@@ -793,7 +793,7 @@ export default {
           } else {
             verifyRequestBody.value.TransactionWorkflowStatuses.push({
               "status": status.statusName,
-              "datetimeutc": moment.utc(status.updateTime).valueOf(),
+              "datetimeutc": moment(status.updateTime).valueOf(),
               "identity": status.updateBy,
               "paymentAdvice": null,
             })
@@ -802,11 +802,11 @@ export default {
       )
       console.log("loading.value.provenance = ", loading.value.provenance)
       console.log("verify request body = ", verifyRequestBody.value)
-      loading.value.provenance = false
       console.log("loading = ", loading.value)
       await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}`, verifyRequestBody.value).then(res => {
         console.log("verification res = ", res.data)
       })
+      loading.value.provenance = false
       return new Promise(resolve => resolve("provenance api function done"))
     }
     
@@ -926,12 +926,11 @@ export default {
         vote: {
           companyId: store.state.account.company_uuid,
           bidValue: bidValue.value,
-          valueDate: moment(valueDate.value).format(),
+          valueDate: moment.utc(valueDate.value).format(),
         }
       }).then(res => {
         modalLoading.value = false
         if(res.status === 201) {
-          console.log("submit proposal = ", res)
           cash("#submit-proposal-modal").modal("hide")
         }
       })
@@ -960,7 +959,7 @@ export default {
         paymentAdviceUri: disbursementData.value.paymentAdviceUri,
         paymentAdviceAmount: disbursementData.value.paymentAdviceAmount,
         currencyCode: disbursementData.value.currencyCode,
-        paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
+        paymentAdviceDate: moment.utc(disbursementData.value.paymentAdviceDate).format()
       }
 
       appAxios.post(api, request).then(res => {
@@ -988,14 +987,13 @@ export default {
       const api = `/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
       const resData = await appAxios.get(api)
       confirmFunderAcknowledgeReceiveOfRepaymentData.value = {..._.find(resData.data, {paymentInstructionId: paymentInstructionId}) }
-      console.log("result filter = ", confirmFunderAcknowledgeReceiveOfRepaymentData.value)
       cash("#funder-acknowledge-upload-repayment-advice").modal("show")
     }
 
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
       modalLoading.value = true
       var api = ''
-      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10'
+      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
       else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
       else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
       
@@ -1026,7 +1024,7 @@ export default {
       appAxios.post(api, request).then(res => {
         modalLoading.value = false
         console.log(res)
-        if(res.status === '200'){
+        if(res.status === 200){
           cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
         }
       })
@@ -1064,12 +1062,12 @@ export default {
         paymentAdviceUri: disbursementData.value.paymentAdviceUri,
         paymentAdviceAmount: disbursementData.value.paymentAdviceAmount,
         currencyCode: disbursementData.value.currencyCode,
-        paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
+        paymentAdviceDate: moment.utc(disbursementData.value.paymentAdviceDate).format()
       }
       appAxios.post(api, request).then(res => {
         modalLoading.value = false
         console.log(res)
-        if(res.status === '200') cash("#buyer-upload-repayment-advice").modal("hide")
+        if(res.status === 200) cash("#buyer-upload-repayment-advice").modal("hide")
       })
     }
 
@@ -1085,7 +1083,7 @@ export default {
         paymentAdviceUri: disbursementData.value.paymentAdviceUri,
         paymentAdviceAmount: disbursementData.value.paymentAdviceAmount,
         currencyCode: disbursementData.value.currencyCode,
-        paymentAdviceDate: moment(disbursementData.value.paymentAdviceDate).format()
+        paymentAdviceDate: moment.utc(disbursementData.value.paymentAdviceDate).format()
       }
       appAxios.post(api, request).then(res => {
         cash("#seller-upload-repayment-advice").modal("hide")
@@ -1165,7 +1163,7 @@ export default {
           batchInformation: {
             bidEndTime: res.data.bidEndTime,
             paymentDueDate: res.data.paymentDueDate,
-            uploadDate: moment(res.data.createdTime).format('DD/MM/YYYY'),
+            uploadDate: moment.utc(res.data.createdTime).format('DD/MM/YYYY'),
             totalAmount: res.data.totalAmount,
             noOfBatchEntries: res.data.numberOfBatchEntries
           },
@@ -1173,7 +1171,7 @@ export default {
             interestRate: res.data.interestRate,
             platformFeeRate: res.data.processingFeeRateForFunder,
             repaymentAmountToFunder: res.data.totalAmount,
-            repaymentDate: moment(res.data.paymentDueDate).format('DD/MM/YYYY')
+            repaymentDate: moment.utc(res.data.paymentDueDate).format('DD/MM/YYYY')
           }
         }
         batchDetails.value = {...batchDetails.value, ...batch}
@@ -1206,7 +1204,7 @@ export default {
                 "supportingdocumentname": document.documentName,
                 "supportingdocumentcategory": 'Supporting Document',
                 "identity": fileData.uploadByUserId,
-                "datetimeutc": moment(document.uploadTime).format("X"),
+                "datetimeutc": moment.utc(document.uploadTime).format("X"),
                 "dataHash": fileData.dataHash,
               })
             })
@@ -1231,7 +1229,6 @@ export default {
       await provenanceApi()
       await getCurrencyCode()
       await getLockDays()
-      console.log("loadig and init component", loading.value, initComponent.value)
       initComponent.value = true
     })
 

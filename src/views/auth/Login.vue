@@ -80,7 +80,6 @@ export default {
     const login = async (userName, applicationDomain, secret) => {
       loading.value = !loading.value
       store.dispatch("auth/login", userName, applicationDomain, secret).then(res => {
-        console.log('res = ', res)
         if(res.status === 'error') {
           Toastify({
             node: cash("#failed-notification-content").clone().removeClass("hidden")[0],

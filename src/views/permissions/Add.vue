@@ -173,7 +173,6 @@ export default {
       },
       setup: (picker) => {
         picker.on('button:apply', (date) => {
-          console.log("date = ", helper.formatDate(date.dateInstance, "D MMM, YYYY"));
           formData.validUntil = helper.formatDate(date.dateInstance, "D MMM, YYYY")
           // picker.preventClick = true;
           // some action

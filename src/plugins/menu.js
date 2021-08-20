@@ -93,6 +93,5 @@ export const custom_menu = (permissions) => {
       ret.push(iMenu) ;
     }
   });
-  console.log("ret = ", ret)
   return ret ;
 }

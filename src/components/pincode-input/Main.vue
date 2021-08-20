@@ -78,8 +78,6 @@ export default {
 
     watch(codeString, (newVal, oldVal) => {
       // console.log(codeString.value)
-      console.log("new = ", newVal)
-      console.log("old = ", oldVal)
       if(newVal.length >= oldVal.length) focusNextCell()
       emit("update:modelValue", codeString.value)
     })

@@ -45,7 +45,6 @@ export default {
       const fileUploadApi = 'uploads/v1/supporting_document';
       let formData = new FormData();
       uploadingFiles.value = true
-      console.log("acceptFiles = ", acceptFiles)
       acceptFiles.forEach(async file => {
         uploadingFiles.value = true
         formData.append('file', file)
