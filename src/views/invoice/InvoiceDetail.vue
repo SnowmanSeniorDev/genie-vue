@@ -59,9 +59,30 @@
             <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
             <div class="px-5 ml-4 flex-1">
               <div class="flex items-center">
-                <div v-if="item.passed" :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'text-green-700 bg-green-200'} `" role="alert">
+                <div
+                  v-if="item.passed && item.verified"
+                  class="alert show flex items-center h-5 p-3 text-sm justify-center text-blue-700 bg-blue-200"
+                  role="alert"
+                >
+                  <ShieldIcon class="w-3 h-3 mr-3" />
+                  <span class="pr-3">Verified</span>
+                </div>
+                <div
+                  v-else-if="item.passed && !item.verified"
+                  class="alert show flex items-center h-5 p-3 text-sm justify-center text-red-700 bg-red-200"
+                  role="alert"
+                >
+                  <ShieldOffIcon class="w-3 h-3 mr-3" />
+                  <span class="pr-3">Not Verified</span>
+                </div>
+                <div
+                  v-else-if="item.passed && item.verified === undefined"
+                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'text-green-700 bg-green-200'} `"
+                  role="alert"
+                >
                   <CheckCircleIcon class="w-3 h-3 mr-3" />
-                  <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Passed'}}</span>
+                  <!-- <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Passed'}}</span> -->
+                  <span class="pr-3">{{item.statusName === item.statusName ? 'Pending' : 'Passed'}}</span>
                 </div>
                 <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
                   Not Started
@@ -805,6 +826,12 @@ export default {
       console.log("loading = ", loading.value)
       await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}`, verifyRequestBody.value).then(res => {
         console.log("verification res = ", res.data)
+        provenance.value.forEach((workStatus, index) => {
+          if(workStatus.passed) {
+            console.log(_.find(res.data.transactionWorkflowStatuses, {status: workStatus.statusName}).verificationStatus)
+            provenance.value[index].verified = _.find(res.data.transactionWorkflowStatuses, {status: workStatus.statusName}).verificationStatus
+          }
+        })
       })
       loading.value.provenance = false
       return new Promise(resolve => resolve("provenance api function done"))
@@ -902,6 +929,8 @@ export default {
           visibleWorkflowActions.value.visibleApproveButton = false
           provenancePendingStatusIndex.value ++;
         }
+        loading.value.provenance = true
+        updateProvenanceApi()
       })
     }
 
@@ -915,6 +944,8 @@ export default {
         if(res.status === 200) {
           visibleWorkflowActions.value.visibleApproveButton.value = false
           provenancePendingStatusIndex.value ++;
+          loading.value.provenance = true
+          updateProvenanceApi()
         }
       })
     }
@@ -932,6 +963,8 @@ export default {
         modalLoading.value = false
         if(res.status === 201) {
           cash("#submit-proposal-modal").modal("hide")
+          loading.value.provenance = true
+          updateProvenanceApi()
         }
       })
     }
@@ -966,6 +999,8 @@ export default {
         modalLoading.value = false
         if(res.status == '200') {
           cash("#submit-disbursment-modal").modal("hide")
+          loading.value.provenance = true
+          updateProvenanceApi()
         }
       })
     }
@@ -1007,6 +1042,8 @@ export default {
         console.log(res)
         if(res.status === 200) {
           cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
+          loading.value.provenance = true
+          provenanceApi()
         }
       })
     }
@@ -1026,6 +1063,8 @@ export default {
         console.log(res)
         if(res.status === 200){
           cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
+          loading.value.provenance = true
+          updateProvenanceApi()
         }
       })
     }
@@ -1040,6 +1079,8 @@ export default {
       appAxios.post(api, request).then(res => {
         console.log(res)
         cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
+        loading.value.provenance = true
+        updateProvenanceApi()
       })
     }
 
@@ -1068,6 +1109,8 @@ export default {
         modalLoading.value = false
         console.log(res)
         if(res.status === 200) cash("#buyer-upload-repayment-advice").modal("hide")
+        loading.value.provenance = true
+        updateProvenanceApi()
       })
     }
 
@@ -1155,7 +1198,7 @@ export default {
       else supportingDocumentAccordionIndex.value.push(index)
     }
 
-    onMounted(async () => {
+    const init = async () => {
       await appAxios.get(`/journalbatch/v1/header/byworkflowexecutionid/${props.workflowExecutionReferenceId}`).then( res => {    
         const batch = {
           ...res.data,
@@ -1229,6 +1272,21 @@ export default {
       await provenanceApi()
       await getCurrencyCode()
       await getLockDays()
+    }
+    
+    const updateProvenanceApi = async () => {
+      const genieGlobalSetting = `configuration/v1/Genie Global Settings`
+      await sysAxios.get(genieGlobalSetting).then(res => {
+        adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
+        initWorkflowId.value = {...initWorkflowId.value, buyerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id'}).value}
+        initWorkflowId.value = {...initWorkflowId.value, sellerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id'}).value}
+        paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow Status With Payment Advice'}).value)
+      })
+      await provenanceApi()
+    }
+
+    onMounted(async () => {
+      await init()
       initComponent.value = true
     })
 

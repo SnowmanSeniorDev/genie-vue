@@ -233,9 +233,7 @@ export default {
         let journalBatchEntries = [];
         await Promise.all(
           jsonData.value.map(async item => {
-            const companyId = await getCompanyIdByCompanyName("Seller company Display Name");
-            console.log(moment(item.documentDate).format());
-            console.log(moment.utc(item.documentDate).format());
+            const companyId = await getCompanyIdByCompanyName(item.sellerCompanyId);
             journalBatchEntries.push({
               ...item,
               sellerCompanyId: companyId,
@@ -244,12 +242,12 @@ export default {
             });
           })
         )
-
         appAxios.post(api, {
           buyerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
           bidEndTime: moment(bidEndTime.value).format()
         }).then(res => {
+          console.log('res = ', res)
           loading.value = !loading.value
           cash("#upload-invoice-modal").modal("hide");
           props.callback()
@@ -259,8 +257,7 @@ export default {
         let journalBatchEntries = [];
         await Promise.all(
           jsonData.value.map(async item => {
-            const companyId = await getCompanyIdByCompanyName("buyer testing company");
-            console.log(moment(item.documentDate).format());
+            const companyId = await getCompanyIdByCompanyName(item.sellerCompanyId);
             journalBatchEntries.push({
               ...item,
               buyerCompanyId: companyId,
@@ -294,25 +291,24 @@ export default {
         /* DO SOMETHING WITH workbook HERE */
         let worksheet = workbook.Sheets[sheetName];
         xlsxRows.value = xlsx.utils.sheet_to_json(worksheet);
-        
+        console.log('xlsxrows = ', xlsxRows.value)
         let sellerCompanyId = ''
         let dueDate = 0
         let currencyCode = ''
         xlsxRows.value.forEach((row) => {
-          if(row['Wonka Industries'] === 'INV') {
-
+          if(Object.values(row)[0] === 'INV') {
             jsonData.value.push({
               documentNumber: row['__EMPTY'],
-              documentType: row['Wonka Industries'],
+              documentType: Object.values(row)[0],
               sellerCompanyId: sellerCompanyId,
-              documentDate: row['__EMPTY_2'],
-              paymentDueDate: moment(row['__EMPTY_2']).add(dueDate, 'days'),
+              documentDate: moment(row['__EMPTY_2'], 'DD/MM/YYYY'),
+              paymentDueDate: moment(row['__EMPTY_2'], 'DD/MM/YYYY').add(dueDate, 'days'),
               currencyCode: currencyCode,
               amount: row['__EMPTY_9'].replace(',', ''),
               supportingDocuments: []
             })
           }
-          else if(row['Wonka Industries'] === 'CURRENCY') {
+          else if(Object.values(row)[0] === 'CURRENCY') {
             currencyCode = row['__EMPTY']
           } else {
             sellerCompanyId = row['__EMPTY']
@@ -322,7 +318,6 @@ export default {
         /**
          * for the test will add the fixed to jsonData 
         */
-       console.log('jsonData = ', jsonData.value)
        /**
         * end of fillin testing data
         */
