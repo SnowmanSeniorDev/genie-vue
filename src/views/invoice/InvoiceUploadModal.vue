@@ -298,7 +298,7 @@ export default {
         xlsxRows.value.forEach((row) => {
           if(Object.values(row)[0] === 'INV') {
             jsonData.value.push({
-              documentNumber: row['__EMPTY'],
+              documentNumber: row['__EMPTY'].toString(),
               documentType: Object.values(row)[0],
               sellerCompanyId: sellerCompanyId,
               documentDate: moment(row['__EMPTY_2'], 'DD/MM/YYYY'),

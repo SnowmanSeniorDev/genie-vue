@@ -229,6 +229,7 @@ export default defineComponent({
 
     onMounted(async () => {
       const company_uuid = store.state.account.company_uuid
+      console.log(company_uuid)
       const api = `/communications/v1/notification/${company_uuid}`
       if(company_uuid !== "00000000-0000-0000-0000-000000000000") {
         await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
