@@ -76,16 +76,12 @@
                   <span class="pr-3">Not Verified</span>
                 </div>
                 <div
-                  v-else-if="item.passed && item.verified === undefined"
-                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'text-green-700 bg-green-200'} `"
+                  v-else
+                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === provenance[index + 1].statusName ? 'alert-warning-soft' : 'alert-secondary'}`"
                   role="alert"
                 >
-                  <CheckCircleIcon class="w-3 h-3 mr-3" />
-                  <!-- <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Passed'}}</span> -->
-                  <span class="pr-3">{{item.statusName === item.statusName ? 'Pending' : 'Passed'}}</span>
-                </div>
-                <div v-else class="alert alert-secondary show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                  Not Started
+                  <SendIcon class="w-3 h-3 mr-3" v-if="lastWorkStatus.statusName === provenance[index + 1].statusName" />
+                  <span class="pr-3">{{lastWorkStatus.statusName === provenance[index + 1].statusName ? 'Pending' : 'Not Started'}}</span>
                 </div>
                 <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}</span>
               </div>
