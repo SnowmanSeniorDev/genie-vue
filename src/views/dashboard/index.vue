@@ -27,7 +27,7 @@
                   <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
                   <div class="px-5 ml-4 flex-1">
                     <div class="items-center">
-                      <span class="font-bold">{{ProvenanceLang[pendingAction.statusName]}}</span>
+                      <span class="font-bold">{{ProvenanceLang[pendingAction.action]}}</span>
                       <div class="mt-2">Invoice Batch {{pendingAction.batchNumber}}</div>
                       <div class="text-gray-500">Created On :  {{pendingAction.createdTime}}</div>
                       <a :href="`/invoice/detail/${pendingAction.workflowExecutionReferenceId}`"><button class="mt-2 btn h-6 w-16 bg-pink-700 text-white btn-sm">View</button></a>
@@ -163,7 +163,7 @@ export default defineComponent({
         })
         
         await appAxios.get(dashboardApi).then(res => {
-          let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByStatus;
+          let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
           let pendingAction = {};
           if(pendingItem.length > 0)
           {
@@ -174,7 +174,7 @@ export default defineComponent({
                 let batchData = res2.data;
 
                 pendingAction = {};
-                pendingAction.statusName = pendingItem[i].statusName;
+                pendingAction.action = pendingItem[i].action;
                 pendingAction.batchNumber = batchData.batchNumber;
                 pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
                 pendingAction.createdTime = batchData.createdTime;
@@ -196,7 +196,7 @@ export default defineComponent({
                     let batchData = res2.data;
                     console.log(batchData,"batchData");
                     pendingAction = {};
-                    pendingAction.statusName = "INVITE_FUNDERS_TO_BID";
+                    pendingAction.action = "INVITE_FUNDERS_TO_BID";
                     pendingAction.batchNumber = batchData.batchNumber;
                     pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
                     pendingAction.createdTime = batchData.createdTime;
