@@ -36,10 +36,21 @@ export default {
     const documents = ref();
     onMounted(() => {
       const api = `/journalbatch/v1/header/${props.journalBatchHeaderId }/entry/${props.journalBatchEntryId }/supportingdocuments`;
+      
       appAxios.get(api).then(res => {
-        documents.value = res.data
-        console.log(res.data)
-      })
+        console.log(res.data,"doc data");
+        documents.value = res.data 
+        if(documents.value.length > 0)
+        {
+          for(let i=0;i<documents.value.length;i++)
+          {
+            const fileInfoApi = documents.value[i].documentURI + '/info';
+            appAxios.get(fileInfoApi).then((res2)=>{
+              documents.value[i].contentType = res2.data.contentType;
+            });
+          }
+        }
+      }) 
     })
 
     return {

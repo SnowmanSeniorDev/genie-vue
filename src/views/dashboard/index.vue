@@ -12,61 +12,7 @@
             <a href="" class="ml-auto flex text-theme-1 dark:text-theme-10">
               <RefreshCcwIcon class="w-4 h-4 mr-3" /> Reload Data
             </a>
-          </div>
-          <div class="grid grid-cols-12 gap-6 mt-5">
-            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
-              <div class="report-box zoom-in">
-                <div class="box px-5 py-8 grid grid-cols-12 gap-4">
-                  <div class="col-span-10">
-                    <div class="text-xl font-bold leading-8">Offer Pending</div>
-                    <div class="text-base text-gray-600 mt-1">EUR 8,000.00</div>
-                  </div>
-                  <div class="col-span-2 self-center bg-blue-200 h-12 w-12 flex rounded-full justify-center">
-                    <ShoppingCartIcon class="report-box__icon text-theme-10 self-center" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
-              <div class="report-box zoom-in">
-                <div class="box px-5 py-8 grid grid-cols-12 gap-4">
-                  <div class="col-span-10">
-                    <div class="text-xl font-bold leading-8">Approved</div>
-                    <div class="text-base text-gray-600 mt-1">EUR 8,000.00</div>
-                  </div>
-                  <div class="col-span-2 self-center bg-green-200 h-12 w-12 flex rounded-full justify-center">
-                    <ThumbsUpIcon class="report-box__icon text-green-700 self-center" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
-              <div class="report-box zoom-in">
-                <div class="box px-5 py-8 grid grid-cols-12 gap-4">
-                  <div class="col-span-10">
-                    <div class="text-xl font-bold leading-8">Payable to Funder</div>
-                    <div class="text-base text-gray-600 mt-1">EUR 8,000.00</div>
-                  </div>
-                  <div class="col-span-2 self-center bg-pink-200 h-12 w-12 flex rounded-full justify-center">
-                    <ShoppingCartIcon class="report-box__icon text-pink-700 self-center" />
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
-              <div class="report-box zoom-in">
-                <div class="box px-5 py-8 grid grid-cols-12 gap-4">
-                  <div class="col-span-10">
-                    <div class="text-xl font-bold leading-8">Paid to Funder</div>
-                    <div class="text-base text-gray-600 mt-1">EUR 3,000.00</div>
-                  </div>
-                  <div class="col-span-2 self-center bg-yellow-200 h-12 w-12 flex rounded-full justify-center">
-                    <ShoppingCartIcon class="report-box__icon text-yellow-700 self-center" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          </div> 
         </div>
         <!-- END: General Report -->
         <!-- STAER: Active Report-->
@@ -74,51 +20,29 @@
           <div class="col-span-12 sm:col-span-6 xl:col-span-4 intro-y">
             <div class="intro-y box p-5">
               <div class="flex items-center">
-                <ListIcon class="w-6 h-6 mr-3" /><span class="text-lg">Last Activties</span>
+                <ListIcon class="w-6 h-6 mr-3" /><span class="text-lg">Pending For Action</span>
               </div>
-              <div class="report-timeline mt-5 relative">
-                <div class="intro-x relative flex items-start pb-5">
+              <div class="report-timeline mt-5 relative" v-if="pendingActions.length > 0">
+                <div class="intro-x relative flex items-start pb-5" v-for="pendingAction in pendingActions" :key="pendingAction.workflowExecutionReferenceId">
                   <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
                   <div class="px-5 ml-4 flex-1">
                     <div class="items-center">
-                      <span class="font-bold">Invoice Upload</span>
-                      <div class="mt-2">Invoice Batch #10054 upload success</div>
-                      <div class="text-gray-500">TimeStamp : 20/04/2021, 10:03</div>
-                      <button class="mt-2 btn h-6 w-16 bg-pink-700 text-white btn-sm">View</button>
+                      <span class="font-bold">{{ProvenanceLang[pendingAction.action]}}</span>
+                      <div class="mt-2">Invoice Batch {{pendingAction.batchNumber}}</div>
+                      <div class="text-gray-500">Created On :  {{pendingAction.createdTime}}</div>
+                      <a :href="`/invoice/detail/${pendingAction.workflowExecutionReferenceId}`"><button class="mt-2 btn h-6 w-16 bg-pink-700 text-white btn-sm">View</button></a>
                     </div>
                   </div>
-                </div>
-                <div class="intro-x relative flex items-start pb-5">
-                  <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
+                </div>  
+              </div>
+              <div class="mt-5 relative" v-else>
+                <div class="intro-x relative flex items-start pb-5"> 
                   <div class="px-5 ml-4 flex-1">
                     <div class="items-center">
-                      <span class="font-bold">Corporate Documents Validated</span>
-                      <div class="mt-2">Your seller John.smith@happytech.com is now active on Genie!</div>
-                      <div class="text-gray-500">TimeStamp : 18/04/2021, 15:30</div>
-                      <button class="mt-2 btn h-6 w-16 bg-pink-700 text-white btn-sm">View</button>
+                      No pending item
                     </div>
                   </div>
-                </div>
-                <div class="intro-x relative flex items-start pb-5">
-                  <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-                  <div class="px-5 ml-4 flex-1">
-                    <div class="items-center">
-                      <span class="font-bold">Wecome to Genie!</span>
-                      <div class="mt-2">Your account is approved!</div>
-                      <div class="text-gray-500">TimeStamp : 11/04/2021, 20:45</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="intro-x relative flex items-start pb-5">
-                  <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-                  <div class="px-5 ml-4 flex-1">
-                    <div class="items-center">
-                      <span class="font-bold">Wecome to Genie!</span>
-                      <div class="mt-2">Your account is approved!</div>
-                      <div class="text-gray-500">TimeStamp : 11/04/2021, 20:45</div>
-                    </div>
-                  </div>
-                </div>
+                </div>  
               </div>
             </div>
           </div>
@@ -215,7 +139,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import { appAxios } from '@/plugins/axios';
 import InvoiceUploadModal from "../invoice/InvoiceUploadModal";
-
+import ProvenanceLang from '@/utils/provenanceLanguage'
 
 export default defineComponent({
   components: {
@@ -226,18 +150,75 @@ export default defineComponent({
   setup() {
     const store = useStore()
     const holidays = ref([]);
+    const pendingActions = ref([]);
 
     onMounted(async () => {
-      const company_uuid = store.state.account.company_uuid
-      console.log(company_uuid)
-      const api = `/communications/v1/notification/${company_uuid}`
+      const company_uuid = store.state.account.company_uuid;
+
+      const dashboardApi = `/company/v1/${company_uuid}/dashboarddata`;
+      const api = `/communications/v1/notification/${company_uuid}`;
       if(company_uuid !== "00000000-0000-0000-0000-000000000000") {
         await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
           holidays.value = _.filter(res.data, (holiday) => {return new Date(holiday.date) > new Date()})
         })
+        
+        await appAxios.get(dashboardApi).then(res => {
+          let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
+          let pendingAction = {};
+          if(pendingItem.length > 0)
+          {
+            for(let i=0;i<pendingItem.length;i++)
+            {
+              const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
+              appAxios.get(batchApi).then(res2 => {
+                let batchData = res2.data;
+
+                pendingAction = {};
+                pendingAction.action = pendingItem[i].action;
+                pendingAction.batchNumber = batchData.batchNumber;
+                pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
+                pendingAction.createdTime = batchData.createdTime;
+                pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
+                pendingActions.value.push(pendingAction);
+              }); 
+            }
+          }
+          if(store.state.account.company_type.toLowerCase() == "funder")
+          {
+            if(res.data.bidInvitations != null)
+            {
+              let pendingBid = res.data.bidInvitations.open;
+              console.log(pendingBid.workflowExecutionids,"workflowExecutionids");
+               if(pendingBid.workflowExecutionids.length > 0)
+              { 
+                  const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
+                  appAxios.get(batchApi).then(res2 => {
+                    let batchData = res2.data;
+                    console.log(batchData,"batchData");
+                    pendingAction = {};
+                    pendingAction.action = "INVITE_FUNDERS_TO_BID";
+                    pendingAction.batchNumber = batchData.batchNumber;
+                    pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
+                    pendingAction.createdTime = batchData.createdTime;
+                    pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
+                    pendingActions.value.push(pendingAction);
+
+                    console.log(pendingActions,"pendingActions");
+                  }); 
+                 
+              }
+            }
+          }
+        })
+        
       }
     })
-    return {holidays, moment};
+    return {
+      pendingActions,
+      holidays, 
+      moment,
+      ProvenanceLang
+    };
   }
 });
 </script>
