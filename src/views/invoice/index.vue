@@ -6,7 +6,7 @@
     <div class="intro-y box p-5 mt-5">
       <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
         <div class="flex mt-5 sm:mt-0">
-          <a href="javascript:;" data-toggle="modal" data-target="#upload-invoice-modal" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2" >
+          <a href="javascript:;" data-toggle="modal" data-target="#upload-invoice-modal" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2" v-if="isCompany">
             <UploadIcon class="w-4 h-4 mr-2" /> Upload&nbsp;Invoice
           </a>
         </div>
@@ -93,7 +93,6 @@ import Tabulator from "tabulator-tables";
 import InvoiceUploadModal from "./InvoiceUploadModal";
 import { sysAxios, appAxios } from "@/plugins/axios";
 import _ from "lodash";
-import moment from 'moment'
 
 export default {
   components: {
@@ -105,6 +104,8 @@ export default {
     const tableRef = ref();
     const tabulator = ref();
     const loading = ref(true);
+    const isCompany = ref(false);
+    const invoiceOverview = ref([]);
     const filter = reactive({
       field: "name",
       type: "like",
@@ -112,9 +113,9 @@ export default {
     });
     
     
-    const initTabulator = (data) => {
+    const initTabulator = () => {
       tabulator.value = new Tabulator(tableRef.value, {
-        data: data,
+        data: invoiceOverview.value,
         pagination: "local",
         paginationSize: 10,
         paginationSizeSelector: [5, 10, 20, 30, 40],
@@ -135,7 +136,7 @@ export default {
             field: "buyerCompanyName",
             headerHozAlign: 'center',
             hozAlign: "center",
-            resizable: true,
+            resizable: false,
             headerSort: false
           },
           {
@@ -143,7 +144,7 @@ export default {
             field: "sellerCompanyName",
             headerHozAlign: 'center',
             hozAlign: "center",
-            resizable: true,
+            resizable: false,
             headerSort: false
           },
           {
@@ -152,43 +153,31 @@ export default {
             minWidth: 100,
             maxWidth: 200,
             hozAlign: "right",
-            resizable: true,
-            headerSort: true,
+            resizable: false,
+            headerSort: false,
             formatter(cell) {
               return cell.getData().totalAmount.toFixed(2)
             },
           },
           {
             title: "LAST UPDATED BY",
-            field: "lastUpdatedBy",
+            field: "documentDate",
             hozAlign: "center",
-            resizable: true,
+            resizable: false,
             headerSort: false
           },
           {
-            title: "PAYMENT DUE DATE",
+            title: "LASTEST PHASE",
+            field: "paymentDueDate",
             hozAlign: "center",
-            headerHozAlign: 'center',
-            resizable: true,
-            headerSort: true,
-            formatter(cell) {
-              return moment(cell.getData().paymentDueDate).format("LL")
-            }
-          },
-          {
-            title: "CREATED AT",
-            hozAlign: "center",
-            headerHozAlign: 'center',
-            resizable: true,
-            headerSort: true,
-            formatter(cell) {
-              return moment(cell.getData().createdTime).format("LLLL")
-            }
+            resizable: false,
+            headerSort: false
           },
           {
             title: "ACTIONS",
             minWidth: 100,
             maxWidth: 150,
+            field: "actions",
             responsive: 1,
             headerHozAlign: "center",
             hozAlign: "center",
@@ -237,36 +226,26 @@ export default {
       onFilter();
     };
 
-    const getInvoiceOverview = async () => {
-      const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`
-      getLastUpdatedBy(await appAxios.get(api).then(res => {return res.data})).then(res => {
-        initTabulator(_.sortBy(res, ['createdTime']))
+    const getInvoiceOverview = () => {
+      const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
+      appAxios.get(api).then(res => {
+        invoiceOverview.value = _.sortBy(res.data, ['documentDate', 'paymentDueDate']);
+        initTabulator()
       })
-    }
-
-    const getLastUpdatedBy = async (invoices) => {
-      const withLastUpdatedBy = await Promise.all( invoices.map(async invoice => {
-        const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition'
-        const lastWorkflowData = await appAxios.post(api, [invoice.workflowExecutionReferenceId])
-        const userId = lastWorkflowData.data[0].workflow.lastStatusTransition.updateBy
-        if(userId === '00000000-0000-0000-0000-000000000000') {
-          return {...invoice, lastUpdatedBy: 'System'}
-        }
-        else {
-          const userData = await sysAxios.get(`/api/user/v1/${userId}`)
-          return {...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName}
-        }
-      }) )
-      return new Promise(resolve => resolve(withLastUpdatedBy))
     }
 
     onMounted(async () => {
       await getInvoiceOverview();
+      if(store.state.account.company_type.toLowerCase() == "company")
+      {
+        isCompany.value = true;
+      }
       reInitOnResizeWindow();
       loading.value = false
     });
 
     return {
+      isCompany,
       loading,
       tableRef,
       filter,

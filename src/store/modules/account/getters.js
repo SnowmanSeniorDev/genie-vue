@@ -9,5 +9,6 @@
 export default{
     getStep: state => state.step,
     getAccount: state => state.account,
-    getCompanyId: state => state.company_uuid
+    getCompanyId: state => state.company_uuid,
+    getCompanytype: state => state.company_type
 };

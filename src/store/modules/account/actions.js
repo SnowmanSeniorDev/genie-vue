@@ -26,8 +26,19 @@ export const setCompanyIdFromApi = ({commit}, payload) => {
     });
   })
 }
+export const setCompanyType = ({commit},payload) => {
+	return new Promise((resolve) => {
+    const api = `/company/v1/${payload.company_uuid}`;
+    appAxios.get(api).then((res) => {
+      commit(types.SET_COMPANYTYPE, {company_type: res.data.companyType});
+      resolve();
+    });
+  })
+}
+
 export default {
 	setStep,
 	setCompanyId,
-	setCompanyIdFromApi
+	setCompanyIdFromApi,
+  setCompanyType
 };

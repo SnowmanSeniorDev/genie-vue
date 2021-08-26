@@ -20,6 +20,7 @@ export const login = async ({commit}, payload) => {
 			if(response.status !== 'error') {
 				commit(types.LOGIN, response.data);
 				await store.dispatch('account/setCompanyIdFromApi', {userId: response.data.userId})
+				await store.dispatch('account/setCompanyType', {company_uuid: store.state.account.company_uuid})
 				store.dispatch('main/updateMenu', {userId: response.data.userId}).then(() => {
 					if(response.data.roles[0] === 'guest') router.push({path: 'account'})
 					else router.push({name: 'GENIE_DASHBOARD'})
