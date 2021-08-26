@@ -287,11 +287,52 @@
       <div class="modal-content">
         <!-- BEGIN: Modal Header -->
         <div class="modal-header">
-          <h2 class="font-medium text-base mr-auto"> Approve Invoice </h2>
+          <h2 class="font-medium text-base mr-auto"> Submit Proposal </h2>
         </div>
         <!-- END: Modal Header -->
         <div class="modal-body mx-8">
-          <div class="grid grid-cols-2 grid-flow-row gap-4">
+          <div class="mt-5">
+            <span>Formular</span>
+            <table class="table mt-2">
+              <tr class="hover:bg-gray-200">
+                <td class="border w-1/2">Interest Rate</td>
+                <td class="border">{{batchDetails.formula.interestRate}}</td>
+              </tr>
+              <tr class="hover:bg-gray-200">
+                <td class="border">Processing Fee Amount</td>
+                <td class="border">{{batchDetails.formula.processingFeeAmount}}</td>
+              </tr>
+              <tr class="hover:bg-gray-200">
+                <td class="border">Disbursable Amount To Seller</td>
+                <td class="border">{{batchDetails.formula.disbursableAmountToSeller}}</td>
+              </tr>
+              <tr class="hover:bg-gray-200">
+                <td class="border">Disbursable Date</td>
+                <td class="border">{{batchDetails.formula.disbursableDate}}</td>
+              </tr>
+              <tr class="hover:bg-gray-200" v-if="user.user_role === 'Funder Admin' || user.user_role === 'Genie Admin'">
+                <td class="border">Platform Fee Rate</td>
+                <td class="border">{{batchDetails.formula.platformFeeRate}}</td>
+              </tr>
+              <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
+                <td class="border">Platform Fee Amount</td>
+                <td class="border">{{batchDetails.formula.platformFeeAmount}}</td>
+              </tr>
+              <tr class="hover:bg-gray-200">
+                <td class="border">Platform Fee Date</td>
+                <td class="border">{{batchDetails.formula.platformFeeDate}}</td>
+              </tr>
+              <tr class="hover:bg-gray-200">
+                <td class="border">Repayment Amount To Funder</td>
+                <td class="border">{{batchDetails.formula.repaymentAmountToFunder}}</td>
+              </tr>
+              <tr class="hover:bg-gray-200">
+                <td class="border">Repayment Date</td>
+                <td class="border">{{batchDetails.formula.repaymentDate}}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="grid grid-cols-2 grid-flow-row gap-4 mt-4">
             <div class="self-center">Interest Rate</div>
             <div class="self-center">
               <input type="text" v-model="bidValue" class="form-control"/>

@@ -8,7 +8,7 @@
       <td class="dark:border-dark-5"></td>
     </tr>
     <tr v-for="doc in documents" class="odd:bg-gray-200 intro-y" :key="doc.documentURL  ">
-      <td class="dark:border-dark-5 text-blue-500"><a :href="doc.documentURI">{{doc.documentName}}</a></td>
+      <td class="dark:border-dark-5 text-blue-500"><a :href="doc.documentURI" download>{{doc.documentName}}</a></td>
       <td class="dark:border-dark-5">{{moment(doc.uploadTime).format("DD/MM/YYYY")}}</td>
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
