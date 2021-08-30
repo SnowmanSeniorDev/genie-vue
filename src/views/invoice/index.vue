@@ -281,7 +281,34 @@ export default {
                 pendingActions.value.push(pendingAction); 
               }); 
             }  
-        
+
+            if(store.state.account.company_type.toLowerCase() == "funder")
+            {
+              if(res.data.bidInvitations != null)
+              {
+                let pendingBid = res.data.bidInvitations.open;
+                console.log(pendingBid.workflowExecutionids,"workflowExecutionids");
+                if(pendingBid.workflowExecutionids.length > 0)
+                { 
+                    const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
+                    appAxios.get(batchApi).then(res2 => {
+                      let batchData = res2.data;
+                      console.log(batchData,"batchData");
+                      pendingAction = {};
+                      pendingAction.action = "INVITE_FUNDERS_TO_BID";
+                      pendingAction.batchNumber = batchData.batchNumber;
+                      pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
+                      pendingAction.createdTime = batchData.createdTime;
+                      pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
+                      pendingActions.value.push(pendingAction);
+
+                      console.log(pendingActions,"pendingActions");
+                    }); 
+                  
+                }
+              }
+            }
+
           } 
         }) 
         
