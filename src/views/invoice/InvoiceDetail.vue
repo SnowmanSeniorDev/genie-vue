@@ -14,24 +14,21 @@
         <thead>
           <tr class="bg-gray-400">
             <th class="dark:border-dark-5 whitespace-nowrap"> BATCH REF NO </th>
-            <th class="dark:border-dark-5 whitespace-nowrap"> INVOICE AMOUNT(RM) </th>
+            <th class="dark:border-dark-5 whitespace-nowrap"> INVOICE DATE </th>
+            <th class="dark:border-dark-5 whitespace-nowrap"> INVOICE AMOUNT </th>
             <th class="dark:border-dark-5 whitespace-nowrap"> PAYMENT DUE DATE </th>
-            <th class="dark:border-dark-5 whitespace-nowrap"> OFFER EXPIRY DATE </th>
-            <th class="dark:border-dark-5 whitespace-nowrap"> STATUS </th>
+            <th class="dark:border-dark-5 whitespace-nowrap"> UPLOAD DATE </th>
+            
             <th class="dark:border-dark-5 whitespace-nowrap"> ACTIONS </th>
           </tr>
         </thead>
         <tbody v-for="(item, index) in journalBatchEntry" :key="index">
           <tr>
             <td class="dark:border-dark-5">{{item.vendorDocumentReferenceNumber}}</td>
-            <td class="dark:border-dark-5">{{item.amount.toFixed(2)}}</td>
+            <td class="dark:border-dark-5">{{item.currencyCode +" "+item.amount.toFixed(2)}}</td>
+            <td class="dark:border-dark-5">{{moment(item.postingDate).format('DD/MM/YYYY')}}</td>
             <td class="dark:border-dark-5">{{moment(item.dueDate).format('DD/MM/YYYY')}}</td>
-            <td class="dark:border-dark-5">{{moment(item.createdTime).format('DD/MM/YYYY')}}</td>
-            <td class="dark:border-dark-5">
-              <div class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                pending
-              </div>
-            </td>
+            <td class="dark:border-dark-5">{{moment(item.createdTime).format('DD/MM/YYYY hh:mm:ss A')}}</td>
             <td class="dark:border-dark-5">
               <button class="btn btn-primary h-6" @click="accordion(index)">
                 <span v-if="supportingDocumentAccordionIndex.includes(index)">View Less</span>
@@ -83,7 +80,9 @@
                   <SendIcon class="w-3 h-3 mr-3" v-if="lastWorkStatus.statusName === provenance[index + 1].statusName" />
                   <span class="pr-3">{{lastWorkStatus.statusName === provenance[index + 1].statusName ? 'Pending' : 'Not Started'}}</span>
                 </div>
-                <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}</span>
+                <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}
+                </span>
+                
               </div>
               <hr class="mt-5">
             </div>
@@ -94,15 +93,7 @@
         <div class="flex items-center">
           <ListIcon class="w-6 h-6 mr-3" /><span class="text-lg">Batch Details: from {{batchDetails.batchFrom}}</span>
         </div>
-        <div class="mt-8">
-          <span>Bank Details</span>
-          <table class="table mt-2">
-            <tr class="hover:bg-gray-200">
-              <td class="border w-1/2">Payment Bank Account</td>
-              <td class="border">{{batchDetails.bankDetails.bank && batchDetails.bankDetails.bank.bankName}}</td>
-            </tr>
-          </table>
-        </div>
+       
         <div class="mt-5">
           <span>Batch Information</span>
           <table class="table mt-2">
@@ -132,6 +123,16 @@
             </tr>
           </table>
         </div>
+         <div class="mt-8"  v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
+          <span>Bank Details</span>
+          <table class="table mt-2">
+            <tr class="hover:bg-gray-200">
+              <td class="border w-1/2">Payment Bank Account</td>
+              <td class="border">{{batchDetails.bankDetails.bank && batchDetails.bankDetails.bank.bankName}}</td>
+            </tr>
+          </table>
+        </div>
+
         <div class="mt-5" v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
           <span>Formular</span>
           <table class="table mt-2">
@@ -871,7 +872,10 @@ export default {
         })
       })
       loading.value.provenance = false
+      console.log(provenance.value,"provenance data");
       return new Promise(resolve => resolve("provenance api function done"))
+
+      
     }
     
     const getLockDays = async () => {
@@ -1271,7 +1275,7 @@ export default {
 
       await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
         journalBatchEntry.value = res.data
-        
+        console.log(journalBatchEntry.value);
         res.data.forEach(async entry => {
           const api = `/journalbatch/v1/header/${entry.journalBatchHeaderId }/entry/${entry.journalBatchEntryId }/supportingdocuments`;
           let supportingDocument = []
