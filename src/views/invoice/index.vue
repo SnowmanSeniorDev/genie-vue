@@ -296,20 +296,12 @@ export default {
               }
             }             
           }
-          
-          if(pendingActions.value.length > 0)
-            {
-              console.log("1");
+           
               getLastUpdatedBy(pendingActions.value).then(res=>{  
                 pendingActions.value = res;
                 initTabulator(_.sortBy(res, ['createdTime']))
               });
-            }
-            else
-            {
-              console.log(invoiceOverview.value,"2");
-              initTabulator(_.sortBy(invoiceOverview.value, ['createdTime']))
-            }
+            
          
         }) 
     }
