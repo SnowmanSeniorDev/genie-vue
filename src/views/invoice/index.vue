@@ -125,6 +125,7 @@ export default {
     
     
     const initTabulator = (data) => { 
+      console.log(data,"data");
        tabulator.value = new Tabulator(tableRef.value, {
         data: data,
         pagination: "local",
@@ -293,12 +294,23 @@ export default {
                     });  
                 }
               }
+            }             
+          }
+          
+          if(pendingActions.value.length > 0)
+            {
+              console.log("1");
+              getLastUpdatedBy(pendingActions.value).then(res=>{  
+                pendingActions.value = res;
+                initTabulator(_.sortBy(res, ['createdTime']))
+              });
             }
-            getLastUpdatedBy(pendingActions.value).then(res=>{  
-              pendingActions.value = res;
-              initTabulator(_.sortBy(res, ['createdTime']))
-            });
-          } 
+            else
+            {
+              console.log(invoiceOverview.value,"2");
+              initTabulator(_.sortBy(invoiceOverview.value, ['createdTime']))
+            }
+         
         }) 
     }
 
@@ -322,19 +334,25 @@ export default {
     const invoiceFromMe = () => {
       const updatedData = _.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid})
       tabulator.value.clearData()
-      tabulator.value.addRow(updatedData)
+      if(updatedData.length > 0 )
+      {
+        tabulator.value.addRow(updatedData)
+      }      
     }
 
     const invoiceFromPendingAction = () => {
       const updatedData = pendingActions.value;
       tabulator.value.clearData()
-      tabulator.value.addRow(updatedData)
+      if(updatedData.length > 0 )
+      {
+        tabulator.value.addRow(updatedData)
+      }      
     }
 
     onMounted(async () => {
       
-      await getInvoiceOverview();
-      await getPendingAction();
+       getInvoiceOverview();
+       getPendingAction();
       if(store.state.account.company_type.toLowerCase() == "company")
       { 
         isCompany.value = true;
