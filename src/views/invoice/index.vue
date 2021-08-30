@@ -70,14 +70,14 @@
         </div>
       </div>
     </div>
-    <h4 class="text-lg underline mt-5 ml-2 text-red-400 font-bold">Invoice Overview</h4>
+    <br />
     <div class="flex divide-x-2 divide-gray-500">
       <div class="">
-        <button class="btn btn-sm btn-outline-primary mr-2" @click="invoiceFromMe">Invoice from me</button>
+        <button class="btn btn-sm btn-outline-primary ml-2" @click="invoiceFromPendingAction">Pending Action</button>
       </div>
       <div class="">
-        <button class="btn btn-sm btn-outline-primary ml-2" @click="invoiceFromPartner">Invoice from partner</button>
-      </div>
+        <button class="btn btn-sm btn-outline-primary mr-2" @click="invoiceFromMe">My Invoice</button>
+      </div> 
     </div>
     <div class="intro-y box px-3 pb-3 mt-3">
       <div v-if="loading" class="py-16">
@@ -115,6 +115,7 @@ export default {
     const loading = ref(true);
     const isCompany = ref(false);
     const invoiceOverview = ref([]);
+    const pendingActions = ref([]);
     const filter = reactive({
       field: "name",
       type: "like",
@@ -157,7 +158,7 @@ export default {
             headerSort: false
           },
           {
-            title: "TOTAL AMOUNT (RM)",
+            title: "TOTAL AMOUNT",
             field: "totalAmount",
             minWidth: 100,
             maxWidth: 200,
@@ -165,7 +166,7 @@ export default {
             resizable: true,
             headerSort: true,
             formatter(cell) {
-              return cell.getData().totalAmount.toFixed(2)
+              return cell.getData().currencyCode + " " +cell.getData().totalAmount.toFixed(2)
             },
           },
           {
@@ -177,7 +178,7 @@ export default {
           },
           {
             title: "LASTEST PHASE",
-            field: "PAYMENT DUE DATE",
+            field: "paymentDueDate",
             hozAlign: "center",
             headerHozAlign: 'center',
             resizable: true,
@@ -253,7 +254,38 @@ export default {
       getLastUpdatedBy(await appAxios.get(api).then(res => {return res.data})).then(res => {
         invoiceOverview.value = res
         initTabulator(_.sortBy(res, ['createdTime']))
+        console.log(invoiceOverview.value, "invoiceOverview.value ");
       })
+      
+    }
+  
+    const getPendingAction = async () => {
+      const company_uuid = store.state.account.company_uuid;
+      const pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`;
+ 
+        await appAxios.get(pendingActionApi).then(async res => {
+          let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
+          let pendingAction = {};
+          console.log(res,"res");
+          if(pendingItem.length > 0)
+          {
+            for(let i=0;i<pendingItem.length;i++)
+            {
+              const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
+              await appAxios.get(batchApi).then(res2 => {
+                console.log(res2,"res2");
+                let batchData = res2.data;
+
+                pendingAction = batchData;
+                pendingAction.action = pendingItem[i].action; 
+                pendingActions.value.push(pendingAction); 
+              }); 
+            }  
+        
+          } 
+        }) 
+        
+
     }
 
     const getLastUpdatedBy = async (invoices) => {
@@ -278,18 +310,18 @@ export default {
       tabulator.value.addRow(updatedData)
     }
 
-    const invoiceFromPartner = () => {
-      const updatedData = _.filter(invoiceOverview.value, (invoice) => {
-        return invoice.initiatedByCompanyId !== store.state.account.company_uuid
-      })
+    const invoiceFromPendingAction = () => {
+      const updatedData = pendingActions.value;
       tabulator.value.clearData()
       tabulator.value.addRow(updatedData)
     }
 
     onMounted(async () => {
+      await getPendingAction();
       await getInvoiceOverview();
+      
       if(store.state.account.company_type.toLowerCase() == "company")
-      {
+      { 
         isCompany.value = true;
       }
       reInitOnResizeWindow();
@@ -303,9 +335,10 @@ export default {
       filter,
       onFilter,
       onResetFilter,
+      getPendingAction,
       getInvoiceOverview,
       invoiceFromMe,
-      invoiceFromPartner
+      invoiceFromPendingAction
     };
   },
 }

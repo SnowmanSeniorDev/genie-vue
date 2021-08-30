@@ -6,9 +6,6 @@
         <div class="col-span-12 mt-8">
           <div class="intro-y flex items-center h-10">
             <h2 class="text-lg font-medium truncate mr-5">General Report</h2>
-            <a href="javascript:;" data-toggle="modal" data-target="#upload-invoice-modal" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2" >
-              <UploadIcon class="w-4 h-4 mr-2" /> Upload&nbsp;Invoice
-            </a>
             <a href="" class="ml-auto flex text-theme-1 dark:text-theme-10">
               <RefreshCcwIcon class="w-4 h-4 mr-3" /> Reload Data
             </a>
@@ -115,7 +112,7 @@
         </div>
         <!-- END: Active Report -->
         <!-- STAER: Stock Chart-->
-        <div class="col-span-12">
+        <!-- div class="col-span-12">
           <div class="intro-y box w-full">
             <div id="stacked-bar-chart" class="p-5">
               <div class="preview">
@@ -123,7 +120,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </!-->
         <!-- END: Stock Chart -->
       </div>
     </div>
@@ -143,7 +140,7 @@ import ProvenanceLang from '@/utils/provenanceLanguage'
 
 export default defineComponent({
   components: {
-    StackedBarChart,
+    //StackedBarChart,
     InvoiceUploadModal
   },
  
