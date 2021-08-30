@@ -154,7 +154,14 @@
             <button type="button" class="btn btn-primary w-20" @click="submitInvoice"> Submit </button>
           </div> <!-- END: Modal Footer -->
         </div>
-     </div>
+      </div>
+      <div id="failed-notification-content" class="toastify-content hidden flex">
+        <XCircleIcon class="text-theme-6" />
+        <div class="ml-4 mr-4">
+          <div class="font-medium">Upload failed!</div>
+          <div class="text-gray-600 mt-1" id="error-content">{{uploadErrorMessage}}.</div>
+        </div>
+      </div>
     </div>
     <!-- END: uploading invoice modal content -->
 </template>
@@ -167,6 +174,7 @@ import moment from "moment";
 import _ from "lodash";
 import { appAxios } from "@/plugins/axios";
 import SupportDropzone from "./SupportFileDropzone";
+import Toastify from "toastify-js";
 
 export default {
   components: {
@@ -187,6 +195,7 @@ export default {
     const bidEndTime = ref(new Date());
     const loading = ref(false);
     const editRowIndex = ref(null);
+    const uploadErrorMessage = ref('')
 
     const setDocumentFromat = (format) => {
       documentFormat.value = format
@@ -249,8 +258,22 @@ export default {
         }).then(res => {
           console.log('res = ', res)
           loading.value = !loading.value
-          cash("#upload-invoice-modal").modal("hide");
-          props.callback()
+          if(res.status === 'error') {
+            uploadErrorMessage.value = res.error.response.data
+            console.log(cash("#error-content"))
+            Toastify({
+              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+              duration: 3000,
+              newWindow: true,
+              close: true,
+              gravity: "top",
+              position: "right",
+              stopOnFocus: true,
+            }).showToast();
+          } else {
+            cash("#upload-invoice-modal").modal("hide");
+            props.callback()
+          }
         })      
       } else {
         const api = "/workflow/v1/seller-led-invoice-financing-workflow-1/0"
@@ -266,15 +289,30 @@ export default {
             });
           })
         )
-
         appAxios.post(api, {
           sellerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
           bidEndTime: moment(bidEndTime.value).format()
         }).then(res => {
+          console.log(res)
           loading.value = !loading.value;
-          cash("#upload-invoice-modal").modal("hide");
-          props.callback()
+          if(res.status === 'error') {
+            uploadErrorMessage.value = res.error.response.data
+            cash("#error-content").text(res.error.response.data)
+            Toastify({
+              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+              duration: 3000,
+              newWindow: true,
+              close: true,
+              gravity: "top",
+              position: "right",
+              stopOnFocus: true,
+              text: res.error.response.data
+            }).showToast();
+          } else {
+            cash("#upload-invoice-modal").modal("hide");
+            props.callback()
+          }
         })
       }   
     }
@@ -340,7 +378,8 @@ export default {
       removeSupportDoc,
       bidEndTime,
       editRowIndex,
-      moment
+      moment,
+      uploadErrorMessage
     }
   }
 }
