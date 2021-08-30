@@ -89,7 +89,7 @@
         <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
       </div>
     </div>
-    <InvoiceUploadModal :callback="getInvoiceOverview"/>
+    <InvoiceUploadModal :callback="getPendingAction"/>
   </div>
 </template>
 <script>
@@ -123,7 +123,7 @@ export default {
     });
     
     
-    const initTabulator = (data) => {
+    const initTabulator = (data) => { 
        tabulator.value = new Tabulator(tableRef.value, {
         data: data,
         pagination: "local",
@@ -253,10 +253,7 @@ export default {
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`
       getLastUpdatedBy(await appAxios.get(api).then(res => {return res.data})).then(res => {
         invoiceOverview.value = res
-        initTabulator(_.sortBy(res, ['createdTime']))
-        console.log(invoiceOverview.value, "invoiceOverview.value ");
-      })
-      
+      })      
     }
   
     const getPendingAction = async () => {
@@ -266,18 +263,15 @@ export default {
         await appAxios.get(pendingActionApi).then(async res => {
           let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
           let pendingAction = {};
-          console.log(res,"res");
           if(pendingItem.length > 0)
           {
             for(let i=0;i<pendingItem.length;i++)
             {
               const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
-              await appAxios.get(batchApi).then(res2 => {
-                console.log(res2,"res2");
-                let batchData = res2.data;
-
-                pendingAction = batchData;
-                pendingAction.action = pendingItem[i].action; 
+              await appAxios.get(batchApi).then(res2 => { 
+                let batchData = res2.data; 
+                pendingAction.action = pendingItem[i].action;
+                pendingAction = batchData; 
                 pendingActions.value.push(pendingAction); 
               }); 
             }  
@@ -286,33 +280,25 @@ export default {
             {
               if(res.data.bidInvitations != null)
               {
-                let pendingBid = res.data.bidInvitations.open;
-                console.log(pendingBid.workflowExecutionids,"workflowExecutionids");
+                let pendingBid = res.data.bidInvitations.open; 
                 if(pendingBid.workflowExecutionids.length > 0)
                 { 
                     const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
-                    appAxios.get(batchApi).then(res2 => {
-                      let batchData = res2.data;
-                      console.log(batchData,"batchData");
-                      pendingAction = {};
-                      pendingAction.action = "INVITE_FUNDERS_TO_BID";
-                      pendingAction.batchNumber = batchData.batchNumber;
-                      pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
-                      pendingAction.createdTime = batchData.createdTime;
-                      pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
-                      pendingActions.value.push(pendingAction);
-
-                      console.log(pendingActions,"pendingActions");
-                    }); 
-                  
+                    await appAxios.get(batchApi).then(res2 => {
+                      let batchData = res2.data; 
+                      pendingAction = batchData;
+                      pendingAction.action = "INVITE_FUNDERS_TO_BID"; 
+                      pendingActions.value.push(pendingAction); 
+                    });  
                 }
               }
             }
-
+            getLastUpdatedBy(pendingActions.value).then(res=>{  
+              pendingActions.value = res;
+              initTabulator(_.sortBy(res, ['createdTime']))
+            });
           } 
         }) 
-        
-
     }
 
     const getLastUpdatedBy = async (invoices) => {
@@ -344,9 +330,9 @@ export default {
     }
 
     onMounted(async () => {
-      await getPendingAction();
-      await getInvoiceOverview();
       
+      await getInvoiceOverview();
+      await getPendingAction();
       if(store.state.account.company_type.toLowerCase() == "company")
       { 
         isCompany.value = true;
