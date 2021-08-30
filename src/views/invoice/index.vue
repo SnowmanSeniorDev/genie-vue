@@ -102,6 +102,7 @@ import InvoiceUploadModal from "./InvoiceUploadModal";
 import { sysAxios, appAxios } from "@/plugins/axios";
 import _ from "lodash";
 import moment from 'moment'
+import ProvenanceLang from '@/utils/provenanceLanguage'
 
 export default {
   components: {
@@ -178,13 +179,13 @@ export default {
           },
           {
             title: "LASTEST PHASE",
-            field: "paymentDueDate",
+            field: "action",
             hozAlign: "center",
             headerHozAlign: 'center',
             resizable: true,
             headerSort: true,
             formatter(cell) {
-              return moment(cell.getData().paymentDueDate).format("LL")
+              return ProvenanceLang[cell.getData().action]//moment(cell.getData().paymentDueDate).format("LL")
             }
           },
           {
@@ -305,13 +306,14 @@ export default {
       const withLastUpdatedBy = await Promise.all(invoices.map(async invoice => {
         const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition'
         const lastWorkflowData = await appAxios.post(api, [invoice.workflowExecutionReferenceId])
+        
         const userId = lastWorkflowData.data[0].workflow.lastStatusTransition.updateBy
         if(userId === '00000000-0000-0000-0000-000000000000') {
-          return {...invoice, lastUpdatedBy: 'System'}
+          return {...invoice, lastUpdatedBy: 'System', action: lastWorkflowData.data[0].workflow.lastStatusTransition.statusName}
         }
         else {
           const userData = await sysAxios.get(`/api/user/v1/${userId}`)
-          return {...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName}
+          return {...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName, action: lastWorkflowData.workflow.lastStatusTransition.statusName}
         }
       }))
       return new Promise(resolve => resolve(withLastUpdatedBy))
@@ -351,7 +353,8 @@ export default {
       getPendingAction,
       getInvoiceOverview,
       invoiceFromMe,
-      invoiceFromPendingAction
+      invoiceFromPendingAction,
+      ProvenanceLang
     };
   },
 }
