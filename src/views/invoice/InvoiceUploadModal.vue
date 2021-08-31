@@ -172,7 +172,7 @@ import { useStore } from 'vuex';
 import xlsx from "xlsx";
 import moment from "moment";
 import _ from "lodash";
-import { appAxios } from "@/plugins/axios";
+import { appAxios, sysAxios } from "@/plugins/axios";
 import SupportDropzone from "./SupportFileDropzone";
 import Toastify from "toastify-js";
 
@@ -214,7 +214,7 @@ export default {
     const addSupportDoc = (index, documentId, documentName) => {
       jsonData.value[index].supportingDocuments.push({
           documentName: documentName,
-          documentURI: "https://authorization.bsg-api.tk/api/uploads/v1/" + documentId,
+          documentURI: process.env.VUE_APP_SYSTEM_API_URL + "/uploads/v1/" + documentId,
         });
     }
 
@@ -317,8 +317,21 @@ export default {
       }   
     }
     
-    const fileChoosen = (event) => {
+    const fileChoosen = async (event) => {
+      // console.log(event.target.files)
+      // const fileUploadApi = 'uploads/v1/supporting_document';
       var reader = new FileReader();
+      // let formData = new FormData();
+      // formData.append('file', event.target.value[0])
+      // let res = await sysAxios.post(fileUploadApi, formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data'
+      //   }
+      // });
+
+      // console.log("res = ", res)
+      // if(res.status === 200) {}
+      // return;
       reader.onload = function (e) {
         var data = new Uint8Array(e.target.result);
         var workbook = xlsx.read(data, { type: "array" });

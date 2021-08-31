@@ -64,7 +64,8 @@
                   class="alert show flex items-center h-5 p-3 text-sm justify-center text-blue-700 bg-blue-200"
                   role="alert"
                 >
-                  <ShieldIcon class="w-3 h-3 mr-3" />
+                  <SendIcon v-if="lastWorkStatus.statusName === item.statusName" class="w-3 h-3 mr-3" />
+                  <ShieldIcon v-else class="w-3 h-3 mr-3"/>
                   <span class="pr-3">Verified</span>
                 </div>
                 <div
@@ -77,11 +78,11 @@
                 </div>
                 <div
                   v-else
-                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === provenance[index + 1].statusName ? 'alert-warning-soft' : 'alert-secondary'}`"
+                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'alert-secondary'}`"
                   role="alert"
                 >
-                  <SendIcon class="w-3 h-3 mr-3" v-if="lastWorkStatus.statusName === provenance[index + 1].statusName" />
-                  <span class="pr-3">{{lastWorkStatus.statusName === provenance[index + 1].statusName ? 'Pending' : 'Not Started'}}</span>
+                  <SendIcon class="w-3 h-3 mr-3" v-if="lastWorkStatus.statusName === item.statusName" />
+                  <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Not Started'}}</span>
                 </div>
                 <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}</span>
               </div>
@@ -231,10 +232,6 @@
           <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
-              Save signature
-              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
-            </button>
           </div>
         </div>
         <div class="modal-footer text-right">
@@ -487,10 +484,6 @@
           <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
-              Save signature
-              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
-            </button>
           </div>
         </div>
         <div class="modal-footer text-right">
@@ -625,10 +618,6 @@
           <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
-              Save signature
-              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
-            </button>
           </div>
         </div>
         <div class="modal-footer text-right">
@@ -950,7 +939,8 @@ export default {
       })
     }
 
-    const approveAcknowledge = () => {
+    const approveAcknowledge = async () => {
+      await saveSignature()
       modalLoading.value = true
       var api = ''
       if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
@@ -1063,6 +1053,7 @@ export default {
     }
 
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
+      await saveSignature()
       modalLoading.value = true
       var api = ''
       if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
@@ -1086,6 +1077,7 @@ export default {
     }
 
     const funderAcknowledgeOfRepaymentComfirm = async () => {
+      await saveSignature()
       modalLoading.value = true
       var api = ''
       if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
@@ -1199,13 +1191,13 @@ export default {
       getSignaturePad().undoSignature();
     }
 
-    const saveSignature = () => {
+    const saveSignature = async () => {
       signatureLoading.value = true
       const signature = getSignaturePad().saveSignature();
       const fileUploadApi = 'uploads/v1/acknowledgement_signature';
       let formData = new FormData();
       formData.append('file', signature.file)
-      sysAxios.post(fileUploadApi, formData, {
+      await sysAxios.post(fileUploadApi, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -1213,6 +1205,9 @@ export default {
         signatureFileUrl.value = `https://authorization.bsg-api.tk/api/uploads/v1/${res.data}`
         signatureLoading.value = false
       });
+      return new Promise(resolve => {
+        resolve(signatureFileUrl.value)
+      })
     }
 
     const onInput = (value) => {

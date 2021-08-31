@@ -1,8 +1,6 @@
 <template>
 	<div class="dark:border-dark-5">
-		<div class="font-medium text-2xl">
-      KYC Documents
-    </div>
+		<div class="font-medium text-2xl">KYC Documents</div>
 		<div class="grid grid-cols-12 gap-4 gap-y-5 mt-5">
 			<div class="intro-y col-span-12">
         <table class="table table--lg">
