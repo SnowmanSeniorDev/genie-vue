@@ -26,9 +26,9 @@
           <tr>
             <td class="dark:border-dark-5">{{item.vendorDocumentReferenceNumber}}</td>
             <td class="dark:border-dark-5">{{item.currencyCode +" "+item.amount.toFixed(2)}}</td>
-            <td class="dark:border-dark-5">{{moment(item.postingDate).format('DD/MM/YYYY')}}</td>
-            <td class="dark:border-dark-5">{{moment(item.dueDate).format('DD/MM/YYYY')}}</td>
-            <td class="dark:border-dark-5">{{moment(item.createdTime).format('DD/MM/YYYY hh:mm:ss A')}}</td>
+            <td class="dark:border-dark-5">{{moment(item.postingDate).format(dateFormat)}}</td>
+            <td class="dark:border-dark-5">{{moment(item.dueDate).format(dateFormat)}}</td>
+            <td class="dark:border-dark-5">{{moment(item.createdTime).format(dateTimeFormat)}}</td>
             <td class="dark:border-dark-5">
               <button class="btn btn-primary h-6" @click="accordion(index)">
                 <span v-if="supportingDocumentAccordionIndex.includes(index)">View Less</span>
@@ -318,7 +318,7 @@
                     autoApply: false,
                     showWeekNumbers: true,
                     zIndex: 10001,
-                    minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                    minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
                     dropdowns: {
                       minYear: 1990,
                       maxYear: null,
@@ -334,11 +334,11 @@
               </tr>
               <tr class="hover:bg-gray-200">
                 <td class="border">Invoice Due Date</td>
-                <td class="border">{{batchDetails.paymentDueDate}}</td>
+                <td class="border">{{moment(batchDetails.paymentDueDate).format(dateFormat)}}</td>
               </tr>
               <tr class="hover:bg-gray-200">
                 <td class="border">Payment Due Date</td>
-                <td class="border">{{batchDetails.maturityDate}}</td>
+                <td class="border">{{moment(batchDetails.maturityDate).format(dateFormat)}}</td>
               </tr> 
               <tr class="hover:bg-gray-200">
                 <td class="border">Numbers of Days</td>
@@ -352,23 +352,23 @@
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Interest Earn</td>
-                <td class="border">{{batchDetails.formula.interestAmount}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount.toFixed(2)}}</td>
               </tr> 
-              <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
+              <tr class="hover:bg-gray-200">
                 <td class="border">Platform Fee Amount</td>
-                <td class="border">{{batchDetails.formula.platformFeeAmount}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount.toFixed(2)}}</td>
               </tr> 
               <tr class="hover:bg-gray-200">
                 <td class="border">First Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount1DueDate}}</td>
-                <td class="border">{{batchDetails.formula.disbursableAmount1}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1.toFixed(2)}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Second Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount2DueDate}}</td>
-                <td class="border">{{batchDetails.formula.disbursableAmount2}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2.toFixed(2)}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Repayment Amount To Funder</td>
-                <td class="border">{{batchDetails.formula.repaymentAmountToFunder}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.repaymentAmountToFunder}}</td>
               </tr> 
             </table>
           </div> 
@@ -448,7 +448,7 @@
                   autoApply: false,
                   showWeekNumbers: true,
                   zIndex: 10001,
-                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                  minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
                   dropdowns: {
                     minYear: 1990,
                     maxYear: null,
@@ -488,7 +488,7 @@
             <div class="self-center">Payment Advice Amount</div>
             <div class="self-center">{{confirmAbleDisbursementData.paymentAdviceAmount + ' ' + confirmAbleDisbursementData.currencyCode}}</div>
             <div class="self-center">Payment Advice Date</div>
-            <div class="self-center">{{moment(confirmAbleDisbursementData.paymentAdviceDate).format("DD MMM, YYYY")}}</div>
+            <div class="self-center">{{moment(confirmAbleDisbursementData.paymentAdviceDate).format(dateFormat)}}</div>
             <div class="self-center">Remark</div>
             <div class="self-center">
               <textarea v-model="remark" class="border-2 border w-full" rows="3" />
@@ -582,7 +582,7 @@
                   autoApply: false,
                   showWeekNumbers: true,
                   zIndex: 10001,
-                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                  minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
                   dropdowns: {
                     minYear: 1990,
                     maxYear: null,
@@ -622,7 +622,7 @@
             <div class="self-center">Payment Advice Amount</div>
             <div class="self-center">{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceAmount + ' ' + confirmFunderAcknowledgeReceiveOfRepaymentData.currencyCode}}</div>
             <div class="self-center">Payment Advice Date</div>
-            <div class="self-center">{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format("DD MMM, YYYY")}}</div>
+            <div class="self-center">{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format(dateFormat)}}</div>
             <div class="self-center">Remark</div>
             <div class="self-center">
               <textarea v-model="remark" class="border-2 border w-full" rows="3" />
@@ -688,6 +688,8 @@ export default {
       visibleFunderAcknowledgeRepaymentAdvice: false,
 
     })
+    const dateFormat = process.env.VUE_APP_DATE_FORMAT;
+    const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT;
     const currencies = ref(null)
     const signatureFileUrl = ref(null)
     const signatureDataURL = ref(null)
@@ -736,7 +738,7 @@ export default {
       paymentAdviceAmount: null,
       paymentInstructionId: null,
       currencyCode: 'USD',
-      paymentAdviceDate: moment.utc(new Date()).format("DD MMM, YYYY"),
+      paymentAdviceDate: moment.utc(new Date()).format(dateFormat),
       paymentAdviceUri: null
     })
     const confirmAbleDisbursementData = ref()
@@ -794,7 +796,7 @@ export default {
 
         var tax = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId})
         batchDetails.value.formula.disbursableAmountToSeller = tax?.amountBeforeTax
-        batchDetails.value.formula.disbursableDate = moment.utc(tax?.dueDate).format('DD/MM/YYYY')
+        batchDetails.value.formula.disbursableDate = moment.utc(tax?.dueDate).format(dateFormat)
 
         var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
         batchDetails.value.formula.platformFeeAmount = platformFee?.amountBeforeTax
@@ -956,15 +958,15 @@ export default {
         }
         await appAxios.get(apiUrl).then(res => {
           let data = res.data;
-          batchDetails.value.formula.disburableAmount1DueDate = data.disburableAmount1DueDate;
-          batchDetails.value.formula.disburableAmount2DueDate = data.disburableAmount2DueDate;
+          batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat);
+          batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat);
           batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1;
           batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2;
           batchDetails.value.formula.interestAmount = data.interestAmount;
           batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount;
-          batchDetails.value.formula.platformFeeAmountDueDate = data.platformFeeAmountDueDate;
+          batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat);
           batchDetails.value.formula.repaymentAmount = data.repaymentAmount;
-          batchDetails.value.formula.repaymentAmountDueDate = data.repaymentAmountDueDate;
+          batchDetails.value.formula.repaymentAmountDueDate = moment(data.repaymentAmountDueDate).format(dateFormat);
          console.log(res.data,"my estimate");
         });
       }
@@ -1315,7 +1317,7 @@ export default {
           batchInformation: {
             bidEndTime: res.data.bidEndTime,
             paymentDueDate: res.data.paymentDueDate,
-            uploadDate: moment.utc(res.data.createdTime).format('DD/MM/YYYY'),
+            uploadDate: moment.utc(res.data.createdTime).format(dateFormat),
             totalAmount: res.data.totalAmount,
             noOfBatchEntries: res.data.numberOfBatchEntries
           },
@@ -1323,7 +1325,7 @@ export default {
             interestRate: res.data.interestRate,
             platformFeeRate: res.data.processingFeeRateForFunder,
             repaymentAmountToFunder: res.data.totalAmount,
-            repaymentDate: moment.utc(res.data.paymentDueDate).format('DD/MM/YYYY')
+            repaymentDate: moment.utc(res.data.paymentDueDate).format(dateFormat)
           }
         }
         batchDetails.value.valueDate = moment().add(2,'days'); 
@@ -1409,6 +1411,8 @@ export default {
     })
     
     return { 
+      dateFormat,
+      dateTimeFormat,
       transactionType,
       loading,
       journalBatchEntry,

@@ -71,12 +71,12 @@
       </div>
     </div>
     <br />
-    <div class="flex divide-x-2 divide-gray-500">
+    <div class="flex divide-x-2">
       <div class="">
-        <button class="btn btn-sm btn-outline-primary ml-2" @click="invoiceFromPendingAction">Pending Action</button>
+        <button :class="'btn btn-sm ml-2 ' + ((selectedTab =='Pending Action')? 'btn-primary' : 'btn-outline-primary')" @click="invoiceFromPendingAction">Pending Action</button>
       </div>
       <div class="">
-        <button class="btn btn-sm btn-outline-primary mr-2" @click="invoiceFromMe">My Invoice</button>
+        <button :class="'btn btn-sm mr-2 ' + ((selectedTab =='My Invoice')? 'btn-primary' : 'btn-outline-primary')" @click="invoiceFromMe">My Invoice</button>
       </div> 
     </div>
     <div class="intro-y box px-3 pb-3 mt-3">
@@ -109,6 +109,7 @@ export default {
     InvoiceUploadModal
   },
   setup() {
+    const selectedTab = ref();
     const store = useStore();
     const router = useRouter();
     const tableRef = ref();
@@ -252,6 +253,7 @@ export default {
     };
 
     const getInvoiceOverview = async () => {
+      
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`
       getLastUpdatedBy(await appAxios.get(api).then(res => {return res.data})).then(res => {
         invoiceOverview.value = res
@@ -259,6 +261,7 @@ export default {
     }
   
     const getPendingAction = async () => {
+      selectedTab.value ="Pending Action";
       const company_uuid = store.state.account.company_uuid;
       const pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`;
  
@@ -320,6 +323,7 @@ export default {
     }
 
     const invoiceFromMe = () => {
+      selectedTab.value = "My Invoice";
       const updatedData = _.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid})
       tabulator.value.clearData()
       if(updatedData.length > 0 )
@@ -329,6 +333,7 @@ export default {
     }
 
     const invoiceFromPendingAction = () => {
+      selectedTab.value='Pending Action';
       const updatedData = pendingActions.value;
       tabulator.value.clearData()
       if(updatedData.length > 0 )
@@ -350,6 +355,7 @@ export default {
     });
 
     return {
+      selectedTab,
       isCompany,
       loading,
       tableRef,

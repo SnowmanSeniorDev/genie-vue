@@ -9,7 +9,7 @@
     </tr>
     <tr v-for="doc in documents" class="odd:bg-gray-200 intro-y" :key="doc.documentURL  ">
       <td class="dark:border-dark-5 text-blue-500"><a :href="doc.documentURI" download>{{doc.documentName}}</a></td>
-      <td class="dark:border-dark-5">{{moment(doc.uploadTime).format("DD/MM/YYYY")}}</td>
+      <td class="dark:border-dark-5">{{moment(doc.uploadTime).format(dateFormat)}}</td>
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
       <td class="dark:border-dark-5"></td>
@@ -33,6 +33,7 @@ export default {
     }
   },
   setup(props) {
+    const dateFormat = process.env.VUE_APP_DATE_FORMAT;
     const documents = ref();
     onMounted(() => {
       const api = `/journalbatch/v1/header/${props.journalBatchHeaderId }/entry/${props.journalBatchEntryId }/supportingdocuments`;
@@ -54,6 +55,7 @@ export default {
     })
 
     return {
+      dateFormat,
       documents,
       moment
     }

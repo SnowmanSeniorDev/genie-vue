@@ -5,7 +5,7 @@ import Litepicker from 'litepicker'
 let litePickerInstance = reactive({})
 
 const getDateFormat = format => {
-  return format !== undefined ? format : 'D MMM, YYYY'
+  return format !== undefined ? format : process.env.VUE_APP_DATE_FORMAT
 }
 
 const setValue = (props, emit) => {
