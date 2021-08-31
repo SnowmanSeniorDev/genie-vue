@@ -5,7 +5,7 @@ import Litepicker from 'litepicker'
 let litePickerInstance = reactive({})
 
 const getDateFormat = format => {
-  return format !== undefined ? format : 'D MMM, YYYY'
+  return format !== undefined ? format : process.env.VUE_APP_DATE_FORMAT
 }
 
 const setValue = (props, emit) => {
@@ -18,9 +18,9 @@ const setValue = (props, emit) => {
           dayjs()
             .add(1, 'month')
             .format(format)
-        : ''
+        : '';  
     emit('update:modelValue', date)
-  }
+  }  
 }
 
 const init = (el, props, emit) => {
@@ -36,8 +36,12 @@ const init = (el, props, emit) => {
           endDate !== undefined
             ? ' - ' + dayjs(endDate.dateInstance).format(format)
             : ''
+ 
         emit('update:modelValue', date)
-      })
+      });
+      picker.on('button:apply', (startDate, endDate) => { 
+        if(props.callback!==undefined) props.callback 
+      });
     }
   })
 }

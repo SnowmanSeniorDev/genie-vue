@@ -14,24 +14,21 @@
         <thead>
           <tr class="bg-gray-400">
             <th class="dark:border-dark-5 whitespace-nowrap"> BATCH REF NO </th>
-            <th class="dark:border-dark-5 whitespace-nowrap"> INVOICE AMOUNT(RM) </th>
+            <th class="dark:border-dark-5 whitespace-nowrap"> INVOICE DATE </th>
+            <th class="dark:border-dark-5 whitespace-nowrap"> INVOICE AMOUNT </th>
             <th class="dark:border-dark-5 whitespace-nowrap"> PAYMENT DUE DATE </th>
-            <th class="dark:border-dark-5 whitespace-nowrap"> OFFER EXPIRY DATE </th>
-            <th class="dark:border-dark-5 whitespace-nowrap"> STATUS </th>
+            <th class="dark:border-dark-5 whitespace-nowrap"> UPLOAD DATE </th>
+            
             <th class="dark:border-dark-5 whitespace-nowrap"> ACTIONS </th>
           </tr>
         </thead>
         <tbody v-for="(item, index) in journalBatchEntry" :key="index">
           <tr>
             <td class="dark:border-dark-5">{{item.vendorDocumentReferenceNumber}}</td>
-            <td class="dark:border-dark-5">{{item.amount.toFixed(2)}}</td>
-            <td class="dark:border-dark-5">{{moment(item.dueDate).format('DD/MM/YYYY')}}</td>
-            <td class="dark:border-dark-5">{{moment(item.createdTime).format('DD/MM/YYYY')}}</td>
-            <td class="dark:border-dark-5">
-              <div class="alert alert-warning-soft show flex items-center justify-center h-5 p-3 text-sm" role="alert">
-                pending
-              </div>
-            </td>
+            <td class="dark:border-dark-5">{{item.currencyCode +" "+item.amount.toFixed(2)}}</td>
+            <td class="dark:border-dark-5">{{moment(item.postingDate).format(dateFormat)}}</td>
+            <td class="dark:border-dark-5">{{moment(item.dueDate).format(dateFormat)}}</td>
+            <td class="dark:border-dark-5">{{moment(item.createdTime).format(dateTimeFormat)}}</td>
             <td class="dark:border-dark-5">
               <button class="btn btn-primary h-6" @click="accordion(index)">
                 <span v-if="supportingDocumentAccordionIndex.includes(index)">View Less</span>
@@ -84,7 +81,9 @@
                   <SendIcon class="w-3 h-3 mr-3" v-if="lastWorkStatus.statusName === item.statusName" />
                   <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Not Started'}}</span>
                 </div>
-                <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}</span>
+                <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}
+                </span>
+                
               </div>
               <hr class="mt-5">
             </div>
@@ -95,15 +94,7 @@
         <div class="flex items-center">
           <ListIcon class="w-6 h-6 mr-3" /><span class="text-lg">Batch Details: from {{batchDetails.batchFrom}}</span>
         </div>
-        <div class="mt-8">
-          <span>Bank Details</span>
-          <table class="table mt-2">
-            <tr class="hover:bg-gray-200">
-              <td class="border w-1/2">Payment Bank Account</td>
-              <td class="border">{{batchDetails.bankDetails.bank && batchDetails.bankDetails.bank.bankName}}</td>
-            </tr>
-          </table>
-        </div>
+       
         <div class="mt-5">
           <span>Batch Information</span>
           <table class="table mt-2">
@@ -115,7 +106,7 @@
               <td class="border">Seller Company</td>
               <td class="border">{{batchDetails.batchInformation.sellerCompany ? batchDetails.batchInformation.sellerCompany : 'NA'}}</td>
             </tr>
-            <tr class="hover:bg-gray-200">
+            <tr class="hover:bg-gray-200" v-if="_.find(provenance, {statusName: 'AWAITING_BIDDING_RESULT'})?.passed">
               <td class="border">Funder Company</td>
               <td class="border">{{batchDetails.batchInformation.funderCompany ? batchDetails.batchInformation.funderCompany : 'NA'}}</td>
             </tr>
@@ -133,6 +124,16 @@
             </tr>
           </table>
         </div>
+         <div class="mt-8" v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
+          <span>Bank Details</span>
+          <table class="table mt-2">
+            <tr class="hover:bg-gray-200">
+              <td class="border w-1/2">Payment Bank Account</td>
+              <td class="border">{{batchDetails.bankDetails.bank && batchDetails.bankDetails.bank.bankName}}</td>
+            </tr>
+          </table>
+        </div>
+
         <div class="mt-5" v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
           <span>Formular</span>
           <table class="table mt-2">
@@ -213,7 +214,7 @@
             <div class="self-center">Bid Expiry Date & Time</div>
             <div class="self-center">{{batchDetails.batchInformation.bidEndTime}}</div>
             <div class="self-center">Invoice Amount</div>
-            <div class="self-center">{{batchDetails.batchInformation.totalAmount}}</div>
+            <div class="self-center">{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
             <div class="self-center">Payment Due Date</div>
             <div class="self-center">{{batchDetails.batchInformation.paymentDueDate}}</div>
             <div class="self-center">Remark</div>
@@ -267,6 +268,19 @@
               <textarea v-model="remark" class="border-2 border w-full" rows="3" />
             </div>
           </div>
+          <signature-pad
+            :modelValue="signatureFile"
+            @input="onInput"
+            :height="150"
+            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
+            saveType="image/png"
+            saveOutput="file"
+            ref="signaturePad" />
+          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+            <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
+            <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
+           
+          </div>
         </div>
         <div class="modal-footer text-right">
           <button type="button" class="btn btn-primary w-20 mr-1" @click="declineAcknowledge"> Decline </button>
@@ -286,71 +300,78 @@
         <div class="modal-body mx-8">
           <div class="mt-5">
             <span>Formular</span>
-            <table class="table mt-2">
+            <table class="table mt-2"> 
               <tr class="hover:bg-gray-200">
-                <td class="border w-1/2">Interest Rate</td>
-                <td class="border">{{batchDetails.formula.interestRate}}</td>
-              </tr>
-              <tr class="hover:bg-gray-200">
-                <td class="border">Processing Fee Amount</td>
-                <td class="border">{{batchDetails.formula.processingFeeAmount}}</td>
+                <td class="border">Batch Number</td>
+                <td class="border">{{batchDetails.batchNumber}}</td>
               </tr>
               <tr class="hover:bg-gray-200">
-                <td class="border">Disbursable Amount To Seller</td>
-                <td class="border">{{batchDetails.formula.disbursableAmountToSeller}}</td>
+                <td class="border">Total Invoice Amount</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.totalAmount}}</td>
+              </tr> 
+              <tr class="hover:bg-gray-200">
+                <td class="border">Value Date</td>
+                <td class="border">
+                  <Litepicker
+                  v-model="valueDate"
+                  :options="{
+                    autoApply: false,
+                    showWeekNumbers: true,
+                    zIndex: 10001,
+                    minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
+                    dropdowns: {
+                      minYear: 1990,
+                      maxYear: null,
+                      months: true,
+                      years: true
+                    },
+                    callback:getEstimateCalc(),
+                    lockDays: lockDays
+                  }"
+                  class="form-control"
+                />
+                </td>
               </tr>
               <tr class="hover:bg-gray-200">
-                <td class="border">Disbursable Date</td>
-                <td class="border">{{batchDetails.formula.disbursableDate}}</td>
+                <td class="border">Invoice Due Date</td>
+                <td class="border">{{moment(batchDetails.paymentDueDate).format(dateFormat)}}</td>
               </tr>
-              <tr class="hover:bg-gray-200" v-if="user.user_role === 'Funder Admin' || user.user_role === 'Genie Admin'">
-                <td class="border">Platform Fee Rate</td>
-                <td class="border">{{batchDetails.formula.platformFeeRate}}</td>
-              </tr>
-              <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
+              <tr class="hover:bg-gray-200">
+                <td class="border">Payment Due Date</td>
+                <td class="border">{{moment(batchDetails.maturityDate).format(dateFormat)}}</td>
+              </tr> 
+              <tr class="hover:bg-gray-200">
+                <td class="border">Numbers of Days</td>
+                <td class="border">{{batchDetails.numberOfDays}}</td>
+              </tr>  
+              <tr class="hover:bg-gray-200">
+                <td class="border">Interest Rate(Annual Rate %)</td>
+                <td class="border">
+                  <input type="text" v-model="bidValue" @change="getEstimateCalc" class="form-control"/>
+                </td>
+              </tr>  
+              <tr class="hover:bg-gray-200">
+                <td class="border">Interest Earn</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount.toFixed(2)}}</td>
+              </tr> 
+              <tr class="hover:bg-gray-200">
                 <td class="border">Platform Fee Amount</td>
-                <td class="border">{{batchDetails.formula.platformFeeAmount}}</td>
-              </tr>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount.toFixed(2)}}</td>
+              </tr> 
               <tr class="hover:bg-gray-200">
-                <td class="border">Platform Fee Date</td>
-                <td class="border">{{batchDetails.formula.platformFeeDate}}</td>
-              </tr>
+                <td class="border">First Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount1DueDate}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1.toFixed(2)}}</td>
+              </tr>  
+              <tr class="hover:bg-gray-200">
+                <td class="border">Second Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount2DueDate}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2.toFixed(2)}}</td>
+              </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Repayment Amount To Funder</td>
-                <td class="border">{{batchDetails.formula.repaymentAmountToFunder}}</td>
-              </tr>
-              <tr class="hover:bg-gray-200">
-                <td class="border">Repayment Date</td>
-                <td class="border">{{batchDetails.formula.repaymentDate}}</td>
-              </tr>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.repaymentAmountToFunder}}</td>
+              </tr> 
             </table>
-          </div>
-          <div class="grid grid-cols-2 grid-flow-row gap-4 mt-4">
-            <div class="self-center">Interest Rate</div>
-            <div class="self-center">
-              <input type="text" v-model="bidValue" class="form-control"/>
-            </div>
-            <div class="self-center">Value Date</div>
-            <div class="self-center">
-              <Litepicker
-                v-model="valueDate"
-                :options="{
-                  autoApply: false,
-                  showWeekNumbers: true,
-                  zIndex: 10001,
-                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
-                  dropdowns: {
-                    minYear: 1990,
-                    maxYear: null,
-                    months: true,
-                    years: true
-                  },
-                  lockDays: lockDays
-                }"
-                class="form-control"
-              />
-            </div>
-          </div>
+          </div> 
         </div>
         <div class="modal-footer text-right">
           <button type="button" class="btn btn-primary w-24 mr-1" @click="submitProposal" :disabled="modalLoading"> 
@@ -427,7 +448,7 @@
                   autoApply: false,
                   showWeekNumbers: true,
                   zIndex: 10001,
-                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                  minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
                   dropdowns: {
                     minYear: 1990,
                     maxYear: null,
@@ -467,7 +488,7 @@
             <div class="self-center">Payment Advice Amount</div>
             <div class="self-center">{{confirmAbleDisbursementData.paymentAdviceAmount + ' ' + confirmAbleDisbursementData.currencyCode}}</div>
             <div class="self-center">Payment Advice Date</div>
-            <div class="self-center">{{moment(confirmAbleDisbursementData.paymentAdviceDate).format("DD MMM, YYYY")}}</div>
+            <div class="self-center">{{moment(confirmAbleDisbursementData.paymentAdviceDate).format(dateFormat)}}</div>
             <div class="self-center">Remark</div>
             <div class="self-center">
               <textarea v-model="remark" class="border-2 border w-full" rows="3" />
@@ -481,7 +502,7 @@
             saveType="image/png"
             saveOutput="file"
             ref="signaturePad" />
-          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+          <div class="grid grid-cols-2 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
           </div>
@@ -561,7 +582,7 @@
                   autoApply: false,
                   showWeekNumbers: true,
                   zIndex: 10001,
-                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                  minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
                   dropdowns: {
                     minYear: 1990,
                     maxYear: null,
@@ -601,7 +622,7 @@
             <div class="self-center">Payment Advice Amount</div>
             <div class="self-center">{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceAmount + ' ' + confirmFunderAcknowledgeReceiveOfRepaymentData.currencyCode}}</div>
             <div class="self-center">Payment Advice Date</div>
-            <div class="self-center">{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format("DD MMM, YYYY")}}</div>
+            <div class="self-center">{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format(dateFormat)}}</div>
             <div class="self-center">Remark</div>
             <div class="self-center">
               <textarea v-model="remark" class="border-2 border w-full" rows="3" />
@@ -615,7 +636,7 @@
             saveType="image/png"
             saveOutput="file"
             ref="signaturePad" />
-          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+          <div class="grid grid-cols-2 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
           </div>
@@ -652,6 +673,7 @@ export default {
     SignaturePad
   },
   setup(props) {
+    const transactionType = ref();
     const journalBatchEntry = ref()
     const adminCompany = ref()
     const initWorkflowId = ref([])
@@ -666,6 +688,8 @@ export default {
       visibleFunderAcknowledgeRepaymentAdvice: false,
 
     })
+    const dateFormat = process.env.VUE_APP_DATE_FORMAT;
+    const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT;
     const currencies = ref(null)
     const signatureFileUrl = ref(null)
     const signatureDataURL = ref(null)
@@ -714,7 +738,7 @@ export default {
       paymentAdviceAmount: null,
       paymentInstructionId: null,
       currencyCode: 'USD',
-      paymentAdviceDate: moment.utc(new Date()).format("DD MMM, YYYY"),
+      paymentAdviceDate: moment.utc(new Date()).format(dateFormat),
       paymentAdviceUri: null
     })
     const confirmAbleDisbursementData = ref()
@@ -738,6 +762,7 @@ export default {
       onDrop,
       accept: '.jpg, .csv',
     })
+    
 
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
@@ -771,7 +796,7 @@ export default {
 
         var tax = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId})
         batchDetails.value.formula.disbursableAmountToSeller = tax?.amountBeforeTax
-        batchDetails.value.formula.disbursableDate = moment.utc(tax?.dueDate).format('DD/MM/YYYY')
+        batchDetails.value.formula.disbursableDate = moment.utc(tax?.dueDate).format(dateFormat)
 
         var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
         batchDetails.value.formula.platformFeeAmount = platformFee?.amountBeforeTax
@@ -860,7 +885,10 @@ export default {
         })
       })
       loading.value.provenance = false
+      console.log(provenance.value,"provenance data");
       return new Promise(resolve => resolve("provenance api function done"))
+
+      
     }
     
     const getLockDays = async () => {
@@ -899,6 +927,50 @@ export default {
         resolve(wholeHistory)
       })
     }
+    const getEstimateCalc = async()=>{
+      if(valueDate.value != ""
+      && valueDate.value != null && valueDate.value != undefined)
+      {
+        batchDetails.value.valueDate = valueDate.value; 
+        let dueDt = moment(batchDetails.value.paymentDueDate);
+        let valueDt = moment(batchDetails.value.valueDate); 
+        let noOfDays = valueDt.diff(dueDt,'days');
+        batchDetails.value.numberOfDays = noOfDays;
+      }
+      if(bidValue.value != ""
+      && bidValue.value != null && bidValue.value != undefined
+      && valueDate.value != ""
+      && valueDate.value != null && valueDate.value != undefined
+      )
+      {
+       
+        
+        let apiUrl = '';
+        if(batchDetails.value.initiatedByCompanyId == batchDetails.value.buyerCompanyId)
+        {
+          apiUrl = `/workflow/v1/buyer-led-invoice-financing-workflow-0/estimates?refId=${batchDetails.value.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`;
+          //started by buyer
+        }
+        else
+        {
+          apiUrl = `/workflow/v1/seller-led-invoice-financing-workflow-1/estimates?refId=${batchDetails.value.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`;
+          //started by seller
+        }
+        await appAxios.get(apiUrl).then(res => {
+          let data = res.data;
+          batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat);
+          batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat);
+          batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1;
+          batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2;
+          batchDetails.value.formula.interestAmount = data.interestAmount;
+          batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount;
+          batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat);
+          batchDetails.value.formula.repaymentAmount = data.repaymentAmount;
+          batchDetails.value.formula.repaymentAmountDueDate = moment(data.repaymentAmountDueDate).format(dateFormat);
+         console.log(res.data,"my estimate");
+        });
+      }
+    };
 
     const getLastWorkflowStatus = async() => {
       const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition'
@@ -915,6 +987,7 @@ export default {
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT" && user.user_role === "Seller Admin") visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_BUYER_REPAYMENT_ON_DUE_DATE" && user.user_role === "Buyer Admin") visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT" && user.user_role === "Funder Admin") visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
+ 
       })
 
       return new Promise(resolve => resolve('get last workflow status done'))
@@ -942,39 +1015,46 @@ export default {
     const approveAcknowledge = async () => {
       await saveSignature()
       modalLoading.value = true
-      var api = ''
-      if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
-      if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
-      appAxios.post(api, {
-        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-        remark: remark.value,
-        signatureUri: signatureFileUrl.value
-      }).then(res => {
-        modalLoading.value = false
-        if(res.status === 200) {
-          cash("#approve-invoice-modal").modal("hide")
-          visibleWorkflowActions.value.visibleApproveButton = false
-          provenancePendingStatusIndex.value ++;
-        }
-        loading.value.provenance = true
-        updateProvenanceApi()
-      })
-    }
-
-    const declineAcknowledge = () => {
-      if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
-      if(user.user_role === 'Buyer Admin') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
-      appAxios.post(api, {
-        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-        remark: remark.value,
-      }).then(res => {
-        if(res.status === 200) {
-          visibleWorkflowActions.value.visibleApproveButton.value = false
-          provenancePendingStatusIndex.value ++;
+      await saveSignature().then( async()=>{ 
+        var api = ''
+        if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+        if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+        await appAxios.post(api, {
+          externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+          remark: remark.value,
+          signatureUri: signatureFileUrl.value
+        }).then(res => {
+          modalLoading.value = false
+          if(res.status === 200) {
+            cash("#approve-invoice-modal").modal("hide")
+            visibleWorkflowActions.value.visibleApproveButton = false
+            provenancePendingStatusIndex.value ++;
+          }
           loading.value.provenance = true
           updateProvenanceApi()
-        }
-      })
+        })
+      });
+
+      
+    }
+
+    const declineAcknowledge = async () => {
+      saveSignature().then(()=> {
+        if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
+        if(user.user_role === 'Buyer Admin') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
+        appAxios.post(api, {
+          externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+          remark: remark.value,
+          signatureUri: signatureFileUrl.value
+        }).then(res => {
+          if(res.status === 200) {
+            visibleWorkflowActions.value.visibleApproveButton.value = false
+            provenancePendingStatusIndex.value ++;
+            loading.value.provenance = true
+            updateProvenanceApi()
+          }
+        })
+      }); 
     }
 
     const submitProposal = async () => {
@@ -1055,62 +1135,68 @@ export default {
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
       await saveSignature()
       modalLoading.value = true
-      var api = ''
-      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
-      else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
-      else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
-      
-      const request = {
-        externalReferenceId: props.workflowExecutionReferenceId,
-        signatureUri: signatureFileUrl.value,
-        remarks: remark.value
-      }
-      appAxios.post(api, request).then(res => {
-        modalLoading.value = false
-        console.log(res)
-        if(res.status === 200) {
-          cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
-          loading.value.provenance = true
-          provenanceApi()
+      await saveSignature().then( async()=>{ 
+        var api = ''
+        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
+        else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
+        else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
+        
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          signatureUri: signatureFileUrl.value,
+          remarks: remark.value
         }
-      })
+        await appAxios.post(api, request).then(res => {
+          modalLoading.value = false
+          console.log(res)
+          if(res.status === 200) {
+            cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
+            loading.value.provenance = true
+            provenanceApi()
+          }
+        })
+      });
     }
 
     const funderAcknowledgeOfRepaymentComfirm = async () => {
       await saveSignature()
       modalLoading.value = true
-      var api = ''
-      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
-      if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
-      const request = {
-        externalReferenceId: props.workflowExecutionReferenceId,
-        signatureUri: signatureFileUrl.value,
-        remarks: remark.value
-      }
-      appAxios.post(api, request).then(res => {
-        modalLoading.value = false
-        console.log(res)
-        if(res.status === 200){
-          cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
-          loading.value.provenance = true
-          updateProvenanceApi()
+      await saveSignature().then( async()=>{ 
+        var api = ''
+        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
+        if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          signatureUri: signatureFileUrl.value,
+          remarks: remark.value
         }
-      })
+        await appAxios.post(api, request).then(res => {
+          modalLoading.value = false
+          console.log(res)
+          if(res.status === 200){
+            cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
+            loading.value.provenance = true
+            updateProvenanceApi()
+          }
+        })
+      });
     }
 
     const funderAcknowledgeOfRepaymentDecline = async () => {
-      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
-      if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
-      const request = {
-        externalReferenceId: props.workflowExecutionReferenceId,
-        remarks: remark.value
-      }
-      appAxios.post(api, request).then(res => {
-        console.log(res)
-        cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
-        loading.value.provenance = true
-        updateProvenanceApi()
-      })
+      await saveSignature().then( async()=>{ 
+        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
+        if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          remarks: remark.value
+        }
+        await appAxios.post(api, request).then(res => {
+          console.log(res)
+          cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
+          loading.value.provenance = true
+          updateProvenanceApi()
+        })
+      });
     }
 
     const setDisbursmentCurrencyCode = (currencyCode) => {
@@ -1160,8 +1246,7 @@ export default {
       appAxios.post(api, request).then(res => {
         cash("#seller-upload-repayment-advice").modal("hide")
       })
-    }
-
+    } 
     const uploadFile = async () => {
       const fileUploadApi = 'uploads/v1/payment_advice';
       let formData = new FormData();
@@ -1238,7 +1323,7 @@ export default {
           batchInformation: {
             bidEndTime: res.data.bidEndTime,
             paymentDueDate: res.data.paymentDueDate,
-            uploadDate: moment.utc(res.data.createdTime).format('DD/MM/YYYY'),
+            uploadDate: moment.utc(res.data.createdTime).format(dateFormat),
             totalAmount: res.data.totalAmount,
             noOfBatchEntries: res.data.numberOfBatchEntries
           },
@@ -1246,10 +1331,19 @@ export default {
             interestRate: res.data.interestRate,
             platformFeeRate: res.data.processingFeeRateForFunder,
             repaymentAmountToFunder: res.data.totalAmount,
-            repaymentDate: moment.utc(res.data.paymentDueDate).format('DD/MM/YYYY')
+            repaymentDate: moment.utc(res.data.paymentDueDate).format(dateFormat)
           }
         }
+        batchDetails.value.valueDate = moment().add(2,'days'); 
+        valueDate.value = batchDetails.value.valueDate; 
+        let dueDt = moment(batchDetails.value.paymentDueDate);
+        let valueDt = moment(batchDetails.value.valueDate); 
+        let noOfDays = valueDt.diff(dueDt,'days');
+        batchDetails.value.numberOfDays = noOfDays;
+
         batchDetails.value = {...batchDetails.value, ...batch}
+
+        console.log(batchDetails,"batchDetails");
       })
       
       verifyRequestBody.value = {
@@ -1266,7 +1360,7 @@ export default {
 
       await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
         journalBatchEntry.value = res.data
-        
+        console.log(journalBatchEntry.value);
         res.data.forEach(async entry => {
           const api = `/journalbatch/v1/header/${entry.journalBatchHeaderId }/entry/${entry.journalBatchEntryId }/supportingdocuments`;
           let supportingDocument = []
@@ -1321,8 +1415,11 @@ export default {
       await init()
       initComponent.value = true
     })
-
-    return {
+    
+    return { 
+      dateFormat,
+      dateTimeFormat,
+      transactionType,
       loading,
       journalBatchEntry,
       moment,
@@ -1369,7 +1466,8 @@ export default {
       _,
       ProvenanceLang,
       initComponent,
-      lockDays
+      lockDays,
+      getEstimateCalc
     }
   },
 }
