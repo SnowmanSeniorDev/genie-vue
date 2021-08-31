@@ -213,7 +213,7 @@
             <div class="self-center">Bid Expiry Date & Time</div>
             <div class="self-center">{{batchDetails.batchInformation.bidEndTime}}</div>
             <div class="self-center">Invoice Amount</div>
-            <div class="self-center">{{batchDetails.batchInformation.totalAmount}}</div>
+            <div class="self-center">{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
             <div class="self-center">Payment Due Date</div>
             <div class="self-center">{{batchDetails.batchInformation.paymentDueDate}}</div>
             <div class="self-center">Remark</div>
@@ -300,71 +300,78 @@
         <div class="modal-body mx-8">
           <div class="mt-5">
             <span>Formular</span>
-            <table class="table mt-2">
+            <table class="table mt-2"> 
               <tr class="hover:bg-gray-200">
-                <td class="border w-1/2">Interest Rate</td>
-                <td class="border">{{batchDetails.formula.interestRate}}</td>
-              </tr>
-              <tr class="hover:bg-gray-200">
-                <td class="border">Processing Fee Amount</td>
-                <td class="border">{{batchDetails.formula.processingFeeAmount}}</td>
+                <td class="border">Batch Number</td>
+                <td class="border">{{batchDetails.batchNumber}}</td>
               </tr>
               <tr class="hover:bg-gray-200">
-                <td class="border">Disbursable Amount To Seller</td>
-                <td class="border">{{batchDetails.formula.disbursableAmountToSeller}}</td>
+                <td class="border">Total Invoice Amount</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.totalAmount}}</td>
+              </tr> 
+              <tr class="hover:bg-gray-200">
+                <td class="border">Value Date</td>
+                <td class="border">
+                  <Litepicker
+                  v-model="valueDate"
+                  :options="{
+                    autoApply: false,
+                    showWeekNumbers: true,
+                    zIndex: 10001,
+                    minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
+                    dropdowns: {
+                      minYear: 1990,
+                      maxYear: null,
+                      months: true,
+                      years: true
+                    },
+                    callback:getEstimateCalc(),
+                    lockDays: lockDays
+                  }"
+                  class="form-control"
+                />
+                </td>
               </tr>
               <tr class="hover:bg-gray-200">
-                <td class="border">Disbursable Date</td>
-                <td class="border">{{batchDetails.formula.disbursableDate}}</td>
+                <td class="border">Invoice Due Date</td>
+                <td class="border">{{batchDetails.paymentDueDate}}</td>
               </tr>
-              <tr class="hover:bg-gray-200" v-if="user.user_role === 'Funder Admin' || user.user_role === 'Genie Admin'">
-                <td class="border">Platform Fee Rate</td>
-                <td class="border">{{batchDetails.formula.platformFeeRate}}</td>
-              </tr>
+              <tr class="hover:bg-gray-200">
+                <td class="border">Payment Due Date</td>
+                <td class="border">{{batchDetails.maturityDate}}</td>
+              </tr> 
+              <tr class="hover:bg-gray-200">
+                <td class="border">Numbers of Days</td>
+                <td class="border">{{batchDetails.numberOfDays}}</td>
+              </tr>  
+              <tr class="hover:bg-gray-200">
+                <td class="border">Interest Rate(Annual Rate %)</td>
+                <td class="border">
+                  <input type="text" v-model="bidValue" @change="getEstimateCalc" class="form-control"/>
+                </td>
+              </tr>  
+              <tr class="hover:bg-gray-200">
+                <td class="border">Interest Earn</td>
+                <td class="border">{{batchDetails.formula.interestAmount}}</td>
+              </tr> 
               <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
                 <td class="border">Platform Fee Amount</td>
                 <td class="border">{{batchDetails.formula.platformFeeAmount}}</td>
-              </tr>
+              </tr> 
               <tr class="hover:bg-gray-200">
-                <td class="border">Platform Fee Date</td>
-                <td class="border">{{batchDetails.formula.platformFeeDate}}</td>
-              </tr>
+                <td class="border">First Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount1DueDate}}</td>
+                <td class="border">{{batchDetails.formula.disbursableAmount1}}</td>
+              </tr>  
+              <tr class="hover:bg-gray-200">
+                <td class="border">Second Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount2DueDate}}</td>
+                <td class="border">{{batchDetails.formula.disbursableAmount2}}</td>
+              </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Repayment Amount To Funder</td>
                 <td class="border">{{batchDetails.formula.repaymentAmountToFunder}}</td>
-              </tr>
-              <tr class="hover:bg-gray-200">
-                <td class="border">Repayment Date</td>
-                <td class="border">{{batchDetails.formula.repaymentDate}}</td>
-              </tr>
+              </tr> 
             </table>
-          </div>
-          <div class="grid grid-cols-2 grid-flow-row gap-4 mt-4">
-            <div class="self-center">Interest Rate</div>
-            <div class="self-center">
-              <input type="text" v-model="bidValue" @change="getEstimateCalc" class="form-control"/>
-            </div>
-            <div class="self-center">Value Date</div>
-            <div class="self-center">
-              <Litepicker
-                v-model="valueDate"
-                :options="{
-                  autoApply: false,
-                  showWeekNumbers: true,
-                  zIndex: 10001,
-                  minDate: moment(batchDetails.batchInformation.bidEndTime).format('DD MMM, YYYY'),
-                  dropdowns: {
-                    minYear: 1990,
-                    maxYear: null,
-                    months: true,
-                    years: true
-                  },
-                  lockDays: lockDays
-                }"
-                class="form-control"
-              />
-            </div>
-          </div>
+          </div> 
         </div>
         <div class="modal-footer text-right">
           <button type="button" class="btn btn-primary w-24 mr-1" @click="submitProposal" :disabled="modalLoading"> 
@@ -666,6 +673,7 @@ export default {
     SignaturePad
   },
   setup(props) {
+    const transactionType = ref();
     const journalBatchEntry = ref()
     const adminCompany = ref()
     const initWorkflowId = ref([])
@@ -752,6 +760,7 @@ export default {
       onDrop,
       accept: '.jpg, .csv',
     })
+    
 
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
@@ -917,8 +926,23 @@ export default {
       })
     }
     const getEstimateCalc = async()=>{
-      if(bidValue.value != "" && valueDate.value != "")
+      if(valueDate.value != ""
+      && valueDate.value != null && valueDate.value != undefined)
       {
+        batchDetails.value.valueDate = valueDate.value; 
+        let dueDt = moment(batchDetails.value.paymentDueDate);
+        let valueDt = moment(batchDetails.value.valueDate); 
+        let noOfDays = valueDt.diff(dueDt,'days');
+        batchDetails.value.numberOfDays = noOfDays;
+      }
+      if(bidValue.value != ""
+      && bidValue.value != null && bidValue.value != undefined
+      && valueDate.value != ""
+      && valueDate.value != null && valueDate.value != undefined
+      )
+      {
+       
+        
         let apiUrl = '';
         if(batchDetails.value.initiatedByCompanyId == batchDetails.value.buyerCompanyId)
         {
@@ -931,7 +955,17 @@ export default {
           //started by seller
         }
         await appAxios.get(apiUrl).then(res => {
-            console.log(res.data,"my estimate");
+          let data = res.data;
+          batchDetails.value.formula.disburableAmount1DueDate = data.disburableAmount1DueDate;
+          batchDetails.value.formula.disburableAmount2DueDate = data.disburableAmount2DueDate;
+          batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1;
+          batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2;
+          batchDetails.value.formula.interestAmount = data.interestAmount;
+          batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount;
+          batchDetails.value.formula.platformFeeAmountDueDate = data.platformFeeAmountDueDate;
+          batchDetails.value.formula.repaymentAmount = data.repaymentAmount;
+          batchDetails.value.formula.repaymentAmountDueDate = data.repaymentAmountDueDate;
+         console.log(res.data,"my estimate");
         });
       }
     };
@@ -1207,8 +1241,7 @@ export default {
       appAxios.post(api, request).then(res => {
         cash("#seller-upload-repayment-advice").modal("hide")
       })
-    }
-
+    } 
     const uploadFile = async () => {
       const fileUploadApi = 'uploads/v1/payment_advice';
       let formData = new FormData();
@@ -1293,7 +1326,16 @@ export default {
             repaymentDate: moment.utc(res.data.paymentDueDate).format('DD/MM/YYYY')
           }
         }
+        batchDetails.value.valueDate = moment().add(2,'days'); 
+        valueDate.value = batchDetails.value.valueDate; 
+        let dueDt = moment(batchDetails.value.paymentDueDate);
+        let valueDt = moment(batchDetails.value.valueDate); 
+        let noOfDays = valueDt.diff(dueDt,'days');
+        batchDetails.value.numberOfDays = noOfDays;
+
         batchDetails.value = {...batchDetails.value, ...batch}
+
+        console.log(batchDetails,"batchDetails");
       })
       
       verifyRequestBody.value = {
@@ -1365,8 +1407,9 @@ export default {
       await init()
       initComponent.value = true
     })
-
-    return {
+    
+    return { 
+      transactionType,
       loading,
       journalBatchEntry,
       moment,
