@@ -105,7 +105,7 @@
               <td class="border">Seller Company</td>
               <td class="border">{{batchDetails.batchInformation.sellerCompany ? batchDetails.batchInformation.sellerCompany : 'NA'}}</td>
             </tr>
-            <tr class="hover:bg-gray-200">
+            <tr class="hover:bg-gray-200" v-if="_.find(provenance, {statusName: 'AWAITING_BIDDING_RESULT'})?.passed">
               <td class="border">Funder Company</td>
               <td class="border">{{batchDetails.batchInformation.funderCompany ? batchDetails.batchInformation.funderCompany : 'NA'}}</td>
             </tr>
@@ -123,7 +123,7 @@
             </tr>
           </table>
         </div>
-         <div class="mt-8"  v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
+         <div class="mt-8" v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
           <span>Bank Details</span>
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
@@ -232,10 +232,7 @@
           <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
-              Save signature
-              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
-            </button>
+           
           </div>
         </div>
         <div class="modal-footer text-right">
@@ -270,6 +267,19 @@
             <div class="self-center">
               <textarea v-model="remark" class="border-2 border w-full" rows="3" />
             </div>
+          </div>
+          <signature-pad
+            :modelValue="signatureFile"
+            @input="onInput"
+            :height="150"
+            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
+            saveType="image/png"
+            saveOutput="file"
+            ref="signaturePad" />
+          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+            <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
+            <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
+           
           </div>
         </div>
         <div class="modal-footer text-right">
@@ -332,7 +342,7 @@
           <div class="grid grid-cols-2 grid-flow-row gap-4 mt-4">
             <div class="self-center">Interest Rate</div>
             <div class="self-center">
-              <input type="text" v-model="bidValue" class="form-control"/>
+              <input type="text" v-model="bidValue" @change="getEstimateCalc" class="form-control"/>
             </div>
             <div class="self-center">Value Date</div>
             <div class="self-center">
@@ -485,13 +495,9 @@
             saveType="image/png"
             saveOutput="file"
             ref="signaturePad" />
-          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+          <div class="grid grid-cols-2 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
-              Save signature
-              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
-            </button>
           </div>
         </div>
         <div class="modal-footer text-right">
@@ -623,13 +629,9 @@
             saveType="image/png"
             saveOutput="file"
             ref="signaturePad" />
-          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
+          <div class="grid grid-cols-2 grid-flow-row gap-4 mt-2">
             <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
             <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-            <button @click="saveSignature" class="btn btn-primary" :disabled="signatureLoading">
-              Save signature
-              <LoadingIcon v-if="signatureLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
-            </button>
           </div>
         </div>
         <div class="modal-footer text-right">
@@ -914,6 +916,25 @@ export default {
         resolve(wholeHistory)
       })
     }
+    const getEstimateCalc = async()=>{
+      if(bidValue.value != "" && valueDate.value != "")
+      {
+        let apiUrl = '';
+        if(batchDetails.value.initiatedByCompanyId == batchDetails.value.buyerCompanyId)
+        {
+          apiUrl = `/workflow/v1/buyer-led-invoice-financing-workflow-0/estimates?refId=${batchDetails.value.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`;
+          //started by buyer
+        }
+        else
+        {
+          apiUrl = `/workflow/v1/seller-led-invoice-financing-workflow-1/estimates?refId=${batchDetails.value.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`;
+          //started by seller
+        }
+        await appAxios.get(apiUrl).then(res => {
+            console.log(res.data,"my estimate");
+        });
+      }
+    };
 
     const getLastWorkflowStatus = async() => {
       const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition'
@@ -930,6 +951,7 @@ export default {
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT" && user.user_role === "Seller Admin") visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_BUYER_REPAYMENT_ON_DUE_DATE" && user.user_role === "Buyer Admin") visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
         else if(res.data[0].workflow.lastStatusTransition['statusName'] === "AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT" && user.user_role === "Funder Admin") visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
+ 
       })
 
       return new Promise(resolve => resolve('get last workflow status done'))
@@ -954,41 +976,48 @@ export default {
       })
     }
 
-    const approveAcknowledge = () => {
+    const approveAcknowledge = async () => {
       modalLoading.value = true
-      var api = ''
-      if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
-      if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
-      appAxios.post(api, {
-        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-        remark: remark.value,
-        signatureUri: signatureFileUrl.value
-      }).then(res => {
-        modalLoading.value = false
-        if(res.status === 200) {
-          cash("#approve-invoice-modal").modal("hide")
-          visibleWorkflowActions.value.visibleApproveButton = false
-          provenancePendingStatusIndex.value ++;
-        }
-        loading.value.provenance = true
-        updateProvenanceApi()
-      })
-    }
-
-    const declineAcknowledge = () => {
-      if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
-      if(user.user_role === 'Buyer Admin') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
-      appAxios.post(api, {
-        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-        remark: remark.value,
-      }).then(res => {
-        if(res.status === 200) {
-          visibleWorkflowActions.value.visibleApproveButton.value = false
-          provenancePendingStatusIndex.value ++;
+      await saveSignature().then( async()=>{ 
+        var api = ''
+        if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+        if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+        await appAxios.post(api, {
+          externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+          remark: remark.value,
+          signatureUri: signatureFileUrl.value
+        }).then(res => {
+          modalLoading.value = false
+          if(res.status === 200) {
+            cash("#approve-invoice-modal").modal("hide")
+            visibleWorkflowActions.value.visibleApproveButton = false
+            provenancePendingStatusIndex.value ++;
+          }
           loading.value.provenance = true
           updateProvenanceApi()
-        }
-      })
+        })
+      });
+
+      
+    }
+
+    const declineAcknowledge = async () => {
+      saveSignature().then(()=> {
+        if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
+        if(user.user_role === 'Buyer Admin') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
+        appAxios.post(api, {
+          externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+          remark: remark.value,
+          signatureUri: signatureFileUrl.value
+        }).then(res => {
+          if(res.status === 200) {
+            visibleWorkflowActions.value.visibleApproveButton.value = false
+            provenancePendingStatusIndex.value ++;
+            loading.value.provenance = true
+            updateProvenanceApi()
+          }
+        })
+      }); 
     }
 
     const submitProposal = async () => {
@@ -1068,61 +1097,67 @@ export default {
 
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
       modalLoading.value = true
-      var api = ''
-      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
-      else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
-      else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
-      
-      const request = {
-        externalReferenceId: props.workflowExecutionReferenceId,
-        signatureUri: signatureFileUrl.value,
-        remarks: remark.value
-      }
-      appAxios.post(api, request).then(res => {
-        modalLoading.value = false
-        console.log(res)
-        if(res.status === 200) {
-          cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
-          loading.value.provenance = true
-          provenanceApi()
+      await saveSignature().then( async()=>{ 
+        var api = ''
+        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
+        else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
+        else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
+        
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          signatureUri: signatureFileUrl.value,
+          remarks: remark.value
         }
-      })
+        await appAxios.post(api, request).then(res => {
+          modalLoading.value = false
+          console.log(res)
+          if(res.status === 200) {
+            cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
+            loading.value.provenance = true
+            provenanceApi()
+          }
+        })
+      });
     }
 
     const funderAcknowledgeOfRepaymentComfirm = async () => {
       modalLoading.value = true
-      var api = ''
-      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
-      if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
-      const request = {
-        externalReferenceId: props.workflowExecutionReferenceId,
-        signatureUri: signatureFileUrl.value,
-        remarks: remark.value
-      }
-      appAxios.post(api, request).then(res => {
-        modalLoading.value = false
-        console.log(res)
-        if(res.status === 200){
-          cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
-          loading.value.provenance = true
-          updateProvenanceApi()
+      await saveSignature().then( async()=>{ 
+        var api = ''
+        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
+        if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          signatureUri: signatureFileUrl.value,
+          remarks: remark.value
         }
-      })
+        await appAxios.post(api, request).then(res => {
+          modalLoading.value = false
+          console.log(res)
+          if(res.status === 200){
+            cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
+            loading.value.provenance = true
+            updateProvenanceApi()
+          }
+        })
+      });
     }
 
     const funderAcknowledgeOfRepaymentDecline = async () => {
-      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
-      if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
-      const request = {
-        externalReferenceId: props.workflowExecutionReferenceId,
-        remarks: remark.value
-      }
-      appAxios.post(api, request).then(res => {
-        console.log(res)
-        cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
-        loading.value.provenance = true
-        updateProvenanceApi()
-      })
+      await saveSignature().then( async()=>{ 
+        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
+        if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          remarks: remark.value
+        }
+        await appAxios.post(api, request).then(res => {
+          console.log(res)
+          cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
+          loading.value.provenance = true
+          updateProvenanceApi()
+        })
+      });
     }
 
     const setDisbursmentCurrencyCode = (currencyCode) => {
@@ -1203,13 +1238,13 @@ export default {
       getSignaturePad().undoSignature();
     }
 
-    const saveSignature = () => {
+    const saveSignature = async () => {
       signatureLoading.value = true
       const signature = getSignaturePad().saveSignature();
       const fileUploadApi = 'uploads/v1/acknowledgement_signature';
       let formData = new FormData();
       formData.append('file', signature.file)
-      sysAxios.post(fileUploadApi, formData, {
+      await sysAxios.post(fileUploadApi, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -1378,7 +1413,8 @@ export default {
       _,
       ProvenanceLang,
       initComponent,
-      lockDays
+      lockDays,
+      getEstimateCalc
     }
   },
 }

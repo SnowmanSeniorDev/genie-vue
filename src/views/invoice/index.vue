@@ -89,7 +89,7 @@
         <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
       </div>
     </div>
-    <InvoiceUploadModal :callback="getPendingAction"/>
+    <InvoiceUploadModal :callback="getInvoiceOverview"/>
   </div>
 </template>
 <script>
@@ -276,8 +276,7 @@ export default {
                 pendingAction = batchData; 
                 pendingActions.value.push(pendingAction); 
               }); 
-            }  
-
+            }   
             if(store.state.account.company_type.toLowerCase() == "funder")
             {
               if(res.data.bidInvitations != null)
@@ -295,14 +294,11 @@ export default {
                 }
               }
             }             
-          }
-           
-              getLastUpdatedBy(pendingActions.value).then(res=>{  
-                pendingActions.value = res;
-                initTabulator(_.sortBy(res, ['createdTime']))
-              });
-            
-         
+          } 
+          getLastUpdatedBy(pendingActions.value).then(res=>{  
+            pendingActions.value = res;
+            initTabulator(_.sortBy(res, ['createdTime']))
+          });
         }) 
     }
 
