@@ -1013,7 +1013,7 @@ export default {
     }
 
     const approveAcknowledge = async () => {
-      await saveSignature()
+      
       modalLoading.value = true
       await saveSignature().then( async()=>{ 
         var api = ''
@@ -1133,7 +1133,7 @@ export default {
     }
 
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
-      await saveSignature()
+      
       modalLoading.value = true
       await saveSignature().then( async()=>{ 
         var api = ''
@@ -1159,7 +1159,7 @@ export default {
     }
 
     const funderAcknowledgeOfRepaymentComfirm = async () => {
-      await saveSignature()
+     
       modalLoading.value = true
       await saveSignature().then( async()=>{ 
         var api = ''
