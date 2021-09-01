@@ -352,19 +352,19 @@
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Interest Earn</td>
-                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount.toFixed(2)}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
               </tr> 
               <tr class="hover:bg-gray-200">
                 <td class="border">Platform Fee Amount</td>
-                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount.toFixed(2)}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount}}</td>
               </tr> 
               <tr class="hover:bg-gray-200">
                 <td class="border">First Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount1DueDate}}</td>
-                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1.toFixed(2)}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Second Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount2DueDate}}</td>
-                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2.toFixed(2)}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Repayment Amount To Funder</td>
@@ -960,12 +960,12 @@ export default {
           let data = res.data;
           batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat);
           batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat);
-          batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1;
-          batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2;
-          batchDetails.value.formula.interestAmount = data.interestAmount;
-          batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount;
+          batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1.toFixed(2);
+          batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2.toFixed(2);
+          batchDetails.value.formula.interestAmount = data.interestAmount.toFixed(2);
+          batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount.toFixed(2);
           batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat);
-          batchDetails.value.formula.repaymentAmount = data.repaymentAmount;
+          batchDetails.value.formula.repaymentAmount = data.repaymentAmount.toFixed(2);
           batchDetails.value.formula.repaymentAmountDueDate = moment(data.repaymentAmountDueDate).format(dateFormat);
          console.log(res.data,"my estimate");
         });
