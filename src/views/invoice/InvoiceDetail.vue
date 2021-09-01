@@ -297,7 +297,7 @@
           <h2 class="font-medium text-base mr-auto"> Submit Proposal </h2>
         </div>
         <!-- END: Modal Header -->
-        <div class="modal-body mx-8">
+        <div v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed" class="modal-body mx-8">
           <div class="mt-5">
             <span>Formular</span>
             <table class="table mt-2"> 

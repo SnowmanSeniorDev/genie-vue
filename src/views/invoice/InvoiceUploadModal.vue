@@ -318,20 +318,20 @@ export default {
     }
     
     const fileChoosen = async (event) => {
-      // console.log(event.target.files)
-      // const fileUploadApi = 'uploads/v1/supporting_document';
-      var reader = new FileReader();
-      // let formData = new FormData();
-      // formData.append('file', event.target.value[0])
-      // let res = await sysAxios.post(fileUploadApi, formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data'
-      //   }
-      // });
+      console.log(event.target.files)
+      const fileUploadApi = 'uploads/v1/invoice_batch';
+      // var reader = new FileReader();
+      let formData = new FormData();
+      formData.append('file', event.target.files[0])
+      let res = await sysAxios.post(fileUploadApi, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
-      // console.log("res = ", res)
-      // if(res.status === 200) {}
-      // return;
+      console.log("res = ", res)
+      if(res.status === 200) {}
+      return;
       reader.onload = function (e) {
         var data = new Uint8Array(e.target.result);
         var workbook = xlsx.read(data, { type: "array" });
