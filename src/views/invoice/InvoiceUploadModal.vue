@@ -94,30 +94,31 @@
                             <span v-else>{{item.sellerCompanyId}}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
+                            
                             <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].documentDate" mode="date">
-                              <template v-slot="{ inputValue, inputEvents }">
+                              <template v-slot="{ inputEvents }">
                                 <input
                                   class="block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                                  :value="inputValue"
+                                  :value="jsonData[index].documentDate"
                                   v-on="inputEvents"
                                   size="11"
                                 />
                               </template>
                             </DatePicker>
-                            <span v-else>{{moment(item.documentDate).format('MM/DD/YYYY') }}</span>
+                            <span v-else>{{moment(item.documentDate).format(dateFormat) }}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
                             <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].paymentDueDate" mode="date">
-                              <template v-slot="{ inputValue, inputEvents }">
+                              <template v-slot="{ inputEvents }">
                                 <input
                                   class="block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                                  :value="inputValue"
+                                  :value="jsonData[index].paymentDueDate"
                                   v-on="inputEvents"
                                   size="11"
                                 />
                               </template>
                             </DatePicker>
-                            <span v-else>{{moment(item.paymentDueDate).format('MM/DD/YYYY') }}</span>
+                            <span v-else>{{moment(item.paymentDueDate).format(dateFormat) }}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
                             <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].currencyCode" size="5"/>
@@ -174,10 +175,11 @@ import moment from "moment";
 import _ from "lodash";
 import { appAxios, sysAxios } from "@/plugins/axios";
 import SupportDropzone from "./SupportFileDropzone";
-import Toastify from "toastify-js";
+import Toastify from "toastify-js"; 
 
 export default {
   components: {
+     
     SupportDropzone
   },
   props: {
@@ -185,7 +187,11 @@ export default {
       type: Function,
     }
   },
+  methods: { 
+	},
   setup(props){
+    const dateFormat = process.env.VUE_APP_DATE_FORMAT;
+    const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT;    
     const store = useStore();
     const xlsxRows = ref();
     const xlsxHeaders = ref();
@@ -246,15 +252,15 @@ export default {
             journalBatchEntries.push({
               ...item,
               sellerCompanyId: companyId,
-              documentDate: moment.utc(item.documentDate).format(),
-              paymentDueDate: moment.utc(item.paymentDueDate).format()
+              documentDate: moment.utc(item.documentDate).format(dateFormat),
+              paymentDueDate: moment.utc(item.paymentDueDate).format(dateFormat)
             });
           })
         )
         appAxios.post(api, {
           buyerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
-          bidEndTime: moment(bidEndTime.value).format()
+          bidEndTime: moment(bidEndTime.value).format(dateTimeFormat)
         }).then(res => {
           console.log('res = ', res)
           loading.value = !loading.value
@@ -284,15 +290,15 @@ export default {
             journalBatchEntries.push({
               ...item,
               buyerCompanyId: companyId,
-              documentDate: moment.utc(item.documentDate).format(),
-              paymentDueDate: moment.utc(item.paymentDueDate).format()
+              documentDate: moment.utc(item.documentDate).format(dateFormat),
+              paymentDueDate: moment.utc(item.paymentDueDate).format(dateFormat)
             });
           })
         )
         appAxios.post(api, {
           sellerCompanyId: store.state.account.company_uuid,
           journalBatchEntries: journalBatchEntries,
-          bidEndTime: moment(bidEndTime.value).format()
+          bidEndTime: moment(bidEndTime.value).format(dateTimeFormat)
         }).then(res => {
           console.log(res)
           loading.value = !loading.value;
@@ -318,6 +324,7 @@ export default {
     }
     
     const fileChoosen = async (event) => {
+     
       // console.log(event.target.files)
       // const fileUploadApi = 'uploads/v1/supporting_document';
       var reader = new FileReader();
@@ -352,8 +359,8 @@ export default {
               documentNumber: row['__EMPTY'].toString(),
               documentType: Object.values(row)[0],
               sellerCompanyId: sellerCompanyId,
-              documentDate: moment(row['__EMPTY_2'], 'DD/MM/YYYY'),
-              paymentDueDate: moment(row['__EMPTY_2'], 'DD/MM/YYYY').add(dueDate, 'days'),
+              documentDate: moment(row['__EMPTY_2'],'DD/MMM/YYYY'),
+              paymentDueDate: moment(row['__EMPTY_2'],'DD/MMM/YYYY').add(dueDate, 'days'),
               currencyCode: currencyCode,
               amount: row['__EMPTY_9'].replace(',', ''),
               supportingDocuments: []
@@ -376,6 +383,8 @@ export default {
       reader.readAsArrayBuffer(event.target.files[0]);
     }
     return {
+      dateFormat,
+      dateTimeFormat,
       loading,
       jsonData,
       fileUpload,
