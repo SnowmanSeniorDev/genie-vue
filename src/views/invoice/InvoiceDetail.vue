@@ -175,8 +175,9 @@
             </tr>
           </table>
         </div>
-        <div v-if="initComponent">
-          <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center">
+        <!-- <div v-if="initComponent"> -->
+          <!-- <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center"> -->
+          <div class="pt-8 flex justify-center">
             <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
             <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
           </div>
@@ -195,7 +196,7 @@
           <div v-if="visibleWorkflowActions.visibleFunderAcknowledgeRepaymentAdvice" class="pt-8 flex justify-center">
             <a href="javascript:;" @click="openFunderAcknowledgeUploadRepaymentAdviceModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Repayment Advice</a>
           </div>
-        </div>
+        <!-- </div> -->
       </div>
     </div>
   </div>
@@ -297,7 +298,7 @@
           <h2 class="font-medium text-base mr-auto"> Submit Proposal </h2>
         </div>
         <!-- END: Modal Header -->
-        <div v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed" class="modal-body mx-8">
+        <div class="modal-body mx-8">
           <div class="mt-5">
             <span>Formular</span>
             <table class="table mt-2"> 
@@ -872,9 +873,6 @@ export default {
           }
         })
       )
-      console.log("loading.value.provenance = ", loading.value.provenance)
-      console.log("verify request body = ", verifyRequestBody.value)
-      console.log("loading = ", loading.value)
       await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}`, verifyRequestBody.value).then(res => {
         console.log("verification res = ", res.data)
         provenance.value.forEach((workStatus, index) => {
@@ -1013,48 +1011,44 @@ export default {
     }
 
     const approveAcknowledge = async () => {
-      await saveSignature()
       modalLoading.value = true
-      await saveSignature().then( async()=>{ 
-        var api = ''
-        if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
-        if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
-        await appAxios.post(api, {
-          externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-          remark: remark.value,
-          signatureUri: signatureFileUrl.value
-        }).then(res => {
-          modalLoading.value = false
-          if(res.status === 200) {
-            cash("#approve-invoice-modal").modal("hide")
-            visibleWorkflowActions.value.visibleApproveButton = false
-            provenancePendingStatusIndex.value ++;
-          }
-          loading.value.provenance = true
-          updateProvenanceApi()
-        })
-      });
-
-      
+      await saveSignature()
+      var api = ''
+      if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+      if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+      await appAxios.post(api, {
+        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+        remark: remark.value,
+        signatureUri: signatureFileUrl.value
+      }).then(res => {
+        modalLoading.value = false
+        if(res.status === 200) {
+          cash("#approve-invoice-modal").modal("hide")
+          visibleWorkflowActions.value.visibleApproveButton = false
+          provenancePendingStatusIndex.value ++;
+        }
+        loading.value.provenance = true
+        updateProvenanceApi()
+      })
     }
 
     const declineAcknowledge = async () => {
-      saveSignature().then(()=> {
-        if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
-        if(user.user_role === 'Buyer Admin') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
-        appAxios.post(api, {
-          externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-          remark: remark.value,
-          signatureUri: signatureFileUrl.value
-        }).then(res => {
-          if(res.status === 200) {
-            visibleWorkflowActions.value.visibleApproveButton.value = false
-            provenancePendingStatusIndex.value ++;
-            loading.value.provenance = true
-            updateProvenanceApi()
-          }
-        })
-      }); 
+      await saveSignature()
+
+      if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
+      if(user.user_role === 'Buyer Admin') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
+      appAxios.post(api, {
+        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+        remark: remark.value,
+        signatureUri: signatureFileUrl.value
+      }).then(res => {
+        if(res.status === 200) {
+          visibleWorkflowActions.value.visibleApproveButton.value = false
+          provenancePendingStatusIndex.value ++;
+          loading.value.provenance = true
+          updateProvenanceApi()
+        }
+      })
     }
 
     const submitProposal = async () => {
@@ -1135,68 +1129,63 @@ export default {
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
       await saveSignature()
       modalLoading.value = true
-      await saveSignature().then( async()=>{ 
-        var api = ''
-        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
-        else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
-        else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
-        
-        const request = {
-          externalReferenceId: props.workflowExecutionReferenceId,
-          signatureUri: signatureFileUrl.value,
-          remarks: remark.value
+      var api = ''
+      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
+      else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
+      else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
+      
+      const request = {
+        externalReferenceId: props.workflowExecutionReferenceId,
+        signatureUri: signatureFileUrl.value,
+        remarks: remark.value
+      }
+      await appAxios.post(api, request).then(res => {
+        modalLoading.value = false
+        console.log(res)
+        if(res.status === 200) {
+          cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
+          loading.value.provenance = true
+          provenanceApi()
         }
-        await appAxios.post(api, request).then(res => {
-          modalLoading.value = false
-          console.log(res)
-          if(res.status === 200) {
-            cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
-            loading.value.provenance = true
-            provenanceApi()
-          }
-        })
-      });
+      })
     }
 
     const funderAcknowledgeOfRepaymentComfirm = async () => {
       await saveSignature()
       modalLoading.value = true
-      await saveSignature().then( async()=>{ 
-        var api = ''
-        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
-        if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
-        const request = {
-          externalReferenceId: props.workflowExecutionReferenceId,
-          signatureUri: signatureFileUrl.value,
-          remarks: remark.value
-        }
-        await appAxios.post(api, request).then(res => {
-          modalLoading.value = false
-          console.log(res)
-          if(res.status === 200){
-            cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
-            loading.value.provenance = true
-            updateProvenanceApi()
-          }
-        })
-      });
-    }
-
-    const funderAcknowledgeOfRepaymentDecline = async () => {
-      await saveSignature().then( async()=>{ 
-        if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
-        if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
-        const request = {
-          externalReferenceId: props.workflowExecutionReferenceId,
-          remarks: remark.value
-        }
-        await appAxios.post(api, request).then(res => {
-          console.log(res)
+      var api = ''
+      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
+      if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
+      const request = {
+        externalReferenceId: props.workflowExecutionReferenceId,
+        signatureUri: signatureFileUrl.value,
+        remarks: remark.value
+      }
+      await appAxios.post(api, request).then(res => {
+        modalLoading.value = false
+        console.log(res)
+        if(res.status === 200){
           cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
           loading.value.provenance = true
           updateProvenanceApi()
-        })
-      });
+        }
+      })
+    }
+
+    const funderAcknowledgeOfRepaymentDecline = async () => {
+      await saveSignature()
+      if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
+      if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
+      const request = {
+        externalReferenceId: props.workflowExecutionReferenceId,
+        remarks: remark.value
+      }
+      await appAxios.post(api, request).then(res => {
+        console.log(res)
+        cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
+        loading.value.provenance = true
+        updateProvenanceApi()
+      })
     }
 
     const setDisbursmentCurrencyCode = (currencyCode) => {
@@ -1296,6 +1285,7 @@ export default {
     }
 
     const onInput = (value) => {
+      console.log("calling on input", value);
       if (!value) {
         signatureDataURL.value = null;
         signatureFile.value = null;
@@ -1453,7 +1443,6 @@ export default {
       files,
       removeFile,
       signaturePad,
-      signatureDataURL,
       signatureFile,
       clearSignature,
       undoSignature,
