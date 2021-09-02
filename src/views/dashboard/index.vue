@@ -5,7 +5,7 @@
         <!-- BEGIN: General Report -->
         <div class="col-span-12 mt-8">
           <div class="intro-y flex items-center h-10">
-            <h2 class="text-lg font-medium truncate mr-5">General Report</h2>
+            <h2 class="text-lg font-medium truncate mr-5">Dashboard</h2>
             <a href="" class="ml-auto flex text-theme-1 dark:text-theme-10">
               <RefreshCcwIcon class="w-4 h-4 mr-3" /> Reload Data
             </a>
@@ -14,7 +14,7 @@
         <!-- END: General Report -->
         <!-- STAER: Active Report-->
         <div class="col-span-12 grid grid-cols-12 gap-6 mt-5">
-          <div class="col-span-12 sm:col-span-6 xl:col-span-4 intro-y">
+          <div class="col-span-12 sm:col-span-6 xl:col-span-6 intro-y">
             <div class="intro-y box p-5">
               <div class="flex items-center">
                 <ListIcon class="w-6 h-6 mr-3" /><span class="text-lg">Pending For Action</span>
@@ -44,9 +44,9 @@
             </div>
           </div>
 
-          <div class="col-span-12 sm:col-span-6 xl:col-span-4 intro-y">
+          <div class="col-span-12 sm:col-span-6 xl:col-span-6 intro-y">
             <div class="intro-y p-5">
-              <img alt="" class="intro-x w-full h-48" src="/img/illustration.57641b18.svg" />
+              <img alt="" class="intro-x w-full h-48" src="/illustration.svg" />
               <div class="box p-8">
                 <h4 class="text-lg font-bold">Upcomming Holiday Calender</h4>
                 <div class="mt-3 overflow-y-auto h-48 scroll-primary">
@@ -56,7 +56,7 @@
                     </div>
                     <div class="ml-2 overflow-hidden">
                       <div class="flex items-center">
-                        <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format('LL')}}</a>
+                        <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format(dateFormat)}}</a>
                       </div>
                       <div class="flex items-center">
                         <a href="javascript:;" class="font-medium truncate mr-5">{{holiday.description}}</a>
@@ -69,45 +69,6 @@
             </div>
           </div>
 
-          <div class="col-span-12 sm:col-span-6 xl:col-span-4 intro-y">
-            <div class="box p-8">
-              <h4 class="text-lg font-bold">Active Onboarded Parters</h4>
-              <div class="flex gap-4 justify-around">
-                <div class="py-8 flex">
-                  <div class="self-center bg-blue-200 h-12 w-12 flex rounded-full justify-center">
-                    <UserIcon class="report-box__icon text-theme-10 self-center" />
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-xl font-bold leading-8">4 of 6</div>
-                    <div class="text-base text-gray-600">Sellers</div>
-                  </div>
-                </div>
-                <div class="py-8 flex">
-                  <div class="self-center bg-pink-200 h-12 w-12 flex rounded-full justify-center">
-                    <UserIcon class="report-box__icon text-pink-700 self-center" />
-                  </div>
-                  <div class="ml-4">
-                    <div class="text-xl font-bold leading-8">2 of 2</div>
-                    <div class="text-base text-gray-600">Buyer</div>
-                  </div>
-                </div>
-              </div>
-              <button class="btn bg-pink-700 w-full text-white">Onboard Partners</button>
-            </div>
-            <div class="box p-8 mt-3">
-              <h4 class="text-lg font-bold">Pending Actions</h4>
-              <div class="py-8 flex">
-                <div class="self-center bg-yellow-200 h-12 w-12 flex rounded-full justify-center">
-                  <FileIcon class="report-box__icon text-yellow-500 self-center" />
-                </div>
-                <div class="ml-4">
-                  <div class="text-xl font-bold leading-8">3 Invoice Batch</div>
-                  <div class="text-base text-gray-600">Pending for validation</div>
-                </div>
-              </div>
-              <button class="btn bg-pink-700 w-full text-white">Mange Invoices</button>
-            </div>
-          </div>
             
         </div>
         <!-- END: Active Report -->
@@ -145,6 +106,7 @@ export default defineComponent({
   },
  
   setup() {
+    const dateFormat = process.env.VUE_APP_DATE_FORMAT;
     const store = useStore()
     const holidays = ref([]);
     const pendingActions = ref([]);
@@ -174,7 +136,7 @@ export default defineComponent({
                 pendingAction.action = pendingItem[i].action;
                 pendingAction.batchNumber = batchData.batchNumber;
                 pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
-                pendingAction.createdTime = batchData.createdTime;
+                pendingAction.createdTime = moment(batchData.createdTime).format(dateFormat);
                 pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
                 pendingActions.value.push(pendingAction);
               }); 
@@ -196,7 +158,7 @@ export default defineComponent({
                     pendingAction.action = "INVITE_FUNDERS_TO_BID";
                     pendingAction.batchNumber = batchData.batchNumber;
                     pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
-                    pendingAction.createdTime = batchData.createdTime;
+                    pendingAction.createdTime = moment(batchData.createdTime).format(dateFormat);
                     pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
                     pendingActions.value.push(pendingAction);
 
@@ -211,6 +173,7 @@ export default defineComponent({
       }
     })
     return {
+      dateFormat,
       pendingActions,
       holidays, 
       moment,

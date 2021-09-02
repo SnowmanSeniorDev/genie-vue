@@ -816,7 +816,9 @@ export default {
         if(res.data[0].rootWorkflowId === initWorkflowId.value.sellerLedWorkflowId) batchDetails.value.batchFrom = 'seller'
         if(res.data[0].rootWorkflowId === initWorkflowId.value.buyerLedWorkflowId) batchDetails.value.batchFrom = 'buyer'
         provenance.value = await getBranchLists(res.data[0].rootWorkflowId)
-        paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames
+        console.log(res.data[0],"res.data[0]");
+        console.log(paymentAdviceWorksStatus.value,"paymentAdviceWorksStatus.value");
+        paymentAdviceWorksStatus.value = "";//_.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames //error, id mismatch
 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         res.data[0].workflows.forEach(passedWorkflow => {
@@ -1262,6 +1264,7 @@ export default {
     const removeFile = () => files.value = null
 
     const getSignaturePad = () => {
+      console.log(signaturePad,"signaturePad")
       if (!signaturePad.value) {
         throw new Error("No signature pad ref could be found");
       }
@@ -1281,6 +1284,7 @@ export default {
       const signature = getSignaturePad().saveSignature();
       const fileUploadApi = 'uploads/v1/acknowledgement_signature';
       let formData = new FormData();
+      console.log(signature,"signature");
       formData.append('file', signature.file)
       await sysAxios.post(fileUploadApi, formData, {
           headers: {
