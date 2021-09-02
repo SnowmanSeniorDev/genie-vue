@@ -84,6 +84,9 @@
                 <div class="items-center">
                   <span class="font-bold ml-3">{{ProvenanceLang[item.statusName]}}</span> 
                   <div v-if="item.updateTime != undefined" class="text-gray-500 ml-3">Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
+                  <div  class="text-gray-500 ml-3" v-if="batchDetails.bidEndTime != undefined && item.statusName=='BIDDING_IN_PROGRESS'">
+                    Awarded by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
+                  </div>
                 </div>
                 
               </div>
@@ -140,37 +143,29 @@
           <span>Formular</span>
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
-              <td class="border w-1/2">Interest Rate</td>
+              <td class="border w-1/2">Interest Rate (Annual Rate %)</td>
               <td class="border">{{batchDetails.formula.interestRate}}</td>
             </tr>
-            <tr class="hover:bg-gray-200">
-              <td class="border">Processing Fee Amount</td>
-              <td class="border">{{batchDetails.formula.processingFeeAmount}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200">
-              <td class="border">Disbursable Amount To Seller</td>
-              <td class="border">{{batchDetails.formula.disbursableAmountToSeller}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200">
-              <td class="border">Disbursable Date</td>
-              <td class="border">{{batchDetails.formula.disbursableDate}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200" v-if="user.user_role === 'Funder Admin' || user.user_role === 'Genie Admin'">
-              <td class="border">Platform Fee Rate</td>
-              <td class="border">{{batchDetails.formula.platformFeeRate}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200" v-if="user.user_role === 'Buyer Admin' || user.user_role === 'Genie Admin'">
-              <td class="border">Platform Fee Amount</td>
-              <td class="border">{{batchDetails.formula.platformFeeAmount}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200">
-              <td class="border">Platform Fee Date</td>
-              <td class="border">{{batchDetails.formula.platformFeeDate}}</td>
-            </tr>
-            <tr class="hover:bg-gray-200">
-              <td class="border">Repayment Amount To Funder</td>
-              <td class="border">{{batchDetails.formula.repaymentAmountToFunder}}</td>
-            </tr>
+              <tr class="hover:bg-gray-200">
+                <td class="border">Interest Earn</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
+              </tr> 
+              <tr class="hover:bg-gray-200">
+                <td class="border">Platform Fee Amount</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount}}</td>
+              </tr> 
+              <tr class="hover:bg-gray-200">
+                <td class="border">First Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount1DueDate}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1}}</td>
+              </tr>  
+              <tr class="hover:bg-gray-200">
+                <td class="border">Second Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount2DueDate}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2}}</td>
+              </tr>  
+              <tr class="hover:bg-gray-200">
+                <td class="border">Repayment Amount To Funder</td>
+                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.repaymentAmountToFunder}}</td>
+              </tr> 
             <tr class="hover:bg-gray-200">
               <td class="border">Repayment Date</td>
               <td class="border">{{batchDetails.formula.repaymentDate}}</td>
@@ -782,10 +777,21 @@ export default {
 
       const processingFeeApi = `/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`
       await appAxios.get(processingFeeApi).then(res => {
+          //calculate interest amount
+        let dueDt = moment(batchDetails.value.paymentDueDate);
+        let valueDt = moment(batchDetails.value.valueDate); 
+        let noOfDays = dueDt.diff(valueDt,'days');
+        batchDetails.value.numberOfDays = noOfDays;
+        batchDetails.value.formula.interestAmount = (batchDetails.value.formula.interestRate * batchDetails.value.formula.repaymentAmountToFunder / 365 * noOfDays).toFixed(2);
+          console.log(batchDetails,"hs check");
 
-        var tax = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId})
-        batchDetails.value.formula.disbursableAmountToSeller = tax?.amountBeforeTax
-        batchDetails.value.formula.disbursableDate = moment.utc(tax?.dueDate).format(dateFormat)
+        var tax1 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId,label:"FirstDisbursableAmount"})
+        batchDetails.value.formula.disbursableAmount1 = tax1?.amountBeforeTax.toFixed(2)
+        batchDetails.value.formula.disburableAmount1DueDate = moment.utc(tax1?.dueDate).format(dateFormat)
+
+        var tax2 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId,label:"FinalDisbursableAmount"})
+        batchDetails.value.formula.disbursableAmount2 = tax2?.amountBeforeTax.toFixed(2)
+        batchDetails.value.formula.disburableAmount2DueDate = moment.utc(tax2?.dueDate).format(dateFormat)
 
         var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
         batchDetails.value.formula.platformFeeAmount = platformFee?.amountBeforeTax
@@ -1330,8 +1336,7 @@ export default {
         batchDetails.value.numberOfDays = noOfDays;
 
         batchDetails.value = {...batchDetails.value, ...batch}
-
-        console.log(batchDetails,"batchDetails");
+ 
       })
       
       verifyRequestBody.value = {
