@@ -76,13 +76,15 @@
                 <div
                   v-else
                   :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'alert-secondary'}`"
-                  role="alert"
+                  role="alert" 
                 >
                   <SendIcon class="w-3 h-3 mr-3" v-if="lastWorkStatus.statusName === item.statusName" />
                   <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Not Started'}}</span>
                 </div>
-                <span class="ml-3 text-gray-500">{{ProvenanceLang[item.statusName]}}
-                </span>
+                <div class="items-center">
+                  <span class="font-bold ml-3">{{ProvenanceLang[item.statusName]}}</span> 
+                  <div v-if="item.updateTime != undefined" class="text-gray-500 ml-3">Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
+                </div>
                 
               </div>
               <hr class="mt-5">
@@ -211,12 +213,12 @@
           <div class="grid grid-cols-2 grid-flow-row gap-4">
             <div class="self-center">Batch Number</div>
             <div class="self-center">{{batchDetails.batchNumber}}</div>
-            <div class="self-center">Bid Expiry Date & Time</div>
-            <div class="self-center">{{batchDetails.batchInformation.bidEndTime}}</div>
+            <div class="self-center">Invoice Uploaded Date</div>
+            <div class="self-center">{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
             <div class="self-center">Invoice Amount</div>
             <div class="self-center">{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
             <div class="self-center">Payment Due Date</div>
-            <div class="self-center">{{batchDetails.batchInformation.paymentDueDate}}</div>
+            <div class="self-center">{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
             <div class="self-center">Remark</div>
             <div class="self-center">
               <textarea v-model="remark" class="border-2 border w-full" rows="3" />
@@ -257,29 +259,16 @@
           <div class="grid grid-cols-2 grid-flow-row gap-4">
             <div class="self-center">Batch Number</div>
             <div class="self-center">{{batchDetails.batchNumber}}</div>
-            <div class="self-center">Bid Expiry Date & Time</div>
-            <div class="self-center">{{batchDetails.batchInformation.bidEndTime}}</div>
+            <div class="self-center">Invoice Uploaded Date</div>
+            <div class="self-center">{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
             <div class="self-center">Invoice Amount</div>
             <div class="self-center">{{batchDetails.batchInformation.totalAmount}}</div>
             <div class="self-center">Payment Due Date</div>
-            <div class="self-center">{{batchDetails.batchInformation.paymentDueDate}}</div>
+            <div class="self-center">{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
             <div class="self-center">Remark</div>
             <div class="self-center">
               <textarea v-model="remark" class="border-2 border w-full" rows="3" />
             </div>
-          </div>
-          <signature-pad
-            :modelValue="signatureFile"
-            @input="onInput"
-            :height="150"
-            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
-            saveType="image/png"
-            saveOutput="file"
-            ref="signaturePad" />
-          <div class="grid grid-cols-3 grid-flow-row gap-4 mt-2">
-            <button @click="undoSignature" class="btn btn-warning">Undo signature</button>
-            <button @click="clearSignature" class="btn btn-danger">Clear signature</button>
-           
           </div>
         </div>
         <div class="modal-footer text-right">
@@ -338,7 +327,7 @@
               </tr>
               <tr class="hover:bg-gray-200">
                 <td class="border">Payment Due Date</td>
-                <td class="border">{{moment(batchDetails.maturityDate).format(dateFormat)}}</td>
+                <td class="border">{{moment(batchDetails.paymentDueDate).format(dateFormat)}}</td>
               </tr> 
               <tr class="hover:bg-gray-200">
                 <td class="border">Numbers of Days</td>
@@ -818,7 +807,7 @@ export default {
         provenance.value = await getBranchLists(res.data[0].rootWorkflowId)
         console.log(res.data[0],"res.data[0]");
         console.log(paymentAdviceWorksStatus.value,"paymentAdviceWorksStatus.value");
-        paymentAdviceWorksStatus.value = "";//_.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames //error, id mismatch
+        paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         res.data[0].workflows.forEach(passedWorkflow => {
@@ -936,7 +925,7 @@ export default {
         batchDetails.value.valueDate = valueDate.value; 
         let dueDt = moment(batchDetails.value.paymentDueDate);
         let valueDt = moment(batchDetails.value.valueDate); 
-        let noOfDays = valueDt.diff(dueDt,'days');
+        let noOfDays = dueDt.diff(valueDt,'days');
         batchDetails.value.numberOfDays = noOfDays;
       }
       if(bidValue.value != ""
@@ -1014,8 +1003,7 @@ export default {
       })
     }
 
-    const approveAcknowledge = async () => {
-      
+    const approveAcknowledge = async () => { 
       modalLoading.value = true
       await saveSignature().then( async()=>{ 
         var api = ''
@@ -1035,13 +1023,10 @@ export default {
           loading.value.provenance = true
           updateProvenanceApi()
         })
-      });
-
-      
+      }); 
     }
 
-    const declineAcknowledge = async () => {
-      saveSignature().then(()=> {
+    const declineAcknowledge = async () => { 
         if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
         if(user.user_role === 'Buyer Admin') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
         appAxios.post(api, {
@@ -1055,8 +1040,7 @@ export default {
             loading.value.provenance = true
             updateProvenanceApi()
           }
-        })
-      }); 
+        }) 
     }
 
     const submitProposal = async () => {
@@ -1342,7 +1326,7 @@ export default {
         valueDate.value = batchDetails.value.valueDate; 
         let dueDt = moment(batchDetails.value.paymentDueDate);
         let valueDt = moment(batchDetails.value.valueDate); 
-        let noOfDays = valueDt.diff(dueDt,'days');
+        let noOfDays = dueDt.diff(valueDt,'days');
         batchDetails.value.numberOfDays = noOfDays;
 
         batchDetails.value = {...batchDetails.value, ...batch}
