@@ -633,6 +633,13 @@
       </div>
     </div>
   </div>
+  <div id="failed-notification-content" class="toastify-content hidden flex">
+        <XCircleIcon class="text-theme-6" />
+        <div class="ml-4 mr-4">
+          <div class="font-medium">Upload failed!</div>
+          <div class="text-gray-600 mt-1" id="error-content">{{uploadErrorMessage}}.</div>
+        </div>
+      </div>
 </template>
 
 <script>
@@ -645,6 +652,8 @@ import { sysAxios, appAxios } from '@/plugins/axios'
 import Docments from './Documents'
 import { useDropzone } from 'vue3-dropzone';
 import ProvenanceLang from '@/utils/provenanceLanguage'
+import Toastify from "toastify-js";
+
 export default {
   props: {
     workflowExecutionReferenceId: {
@@ -681,6 +690,7 @@ export default {
     const signaturePad = ref(null)
     const remark = ref(null)
     const lastWorkStatus = ref()
+    const uploadErrorMessage = ref();
     const batchDetails = ref({
       batchNumber: null,
       batchFrom: '',
@@ -1011,24 +1021,42 @@ export default {
 
     const approveAcknowledge = async () => { 
       modalLoading.value = true
-      await saveSignature().then( async()=>{ 
-        var api = ''
-        if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
-        if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
-        await appAxios.post(api, {
-          externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-          remark: remark.value,
-          signatureUri: signatureFileUrl.value
-        }).then(res => {
-          modalLoading.value = false
-          if(res.status === 200) {
-            cash("#approve-invoice-modal").modal("hide")
-            visibleWorkflowActions.value.visibleApproveButton = false
-            provenancePendingStatusIndex.value ++;
-          }
-          loading.value.provenance = true
-          updateProvenanceApi()
-        })
+      await saveSignature().then( async()=>{  
+        if(signatureFileUrl.value == null)
+        {
+            uploadErrorMessage.value = "Your signature is required!";
+            console.log(cash("#error-content"))
+            Toastify({
+              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+              duration: 3000,
+              newWindow: true,
+              close: true,
+              gravity: "top",
+              position: "right",
+              stopOnFocus: true,
+            }).showToast();
+            modalLoading.value = false
+        }
+        else
+        {
+            var api = ''
+            if(user.user_role === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+            if(user.user_role === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+            await appAxios.post(api, {
+              externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+              remark: remark.value,
+              signatureUri: signatureFileUrl.value
+            }).then(res => {
+              modalLoading.value = false
+              if(res.status === 200) {
+                cash("#approve-invoice-modal").modal("hide")
+                visibleWorkflowActions.value.visibleApproveButton = false
+                provenancePendingStatusIndex.value ++;
+              }
+              loading.value.provenance = true
+              updateProvenanceApi()
+            })
+        } 
       }); 
     }
 
@@ -1128,6 +1156,23 @@ export default {
       
       modalLoading.value = true
       await saveSignature().then( async()=>{ 
+        if(signatureFileUrl.value == null)
+        {
+            uploadErrorMessage.value = "Your signature is required!";
+            console.log(cash("#error-content"))
+            Toastify({
+              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+              duration: 3000,
+              newWindow: true,
+              close: true,
+              gravity: "top",
+              position: "right",
+              stopOnFocus: true,
+            }).showToast();
+            modalLoading.value = false
+        }
+        else
+        {
         var api = ''
         if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
         else if(batchDetails.value.batchFrom === 'seller' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
@@ -1147,6 +1192,9 @@ export default {
             provenanceApi()
           }
         })
+
+      }
+
       });
     }
 
@@ -1154,6 +1202,23 @@ export default {
      
       modalLoading.value = true
       await saveSignature().then( async()=>{ 
+        if(signatureFileUrl.value == null)
+        {
+            uploadErrorMessage.value = "Your signature is required!";
+            console.log(cash("#error-content"))
+            Toastify({
+              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+              duration: 3000,
+              newWindow: true,
+              close: true,
+              gravity: "top",
+              position: "right",
+              stopOnFocus: true,
+            }).showToast();
+            modalLoading.value = false
+        }
+        else
+        {
         var api = ''
         if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
         if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
@@ -1171,10 +1236,27 @@ export default {
             updateProvenanceApi()
           }
         })
+      }
       });
     }
 
     const funderAcknowledgeOfRepaymentDecline = async () => {
+      if(signatureFileUrl.value == null)
+        {
+            uploadErrorMessage.value = "Your signature is required!";
+            console.log(cash("#error-content"))
+            Toastify({
+              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+              duration: 3000,
+              newWindow: true,
+              close: true,
+              gravity: "top",
+              position: "right",
+              stopOnFocus: true,
+            }).showToast(); 
+        }
+        else
+        {
       await saveSignature().then( async()=>{ 
         if(batchDetails.value.batchFrom === 'buyer') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
         if(batchDetails.value.batchFrom === 'seller') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
@@ -1189,6 +1271,7 @@ export default {
           updateProvenanceApi()
         })
       });
+    }
     }
 
     const setDisbursmentCurrencyCode = (currencyCode) => {
@@ -1275,18 +1358,28 @@ export default {
       const fileUploadApi = 'uploads/v1/acknowledgement_signature';
       let formData = new FormData();
       console.log(signature,"signature");
-      formData.append('file', signature.file)
-      await sysAxios.post(fileUploadApi, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-      }).then(res => {
-        signatureFileUrl.value = `https://authorization.bsg-api.tk/api/uploads/v1/${res.data}`
-        signatureLoading.value = false
-      });
-      return new Promise(resolve => {
-        resolve(signatureFileUrl.value)
-      })
+      if(signature.isEmpty)
+      {
+        return new Promise(resolve => {
+          resolve("Error!")
+        })
+      }
+      else
+      {
+        formData.append('file', signature.file)
+        await sysAxios.post(fileUploadApi, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+        }).then(res => {
+          signatureFileUrl.value = `https://authorization.bsg-api.tk/api/uploads/v1/${res.data}`
+          signatureLoading.value = false
+        });
+        return new Promise(resolve => {
+          resolve(signatureFileUrl.value)
+        })
+      }
+      
     }
 
     const onInput = (value) => {
@@ -1460,7 +1553,8 @@ export default {
       ProvenanceLang,
       initComponent,
       lockDays,
-      getEstimateCalc
+      getEstimateCalc,
+      uploadErrorMessage
     }
   },
 }
