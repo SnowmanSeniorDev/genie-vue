@@ -882,7 +882,7 @@ export default {
       console.log("loading.value.provenance = ", loading.value.provenance)
       console.log("verify request body = ", verifyRequestBody.value)
       console.log("loading = ", loading.value)
-      await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}`, verifyRequestBody.value).then(res => {
+      sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}`, verifyRequestBody.value).then(res => {
         console.log("verification res = ", res.data)
         provenance.value.forEach((workStatus, index) => {
           if(workStatus.passed) {
@@ -890,8 +890,9 @@ export default {
             provenance.value[index].verified = _.find(res.data.transactionWorkflowStatuses, {status: workStatus.statusName}).verificationStatus
           }
         })
+         loading.value.provenance = false
       })
-      loading.value.provenance = false
+     
       console.log(provenance.value,"provenance data");
       return new Promise(resolve => resolve("provenance api function done"))
 
