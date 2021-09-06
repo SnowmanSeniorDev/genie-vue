@@ -189,6 +189,7 @@ export default {
     const workflowLed = ref('');
     const invoiceFromCompanyName = ref('');
     const invoiceToCompanyName = ref('');
+    const requestValide = ref(true);
 
     const setDocumentFromat = (format) => {
       documentFormat.value = format
@@ -240,7 +241,6 @@ export default {
     }
 
     const submitInvoice = async () => {
-      loading.value = !loading.value;
       var api = ''
       var journalBatchEntries = [];
       var buyerCompanyId = '';
@@ -250,7 +250,7 @@ export default {
       if(workflowLed.value === 'Buyer Led') {
         api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0";
         await Promise.all(
-          jsonData.value.map(async item => {
+          jsonData.value.map(async (item, index) => {
             const companyId = await getCompanyIdByCompanyName(item.invoiceFromCompanyName);
             journalBatchEntries.push({
               ...item,
@@ -261,10 +261,11 @@ export default {
           })
         )
         buyerCompanyId = await getCompanyIdByCompanyName(invoiceToCompanyName.value)
+        
       } else {
         api = "/workflow/v1/seller-led-invoice-financing-workflow-1/0"
         await Promise.all(
-          jsonData.value.map(async item => {
+          jsonData.value.map(async (item, index) => {
             const companyId = await getCompanyIdByCompanyName(item.invoiceToCompanyName);
             journalBatchEntries.push({
               ...item,
@@ -275,8 +276,33 @@ export default {
           })
         )
         sellerCompanyId = await getCompanyIdByCompanyName(invoiceFromCompanyName.value)
+        
+      }
+      //verification request body.
+      if(sellerCompanyId === '00000000-0000-0000-0000-000000000000') {
+        requestValide.value = false;
+        showValidationError(-1, `can not find seller company with ${invoiceFromCompanyName.value}`)
+        return;
+      }
+      else if(buyerCompanyId === '00000000-0000-0000-0000-000000000000') {
+        requestValide.value = false;
+        showValidationError(-1, `Can not find buyer company with ${invoiceToCompanyName.value}`);
+        return;
+      }
+      else if(_.find(journalBatchEntries, {buyerCompanyId: '00000000-0000-0000-0000-000000000000'})) {
+        requestValide.value = false;
+        const index = _.findIndex(journalBatchEntries, {buyerCompanyId: '00000000-0000-0000-0000-000000000000'});
+        showValidationError(index, `Can not fild buyer company with ${journalBatchEntries[index].invoiceToCompanyName}`);
+        return;
+      }
+      else if(_.find(journalBatchEntries, {sellerCompanyId: '00000000-0000-0000-0000-000000000000'})) {
+        requestValide.value = false;
+        const index = _.findIndex(journalBatchEntries, {sellerCompanyId: '00000000-0000-0000-0000-000000000000'});
+        showValidationError(index, `Can not fild seller company with ${journalBatchEntries[index].invoiceFromCompanyName}`);
+        return;
       }
       //upload invoice
+      loading.value = !loading.value;
       var invoiceUploadResponse = await appAxios.post(api, {
           buyerCompanyId: buyerCompanyId,
           sellerCompanyId: sellerCompanyId,
@@ -302,19 +328,33 @@ export default {
         props.callback()
       }
     }
+
+    const showValidationError = (index, errorMessage) => {
+      jsonData.value[index].supportingDocuments = [];
+      cash("#error-content").text(errorMessage);
+      Toastify({
+        node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+        duration: 5000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "center",
+        stopOnFocus: true,
+      }).showToast();
+    }
     
     const fileChoosen = async (event) => {
       console.log(event.target.files)
       const fileUploadApi = 'uploads/v1/invoice_batch';
       let formData = new FormData();
       // if(!event.target.files.length) return;
-      
-      formData.append('file', event.target.files[0])
-      uploadedFileId.value = await sysAxios.post(fileUploadApi, formData, {
-        headers: {'Content-Type': 'multipart/form-data'}
-      }).then(res => {return res.data});
-      
-      return;
+      if(event.target.files.length) {
+        formData.append('file', event.target.files[0])
+        uploadedFileId.value = await sysAxios.post(fileUploadApi, formData, {
+          headers: {'Content-Type': 'multipart/form-data'}
+        }).then(res => {return res.data});
+        return;
+      }
     }
 
     onMounted(() => {

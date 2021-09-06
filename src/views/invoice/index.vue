@@ -299,7 +299,7 @@ export default {
           } 
           getLastUpdatedBy(pendingActions.value).then(res=>{  
             pendingActions.value = res;
-            initTabulator(_.orderBy(res, ['createdTime'],'desc'))
+            initTabulator(_.orderBy(res, ['createdTime'], 'desc'))
           });
         }) 
     }
