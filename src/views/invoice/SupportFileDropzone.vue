@@ -1,21 +1,20 @@
 <template>
   <div v-bind="getRootProps()" class="flex justify-center">
-    <div v-if="!files.length">
+    <div>
       <input v-bind="getInputProps()" :id="index">
       <UploadCloudIcon v-if="!uploadingFiles" class="w-4 h-4 text-red-400" />
       <div v-if="uploadingFiles" class="w-4, h-4 flex items-center">
         uploading
         <LoadingIcon icon="oval" color="red" class="w-3 h-3 ml-2" />
       </div>
-    </div>
-    <div v-else  class="dropzone-document-title">
-      <input v-bind="getInputProps()" :id="index">
-      <div v-for="(item, index) in files" :key="index">
-        {{item.name}}
-        <br />
+    </div> 
+  </div> 
+    <div class="justify-center flex-flow" > 
+        <div v-for="(item, index) in data" :key="index" >
+          {{item.documentName}} <button @click="onRemove(index,item)" style="color:red;"><Trash2Icon class="w-3 h-3" /></button>
+          <br /> 
       </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -35,6 +34,10 @@ export default {
     },
     index: {
       type: Number,
+      default: null
+    },
+    data:{
+      type: Object,
       default: null
     }
   },
@@ -61,10 +64,15 @@ export default {
       })
       
     }
+    const onRemove = async(index, item) => { 
+      
+      props.removeSupportDoc(props.index, index, item);
+    }
 
     const { getRootProps, getInputProps, ...rest } = useDropzone({ onDrop })
 
     return {
+      onRemove,
       files,
       getRootProps,
       getInputProps,
