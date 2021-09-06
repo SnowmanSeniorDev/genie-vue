@@ -87,10 +87,10 @@
                           </td>
                           <td class="border-b dark:border-dark-5">
                             <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].documentDate" mode="date">
-                              <template v-slot="{ inputValue, inputEvents }">
+                              <template v-slot="{  inputEvents }">
                                 <input
                                   class="block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                                  :value="inputValue"
+                                  :value="jsonData[index].documentDate"
                                   v-on="inputEvents"
                                   size="11"
                                 />
@@ -100,10 +100,10 @@
                           </td>
                           <td class="border-b dark:border-dark-5">
                             <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].paymentDueDate" mode="date">
-                              <template v-slot="{ inputValue, inputEvents }">
+                              <template v-slot="{  inputEvents }">
                                 <input
                                   class="block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                                  :value="inputValue"
+                                  :value="jsonData[index].paymentDueDate"
                                   v-on="inputEvents"
                                   size="11"
                                 />
@@ -120,7 +120,7 @@
                             <span v-else>{{item.amount}}</span>
                           </td>
                           <td class="border-b dark:border-dark-5 fileupload-col">
-                            <SupportDropzone :index="index" :addSupportDoc="addSupportDoc" :removeSupportDoc="removeSupportDoc"/>
+                            <SupportDropzone :index="index" :data="jsonData[index].supportingDocuments" :addSupportDoc="addSupportDoc" :removeSupportDoc="removeSupportDoc"/>
                           </td>
                           <td class="flex">
                             <button class="btn btn-sm btn-danger" @click="removeRow(index)">
@@ -220,8 +220,10 @@ export default {
         });
     }
 
-    const removeSupportDoc = (index, data) => {
-      console.log(index, data)
+    const removeSupportDoc = (rootIndex, index, data) => {
+      console.log(jsonData.value[rootIndex].supportingDocuments,"before" );
+      jsonData.value[rootIndex].supportingDocuments.splice(index,1);
+      console.log(jsonData.value[rootIndex].supportingDocuments,"after" );
     }
 
     const chooseFiles = () => {

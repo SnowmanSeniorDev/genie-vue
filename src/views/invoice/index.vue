@@ -254,8 +254,8 @@ export default {
     const getInvoiceOverview = async () => {
       
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`
-      getLastUpdatedBy(await appAxios.get(api).then(res => {return res.data})).then(res => {
-        invoiceOverview.value = res
+      getLastUpdatedBy(await appAxios.get(api).then(res => { return res.data })).then(res => {
+        invoiceOverview.value =  res; 
       })      
     }
   
@@ -299,12 +299,12 @@ export default {
           } 
           getLastUpdatedBy(pendingActions.value).then(res=>{  
             pendingActions.value = res;
-            initTabulator(_.sortBy(res, ['createdTime']))
+            initTabulator(_.orderBy(res, ['createdTime'],'desc'))
           });
         }) 
     }
 
-    const getLastUpdatedBy = async (invoices) => {
+    const getLastUpdatedBy = async (invoices) => { 
       const withLastUpdatedBy = await Promise.all(invoices.map(async invoice => {
         const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition'
         const lastWorkflowData = await appAxios.post(api, [invoice.workflowExecutionReferenceId])
@@ -314,16 +314,16 @@ export default {
           return {...invoice, lastUpdatedBy: 'System', action: lastWorkflowData.data[0].workflow.lastStatusTransition.statusName}
         }
         else {
-          const userData = await sysAxios.get(`/api/user/v1/${userId}`)
-          return {...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName, action: lastWorkflowData.workflow.lastStatusTransition.statusName}
+          const userData = await sysAxios.get(`/user/v1/${userId}`) 
+          return {...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName, action: lastWorkflowData.data[0].workflow.lastStatusTransition.statusName}
         }
       }))
       return new Promise(resolve => resolve(withLastUpdatedBy))
     }
 
-    const invoiceFromMe = () => {
+    const invoiceFromMe = () => { 
       selectedTab.value = "My Invoice";
-      const updatedData = _.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid})
+      const updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc');
       tabulator.value.clearData()
       if(updatedData.length > 0 )
       {
@@ -333,7 +333,7 @@ export default {
 
     const invoiceFromPendingAction = () => {
       selectedTab.value='Pending Action';
-      const updatedData = pendingActions.value;
+      const updatedData = _.orderBy(pendingActions.value,'createdTime','desc');
       tabulator.value.clearData()
       if(updatedData.length > 0 )
       {
