@@ -9,30 +9,22 @@
           </div> <!-- END: Modal Header -->
           <div class="m-8">
             <div class="form-inline block md:flex">
-              <div>
+              <div v-if="documentFormats.length">
                 <label for="role-name" class="pr-4">Document Type</label>
                 <div class="dropdown inline-block" data-placement="bottom">
                   <button class="dropdown-toggle btn btn-primary w-32 mr-1" aria-expanded="false"> {{documentFormat}} </button>
                   <div class="dropdown-menu w-40">
                     <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
-                      <a 
+                      <a v-for="(document, index) in documentFormats" :key="index"
                         href="javascript:;"
                         class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                        @click="setDocumentFromat('RVS WMS')"
+                        @click="setDocumentFromat(document.dataSourceSystemName)"
                       >
-                        RVS WMS
-                      </a>
-                      <a
-                        href="javascript:;"
-                        class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                        @click="setDocumentFromat('Standard/TF Format')"
-                      >
-                        Standard/TF Format
+                        {{document.dataSourceSystemName}}
                       </a>
                     </div>
                   </div>
                 </div>
-                        
               </div>
               <button class="btn btn-outline-primary mt-2 md:mt-0" @click="chooseFiles">
                 <UploadIcon class="w-4 h-4 mr-2" />
@@ -90,8 +82,8 @@
                             <span v-else>{{item.documentType}}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
-                            <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].sellerCompanyId"/>
-                            <span v-else>{{item.sellerCompanyId}}</span>
+                            <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].invoiceToCompanyName"/>
+                            <span v-else>{{item.invoiceToCompanyName}}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
                             <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].documentDate" mode="date">
@@ -159,7 +151,7 @@
         <XCircleIcon class="text-theme-6" />
         <div class="ml-4 mr-4">
           <div class="font-medium">Upload failed!</div>
-          <div class="text-gray-600 mt-1" id="error-content">{{uploadErrorMessage}}.</div>
+          <div class="text-gray-600 mt-1" id="error-content"></div>
         </div>
       </div>
     </div>
@@ -167,9 +159,8 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useStore } from 'vuex';
-import xlsx from "xlsx";
 import moment from "moment";
 import _ from "lodash";
 import { appAxios, sysAxios } from "@/plugins/axios";
@@ -187,32 +178,44 @@ export default {
   },
   setup(props){
     const store = useStore();
-    const xlsxRows = ref();
-    const xlsxHeaders = ref();
     const jsonData = ref([]);
     const fileUpload = ref(null);
     const documentFormat = ref("RVS WMS");
+    const documentFormats = ref([])
     const bidEndTime = ref(new Date());
     const loading = ref(false);
     const editRowIndex = ref(null);
-    const uploadErrorMessage = ref('')
+    const uploadedFileId = ref('');
+    const workflowLed = ref('');
+    const invoiceFromCompanyName = ref('');
+    const invoiceToCompanyName = ref('');
+    const requestValide = ref(true);
 
     const setDocumentFromat = (format) => {
       documentFormat.value = format
+      sysAxios.get(`/uploads/v1/${uploadedFileId.value}/extractdata/${format}`).then(res => {
+        console.log('extracted data = ', res.data);
+        workflowLed.value = res.data.workflow;
+        res.data.invoices.forEach((entity) => {
+          entity['supportingDocuments'] = []
+        })
+        jsonData.value = res.data.invoices;
+        if(res.data.workflow === 'Buyer Led') invoiceToCompanyName.value = res.data.invoiceToCompanyName;
+        else invoiceFromCompanyName.value = res.data.invoiceFromCompanyName;
+      })
       cash(".dropdown-menu").dropdown("hide");
     }
     
     const removeRow = (index) => {
       jsonData.value.splice(index, 1)
-      xlsxRows.value.splice(index, 1)
     }
 
-    const editRow = (index) => editRowIndex.value = index
+    const editRow = (index) => editRowIndex.value = index;
 
-    const saveRow = () => editRowIndex.value = null
+    const saveRow = () => editRowIndex.value = null;
 
     const addSupportDoc = (index, documentId, documentName) => {
-      jsonData.value[index].supportingDocuments.push({
+      jsonData.value[index]['supportingDocuments'].push({
           documentName: documentName,
           documentURI: process.env.VUE_APP_SYSTEM_API_URL + "/uploads/v1/" + documentId,
         });
@@ -225,7 +228,7 @@ export default {
     }
 
     const chooseFiles = () => {
-      document.getElementById("file-upload").click()
+      document.getElementById("file-upload").click();
     }
     
     const getCompanyIdByCompanyName = (companyName) => {
@@ -238,13 +241,17 @@ export default {
     }
 
     const submitInvoice = async () => {
-      loading.value = !loading.value
-      if(store.state.auth.user_role === 'Buyer Admin') {
-        const api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
-        let journalBatchEntries = [];
+      var api = ''
+      var journalBatchEntries = [];
+      var buyerCompanyId = '';
+      var sellerCompanyId = '';
+      
+      //preparing invoice upload request body
+      if(workflowLed.value === 'Buyer Led') {
+        api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0";
         await Promise.all(
-          jsonData.value.map(async item => {
-            const companyId = await getCompanyIdByCompanyName(item.sellerCompanyId);
+          jsonData.value.map(async (item, index) => {
+            const companyId = await getCompanyIdByCompanyName(item.invoiceFromCompanyName);
             journalBatchEntries.push({
               ...item,
               sellerCompanyId: companyId,
@@ -253,36 +260,13 @@ export default {
             });
           })
         )
-        appAxios.post(api, {
-          buyerCompanyId: store.state.account.company_uuid,
-          journalBatchEntries: journalBatchEntries,
-          bidEndTime: moment(bidEndTime.value).format()
-        }).then(res => {
-          console.log('res = ', res)
-          loading.value = !loading.value
-          if(res.status === 'error') {
-            uploadErrorMessage.value = res.error.response.data
-            console.log(cash("#error-content"))
-            Toastify({
-              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
-              duration: 3000,
-              newWindow: true,
-              close: true,
-              gravity: "top",
-              position: "right",
-              stopOnFocus: true,
-            }).showToast();
-          } else {
-            cash("#upload-invoice-modal").modal("hide");
-            props.callback()
-          }
-        })      
+        buyerCompanyId = await getCompanyIdByCompanyName(invoiceToCompanyName.value)
+        
       } else {
-        const api = "/workflow/v1/seller-led-invoice-financing-workflow-1/0"
-        let journalBatchEntries = [];
+        api = "/workflow/v1/seller-led-invoice-financing-workflow-1/0"
         await Promise.all(
-          jsonData.value.map(async item => {
-            const companyId = await getCompanyIdByCompanyName(item.sellerCompanyId);
+          jsonData.value.map(async (item, index) => {
+            const companyId = await getCompanyIdByCompanyName(item.invoiceToCompanyName);
             journalBatchEntries.push({
               ...item,
               buyerCompanyId: companyId,
@@ -291,97 +275,104 @@ export default {
             });
           })
         )
-        appAxios.post(api, {
-          sellerCompanyId: store.state.account.company_uuid,
+        sellerCompanyId = await getCompanyIdByCompanyName(invoiceFromCompanyName.value)
+        
+      }
+      //verification request body.
+      if(sellerCompanyId === '00000000-0000-0000-0000-000000000000') {
+        requestValide.value = false;
+        showValidationError(-1, `can not find seller company with ${invoiceFromCompanyName.value}`)
+        return;
+      }
+      else if(buyerCompanyId === '00000000-0000-0000-0000-000000000000') {
+        requestValide.value = false;
+        showValidationError(-1, `Can not find buyer company with ${invoiceToCompanyName.value}`);
+        return;
+      }
+      else if(_.find(journalBatchEntries, {buyerCompanyId: '00000000-0000-0000-0000-000000000000'})) {
+        requestValide.value = false;
+        const index = _.findIndex(journalBatchEntries, {buyerCompanyId: '00000000-0000-0000-0000-000000000000'});
+        showValidationError(index, `Can not fild buyer company with ${journalBatchEntries[index].invoiceToCompanyName}`);
+        return;
+      }
+      else if(_.find(journalBatchEntries, {sellerCompanyId: '00000000-0000-0000-0000-000000000000'})) {
+        requestValide.value = false;
+        const index = _.findIndex(journalBatchEntries, {sellerCompanyId: '00000000-0000-0000-0000-000000000000'});
+        showValidationError(index, `Can not fild seller company with ${journalBatchEntries[index].invoiceFromCompanyName}`);
+        return;
+      }
+      //upload invoice
+      loading.value = !loading.value;
+      var invoiceUploadResponse = await appAxios.post(api, {
+          buyerCompanyId: buyerCompanyId,
+          sellerCompanyId: sellerCompanyId,
           journalBatchEntries: journalBatchEntries,
           bidEndTime: moment(bidEndTime.value).format()
-        }).then(res => {
-          console.log(res)
-          loading.value = !loading.value;
-          if(res.status === 'error') {
-            uploadErrorMessage.value = res.error.response.data
-            cash("#error-content").text(res.error.response.data)
-            Toastify({
-              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
-              duration: 3000,
-              newWindow: true,
-              close: true,
-              gravity: "top",
-              position: "right",
-              stopOnFocus: true,
-              text: res.error.response.data
-            }).showToast();
-          } else {
-            cash("#upload-invoice-modal").modal("hide");
-            props.callback()
-          }
         })
-      }   
+
+      //notify to show invoice upload result
+      loading.value = !loading.value;
+      if(invoiceUploadResponse.status === 'error') {
+        cash("#error-content").text(invoiceUploadResponse.error.response.data)
+        Toastify({
+          node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+          duration: 5000,
+          newWindow: true,
+          close: true,
+          gravity: "top",
+          position: "center",
+          stopOnFocus: true,
+        }).showToast();
+      } else {
+        cash("#upload-invoice-modal").modal("hide");
+        props.callback()
+      }
+    }
+
+    const showValidationError = (index, errorMessage) => {
+      jsonData.value[index].supportingDocuments = [];
+      cash("#error-content").text(errorMessage);
+      Toastify({
+        node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+        duration: 5000,
+        newWindow: true,
+        close: true,
+        gravity: "top",
+        position: "center",
+        stopOnFocus: true,
+      }).showToast();
     }
     
     const fileChoosen = async (event) => {
-      // console.log(event.target.files)
-      // const fileUploadApi = 'uploads/v1/supporting_document';
-      var reader = new FileReader();
-      // let formData = new FormData();
-      // formData.append('file', event.target.value[0])
-      // let res = await sysAxios.post(fileUploadApi, formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data'
-      //   }
-      // });
-
-      // console.log("res = ", res)
-      // if(res.status === 200) {}
-      // return;
-      reader.onload = function (e) {
-        var data = new Uint8Array(e.target.result);
-        var workbook = xlsx.read(data, { type: "array" });
-        let sheetName = workbook.SheetNames[0];
-        xlsxHeaders.value = [];
-        jsonData.value = [];
-        xlsxRows.value = [];
-        /* DO SOMETHING WITH workbook HERE */
-        let worksheet = workbook.Sheets[sheetName];
-        xlsxRows.value = xlsx.utils.sheet_to_json(worksheet);
-        console.log('xlsxrows = ', xlsxRows.value)
-        let sellerCompanyId = ''
-        let dueDate = 0
-        let currencyCode = ''
-        xlsxRows.value.forEach((row) => {
-          if(Object.values(row)[0] === 'INV') {
-            jsonData.value.push({
-              documentNumber: row['__EMPTY'].toString(),
-              documentType: Object.values(row)[0],
-              sellerCompanyId: sellerCompanyId,
-              documentDate: moment(row['__EMPTY_2'], 'DD/MM/YYYY'),
-              paymentDueDate: moment(row['__EMPTY_2'], 'DD/MM/YYYY').add(dueDate, 'days'),
-              currencyCode: currencyCode,
-              amount: row['__EMPTY_9'].replace(',', ''),
-              supportingDocuments: []
-            })
-          }
-          else if(Object.values(row)[0] === 'CURRENCY') {
-            currencyCode = row['__EMPTY']
-          } else {
-            sellerCompanyId = row['__EMPTY']
-            if(row['__EMPTY_1']) dueDate = row['__EMPTY_1'].split(' ')[0]
-          }
-        })
-        /**
-         * for the test will add the fixed to jsonData 
-        */
-       /**
-        * end of fillin testing data
-        */
-      };
-      reader.readAsArrayBuffer(event.target.files[0]);
+      console.log(event.target.files)
+      const fileUploadApi = 'uploads/v1/invoice_batch';
+      let formData = new FormData();
+      // if(!event.target.files.length) return;
+      if(event.target.files.length) {
+        formData.append('file', event.target.files[0])
+        uploadedFileId.value = await sysAxios.post(fileUploadApi, formData, {
+          headers: {'Content-Type': 'multipart/form-data'}
+        }).then(res => {return res.data});
+        return;
+      }
     }
+
+    onMounted(() => {
+      const init = async () => {
+        documentFormats.value = await appAxios.get(`/company/v1/${store.state.account.company_uuid}/datasourcesystem`).then(res => {
+          console.log('res = ', res.data)
+          return res.data
+        })
+      }
+      
+      init()
+    })
     return {
       loading,
       jsonData,
       fileUpload,
       documentFormat,
+      documentFormats,
       setDocumentFromat,
       removeRow,
       editRow,
@@ -394,7 +385,6 @@ export default {
       bidEndTime,
       editRowIndex,
       moment,
-      uploadErrorMessage
     }
   }
 }

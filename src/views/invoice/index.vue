@@ -126,8 +126,7 @@ export default {
     
     
     const initTabulator = (data) => { 
-      console.log(data,"data");
-       tabulator.value = new Tabulator(tableRef.value, {
+      tabulator.value = new Tabulator(tableRef.value, {
         data: data,
         pagination: "local",
         paginationSize: 10,
@@ -300,7 +299,7 @@ export default {
           } 
           getLastUpdatedBy(pendingActions.value).then(res=>{  
             pendingActions.value = res;
-            initTabulator(_.orderBy(res, ['createdTime'],'desc'))
+            initTabulator(_.orderBy(res, ['createdTime'], 'desc'))
           });
         }) 
     }
@@ -343,11 +342,10 @@ export default {
     }
 
     onMounted(async () => {
-       await getInvoiceOverview();
-      await getPendingAction();
-       
-      if(store.state.account.company_type.toLowerCase() == "company")
-      { 
+      
+      getInvoiceOverview();
+      getPendingAction();
+      if(store.state.account.company_type.toLowerCase() == "company"){
         isCompany.value = true;
       }
       reInitOnResizeWindow();

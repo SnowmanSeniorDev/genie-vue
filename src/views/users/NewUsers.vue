@@ -1,164 +1,201 @@
 <template>
-  <div>
-    <h2 class="intro-y text-lg font-medium mt-10">Users Layout</h2>
-    <div class="grid grid-cols-12 gap-6 mt-5">
-      <div class="intro-y col-span-12 flex flex-wrap sm:flex-nowrap items-center mt-2">
-        <button class="btn btn-primary shadow-md mr-2" @click="gotoCreatUser">Add New User</button>
-        <div class="hidden md:block mx-auto text-gray-600">
-          Showing 1 to 10 of 150 entries
-        </div>
-        <div class="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-auto md:ml-0">
-          <div class="w-56 relative text-gray-700 dark:text-gray-300">
-            <input type="text" class="form-control w-56 box pr-10 placeholder-theme-13" placeholder="Search..."/>
-            <SearchIcon class="w-4 h-4 absolute my-auto inset-y-0 mr-3 right-0"/>
-          </div>
-        </div>
+  <h2 class="intro-y text-lg font-medium mt-10">Users Layout</h2>
+  <!-- BEGIN: Users Layout -->
+  <div class="intro-y box px-3 pb-3 mt-3 w-full">
+    <div v-if="companyLoading" class="py-16">
+      <div class="w-full h-8 px-8">
+        <LoadingIcon icon="spinning-circles" color="gray" class="w-4 h-4 py-8" />
       </div>
-      <!-- BEGIN: Users Layout -->
-      <div v-for="user in users" :key="user.Id" class="intro-y col-span-12 md:col-span-6 lg:col-span-4">
-        <div class="box">
-          <div class="flex items-start px-5 pt-5">
-            <div class="w-full flex flex-col lg:flex-row items-center">
-              <div class="w-16 h-16 image-fit">
-                <!-- <img alt="Midone Tailwind HTML Admin Template" class="rounded-full" :src="require(`@/assets/images/${faker.photos[0]}`)"/> -->
-              </div>
-              <div class="lg:ml-4 text-center lg:text-left mt-3 lg:mt-0">
-                <a href="" class="font-medium">{{ user.firstName + ' ' + user.lastName }}</a>
-                <div class="text-gray-600 text-xs mt-0.5">
-                  {{ user.displayName }}
-                </div>
-              </div>
-            </div>
-            <div class="absolute right-0 top-0 mr-5 mt-3 dropdown">
-              <a class="dropdown-toggle w-5 h-5 block" aria-expanded="false">
-                <MoreHorizontalIcon class="w-5 h-5 text-gray-600 dark:text-gray-300"/>
-              </a>
-              <div class="dropdown-menu w-40">
-                <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
-                  <a 
-                    :href="'/users/edit/' + user.userId"
-                    class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                  >
-                    <Edit2Icon class="w-4 h-4 mr-2" /> Edit
-                  </a>
-                  <a
-                    class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                    @click="deleteUser(user.userId)"
-                  >
-                    <TrashIcon class="w-4 h-4 mr-2" /> Delete
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="text-center lg:text-left p-5">
-            <div class="flex items-center justify-center lg:justify-start text-gray-600 mt-5">
-              <MailIcon class="w-3 h-3 mr-2" />
-              {{ user.emailAddress }}
-            </div>
-            <div class="flex items-center justify-center lg:justify-start text-gray-600 mt-1">
-              <InstagramIcon class="w-3 h-3 mr-2" />
-              {{ user.userName }}
-            </div>
-          </div>
-          <div class="text-center lg:text-right p-5 border-t border-gray-200 dark:border-dark-5">
-            <button class="btn btn-outline-secondary py-1 px-2">Profile</button>
-          </div>
-        </div>
-      </div>
-      <!-- END: Users Layout -->
-      <!-- BEGIN: Pagination -->
-      <div class="intro-y col-span-12 flex flex-wrap sm:flex-row sm:flex-nowrap items-center">
-        <ul class="pagination">
-          <li>
-            <a class="pagination__link" href="">
-              <ChevronsLeftIcon class="w-4 h-4" />
-            </a>
-          </li>
-          <li>
-            <a class="pagination__link" href="">
-              <ChevronLeftIcon class="w-4 h-4" />
-            </a>
-          </li>
-          <li>
-            <a class="pagination__link" href="">...</a>
-          </li>
-          <li>
-            <a class="pagination__link" href="">1</a>
-          </li>
-          <li>
-            <a class="pagination__link pagination__link--active" href="">2</a>
-          </li>
-          <li>
-            <a class="pagination__link" href="">3</a>
-          </li>
-          <li>
-            <a class="pagination__link" href="">...</a>
-          </li>
-          <li>
-            <a class="pagination__link" href="">
-              <ChevronRightIcon class="w-4 h-4" />
-            </a>
-          </li>
-          <li>
-            <a class="pagination__link" href="">
-              <ChevronsRightIcon class="w-4 h-4" />
-            </a>
-          </li>
-        </ul>
-        <select class="w-20 form-select box mt-3 sm:mt-0">
-          <option>10</option>
-          <option>25</option>
-          <option>35</option>
-          <option>50</option>
-        </select>
-      </div>
-      <!-- END: Pagination -->
     </div>
-    <router-view></router-view>
+    <div class="overflow-x-auto scrollbar-hidden">
+      <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref } from "vue";
-import { sysAxios } from "@/plugins/axios";
-import _ from "lodash";
+import { ref, onMounted } from "vue";
+import { sysAxios, appAxios } from "@/plugins/axios";
+import { useRouter } from "vue-router";
+import Tabulator from "tabulator-tables";
+import feather from "feather-icons";
+import _ from 'lodash';
 
 export default {
   setup() {
-    const api = "user/v1/";
-    const users = ref([]);
-    sysAxios.get(api).then( res => {
-      console.log(res.data)
-      res.data.map(user => {
-        const authorizationApi = `access/v1/authorization/user/${user.userId}`;
-        sysAxios.get(authorizationApi).then(authRes => {
-          authRes.data.roles.forEach(role => {
-            if(role.roleName === "guest") users.value = [...users.value, user]
-          });
+    const companies = ref([]);
+    const router = useRouter();
+    const tableRef = ref();
+    const tabulator = ref();
+    const companyLoading = ref(true);
+    const approveRoleId = ref('');
+
+    const init = async () => {
+      companyLoading.value = true;
+      
+      var users = await sysAxios.get('user/v1/').then( res => {return res.data});
+      await Promise.all(
+        users.map( async user => {
+          const authorizationApi = `access/v1/authorization/user/${user.userId}`;
+          const isGuest = await sysAxios.get(authorizationApi).then(authRes => {
+            if(_.find(authRes.data.roles, {roleName: 'guest'})) return true;
+            else return false
+          })
+
+          if(isGuest) {
+            const company_uuid = await appAxios.get(`company/v1/user/${user.userId}`).then(res => res.data);
+            if(company_uuid !== '00000000-0000-0000-0000-000000000000') {
+              const company = await appAxios.get(`company/v1/${company_uuid}/`).then(res => {return res.data})
+              companies.value.push({...company, user});
+            }
+          }
         })
+      )
+      
+      companyLoading.value = false;
+      initTabulator(companies.value);
+      return new Promise(resolve => {
+        resolve(companies.value)
       })
-    });
-    return {
-      users
     }
-  },
-  methods: {
-    gotoCreatUser() {
-      this.$router.push({path: '/users/creat'})
-    },
-    gotoEdit(id) {
-      this.$router.push({path: `/users/edit/${id}`})
-    },
-    deleteUser(userId) {
+
+    const initTabulator = (data) => {
+      tabulator.value = new Tabulator(tableRef.value, {
+        data: data,
+        ajaxLoaderLoading: '<span>Loading Data</span>',
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [5, 10, 20, 30, 40],
+        layout: "fitColumns",
+        responsiveLayout: "collapse",
+        placeholder: "No matching records found",
+        columns: [
+          {
+            title: "Registration No",
+            field: "registrationNo",
+            minWidth: 50,
+            maxWidth: 200,
+            hozAlign: "left",
+            resizable: true,
+            headerSort: false
+          },
+          {
+            title: "Company Name",
+            field: "companyDisplayName",
+            resizable: false,
+            headerSort: false
+          },
+          {
+            title: "Company Legal Name",
+            field: "companyLegalName",
+            headerHozAlign: 'center',
+            hozAlign: "center",
+            resizable: true,
+            headerSort: false
+          },
+          {
+            title: "Address",
+            field: "addressLine1",
+            headerHozAlign: 'center',
+            hozAlign: "center",
+            resizable: true,
+            headerSort: false
+          },
+          {
+            title: "Type",
+            field: "companyType",
+            headerHozAlign: 'center',
+            hozAlign: "center",
+            resizable: true,
+            headerSort: false
+          },
+          {
+            title: "Phone",
+            field: "phone",
+            minWidth: 100,
+            maxWidth: 200,
+            hozAlign: "right",
+            resizable: true,
+            headerSort: true,
+          },
+          {
+            title: "Email",
+            field: "primaryEmail",
+            hozAlign: "center",
+            resizable: true,
+            headerSort: false
+          },
+          {
+            title: "ACTIONS",
+            minWidth: 100,
+            maxWidth: 150,
+            responsive: 1,
+            headerHozAlign: "center",
+            hozAlign: "center",
+            vertAlign: "middle",
+            formatter(cell) {
+              const a = cash(`<div class="flex lg:justify-center items-center">
+                <a class="flex items-center btn btn-sm btn-primary" href="javascript:;">
+                  Approve
+                </a>
+              </div>`);
+              cash(a).on("click", function() {
+                const userId = cell.getData().user.userId;
+                approveCompany(userId);
+              })
+              return a[0];
+            }
+          }
+        ],
+        renderComplete() {
+          feather.replace({
+            "stroke-width": 1.5
+          });
+        }
+      });
+    };
+
+    const approveCompany = async userId => {
+      const authorized_uuid = await sysAxios.get(`access/v1/authorization/user/${userId}`).then(res => {return res.data.authorizationId})
+      sysAxios.put(`access/v1/authorization/${authorized_uuid}`, {applicationDomain: 'genie', roleIds: [approveRoleId.value]}).then(res => {
+        if(res.status == 200) init()
+      })
+    }
+
+    const gotoEdit = id => {
+      router.push({path: `/users/edit/${id}`});
+    }
+
+    const deleteUser = (userid) => {
       const api = `user/v1/${userId}`;
-      console.log(api);
       sysAxios.delete(api).then(res => {
         if(res.status === 200) {
           _.remove(this.users, {userId: userId});
           console.log(this.users);
         }
       })
+    }
+    const reInitOnResizeWindow = () => {
+      window.addEventListener("resize", () => {
+        tabulator.value.redraw();
+        feather.replace({
+          "stroke-width": 1.5
+        });
+      });
+    };
+    onMounted(async () => {
+      approveRoleId.value = await sysAxios.get('access/v1/role').then(res => {
+        return _.find(res.data, {roleName: 'System Admin'}).roleId;
+      });
+      await init();
+      reInitOnResizeWindow();
+    })
+
+    return {
+      tableRef,
+      gotoEdit,
+      deleteUser,
+      companyLoading
     }
   },
 }

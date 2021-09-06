@@ -174,8 +174,8 @@
         </div>
         <div v-if="initComponent">
           <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center">
-            <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
             <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
+            <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
           </div>
           <div v-if="visibleWorkflowActions.visibleSubmitProposal" class="pt-8 flex justify-center">
             <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Proposal</a>
