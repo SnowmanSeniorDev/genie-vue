@@ -72,12 +72,12 @@
     </div>
     <br />
     <div class="flex divide-x-2">
-      <div class="">
-        <button :class="'btn btn-sm ml-2 ' + ((selectedTab =='Pending Action')? 'btn-primary' : 'btn-outline-primary')" @click="invoiceFromPendingAction">Pending Action</button>
+      <div>
+      <button :class="`btn btn-sm mr-2 ${selectedTab =='Pending Action' ? 'btn-primary' : 'btn-outline-primary'}`" @click="invoiceFromPendingAction">Pending Action</button>
       </div>
-      <div class="">
-        <button :class="'btn btn-sm mr-2 ' + ((selectedTab =='My Invoice')? 'btn-primary' : 'btn-outline-primary')" @click="invoiceFromMe">My Invoice</button>
-      </div> 
+      <div>
+      <button :class="`btn btn-sm ml-2 ${selectedTab =='My Invoice' ? 'btn-primary' : 'btn-outline-primary'}`" @click="invoiceFromMe">My Invoice</button>
+      </div>
     </div>
     <div class="intro-y box px-3 pb-3 mt-3">
       <div v-if="loading" class="py-16">
@@ -176,7 +176,7 @@ export default {
             field: "lastUpdatedBy",
             hozAlign: "center",
             resizable: true,
-            headerSort: false
+            headerSort: true
           },
           {
             title: "LASTEST PHASE",
@@ -252,25 +252,21 @@ export default {
     };
 
     const getInvoiceOverview = async () => {
-      
-      const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`
-      getLastUpdatedBy(await appAxios.get(api).then(res => { return res.data })).then(res => {
-        invoiceOverview.value =  res; 
-      })      
+      const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
+      const invoices = await getLastUpdatedBy(await appAxios.get(api).then(res => { return res.data }));
+      invoiceOverview.value = invoices;
+      initTabulator(invoices)
     }
   
     const getPendingAction = async () => {
-      selectedTab.value ="Pending Action";
       const company_uuid = store.state.account.company_uuid;
       const pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`;
  
         await appAxios.get(pendingActionApi).then(async res => {
           let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
           let pendingAction = {};
-          if(pendingItem.length > 0)
-          {
-            for(let i=0;i<pendingItem.length;i++)
-            {
+          if(pendingItem.length > 0) {
+            for(let i = 0; i < pendingItem.length; i ++) {
               const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
               await appAxios.get(batchApi).then(res2 => { 
                 let batchData = res2.data; 
@@ -279,45 +275,43 @@ export default {
                 pendingActions.value.push(pendingAction); 
               }); 
             }   
-            if(store.state.account.company_type.toLowerCase() == "funder")
-            {
-              if(res.data.bidInvitations != null)
-              {
+            if(store.state.account.company_type.toLowerCase() == "funder") {
+              if(res.data.bidInvitations != null) {
                 let pendingBid = res.data.bidInvitations.open; 
-                if(pendingBid.workflowExecutionids.length > 0)
-                { 
-                    const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
-                    await appAxios.get(batchApi).then(res2 => {
-                      let batchData = res2.data; 
-                      pendingAction = batchData;
-                      pendingAction.action = "INVITE_FUNDERS_TO_BID"; 
-                      pendingActions.value.push(pendingAction); 
-                    });  
+                if(pendingBid.workflowExecutionids.length > 0) {
+                  const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
+                  await appAxios.get(batchApi).then(res2 => {
+                    let batchData = res2.data; 
+                    pendingAction = batchData;
+                    pendingAction.action = "INVITE_FUNDERS_TO_BID"; 
+                    pendingActions.value.push(pendingAction); 
+                  });  
                 }
               }
             }             
-          } 
-          getLastUpdatedBy(pendingActions.value).then(res=>{  
-            pendingActions.value = res;
-            initTabulator(_.orderBy(res, ['createdTime'], 'desc'))
-          });
+          }
+
+          pendingActions.value = await getLastUpdatedBy(pendingActions.value)
         }) 
     }
 
-    const getLastUpdatedBy = async (invoices) => { 
-      const withLastUpdatedBy = await Promise.all(invoices.map(async invoice => {
-        const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition'
-        const lastWorkflowData = await appAxios.post(api, [invoice.workflowExecutionReferenceId])
-        
-        const userId = lastWorkflowData.data[0].workflow.lastStatusTransition.updateBy
-        if(userId === '00000000-0000-0000-0000-000000000000') {
-          return {...invoice, lastUpdatedBy: 'System', action: lastWorkflowData.data[0].workflow.lastStatusTransition.statusName}
-        }
-        else {
-          const userData = await sysAxios.get(`/user/v1/${userId}`) 
-          return {...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName, action: lastWorkflowData.data[0].workflow.lastStatusTransition.statusName}
-        }
-      }))
+    const getLastUpdatedBy = async (invoices) => {
+      const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition';
+      const lastWorkflowDatas = await appAxios.post(api, _.map(invoices, 'workflowExecutionReferenceId'));
+      var withLastUpdatedBy = [];
+      await Promise.all(
+        invoices.map( async (invoice, index) => {
+          const lastWorkflowData = _.find(lastWorkflowDatas.data, {externalReferenceId: invoice.workflowExecutionReferenceId});
+          const userId = lastWorkflowData.workflow.lastStatusTransition.updateBy;
+          if(userId === '00000000-0000-0000-0000-000000000000') {
+            withLastUpdatedBy.push({...invoice, lastUpdatedBy: 'System', action: lastWorkflowData.workflow.lastStatusTransition.statusName})
+          }
+          else {
+            const userData = await sysAxios.get(`/user/v1/${userId}`) 
+            withLastUpdatedBy.push({...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName, action: lastWorkflowData.workflow.lastStatusTransition.statusName})
+          }
+        })
+      )
       return new Promise(resolve => resolve(withLastUpdatedBy))
     }
 
@@ -325,18 +319,16 @@ export default {
       selectedTab.value = "My Invoice";
       const updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc');
       tabulator.value.clearData()
-      if(updatedData.length > 0 )
-      {
+      if(updatedData.length > 0 ){
         tabulator.value.addRow(updatedData)
       }      
     }
 
     const invoiceFromPendingAction = () => {
-      selectedTab.value='Pending Action';
-      const updatedData = _.orderBy(pendingActions.value,'createdTime','desc');
+      selectedTab.value = 'Pending Action';
+      const updatedData = _.orderBy(pendingActions.value, 'createdTime', 'desc');
       tabulator.value.clearData()
-      if(updatedData.length > 0 )
-      {
+      if(updatedData.length > 0 ){
         tabulator.value.addRow(updatedData)
       }      
     }

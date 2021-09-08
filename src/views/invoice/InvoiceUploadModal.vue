@@ -194,7 +194,6 @@ export default {
     const setDocumentFromat = (format) => {
       documentFormat.value = format
       sysAxios.get(`/uploads/v1/${uploadedFileId.value}/extractdata/${format}`).then(res => {
-        console.log('extracted data = ', res.data);
         workflowLed.value = res.data.workflow;
         res.data.invoices.forEach((entity) => {
           entity['supportingDocuments'] = []
@@ -222,9 +221,7 @@ export default {
     }
 
     const removeSupportDoc = (rootIndex, index, data) => {
-      console.log(jsonData.value[rootIndex].supportingDocuments,"before" );
       jsonData.value[rootIndex].supportingDocuments.splice(index,1);
-      console.log(jsonData.value[rootIndex].supportingDocuments,"after" );
     }
 
     const chooseFiles = () => {
@@ -344,7 +341,6 @@ export default {
     }
     
     const fileChoosen = async (event) => {
-      console.log(event.target.files)
       const fileUploadApi = 'uploads/v1/invoice_batch';
       let formData = new FormData();
       // if(!event.target.files.length) return;
@@ -360,7 +356,6 @@ export default {
     onMounted(() => {
       const init = async () => {
         documentFormats.value = await appAxios.get(`/company/v1/${store.state.account.company_uuid}/datasourcesystem`).then(res => {
-          console.log('res = ', res.data)
           return res.data
         })
       }
