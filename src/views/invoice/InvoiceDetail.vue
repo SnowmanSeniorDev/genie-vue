@@ -31,8 +31,8 @@
             <td class="dark:border-dark-5">{{moment(item.createdTime).format(dateTimeFormat)}}</td>
             <td class="dark:border-dark-5">
               <button class="btn btn-primary h-6" @click="accordion(index)">
-                <span v-if="supportingDocumentAccordionIndex.includes(index)">View Less</span>
-                <span v-else>View More</span>
+                <span v-if="supportingDocumentAccordionIndex.includes(index)">View More</span>
+                <span v-else>View Less</span>
               </button>
             </td>
           </tr>
