@@ -62,7 +62,7 @@
                         <tr>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Document Number </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Document Type </th>
-                          <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Seller Name </th>
+                          <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> {{companyTypeHeader}} </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Document Date </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Payment Due Date </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Currency Code </th>
@@ -180,7 +180,8 @@ export default {
     const store = useStore();
     const jsonData = ref([]);
     const fileUpload = ref(null);
-    const documentFormat = ref("RVS WMS");
+    const documentFormat = ref("Select");
+    const companyTypeHeader = ref("Company Name");
     const documentFormats = ref([])
     const bidEndTime = ref(new Date());
     const loading = ref(false);
@@ -199,8 +200,14 @@ export default {
           entity['supportingDocuments'] = []
         })
         jsonData.value = res.data.invoices;
-        if(res.data.workflow === 'Buyer Led') invoiceToCompanyName.value = res.data.invoiceToCompanyName;
-        else invoiceFromCompanyName.value = res.data.invoiceFromCompanyName;
+        if(res.data.workflow === 'Buyer Led') {
+          companyTypeHeader.value = "Seller Name";
+          invoiceToCompanyName.value = res.data.invoiceToCompanyName;
+        }
+        else {
+           companyTypeHeader.value = "Buyer Name";
+          invoiceFromCompanyName.value = res.data.invoiceFromCompanyName;
+        }
       })
       cash(".dropdown-menu").dropdown("hide");
     }
@@ -367,6 +374,7 @@ export default {
       jsonData,
       fileUpload,
       documentFormat,
+      companyTypeHeader,
       documentFormats,
       setDocumentFromat,
       removeRow,
