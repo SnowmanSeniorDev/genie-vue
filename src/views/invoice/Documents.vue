@@ -39,12 +39,9 @@ export default {
       const api = `/journalbatch/v1/header/${props.journalBatchHeaderId }/entry/${props.journalBatchEntryId }/supportingdocuments`;
       
       appAxios.get(api).then(res => {
-        console.log(res.data,"doc data");
         documents.value = res.data 
-        if(documents.value.length > 0)
-        {
-          for(let i=0;i<documents.value.length;i++)
-          { 
+        if(documents.value.length > 0){
+          for(let i=0;i<documents.value.length;i++){
             const fileInfoApi = documents.value[i].documentURI + '/info';
             appAxios.get(fileInfoApi).then((res2)=>{
               documents.value[i].contentType = res2.data.contentType;
