@@ -12,64 +12,63 @@
           </div> 
         </div>
         <!-- END: General Report -->
+        <!-- START: Cards Data -->
+        <Cards />
+        <!-- END: Cards Data -->
         <!-- STAER: Active Report-->
-        <div class="col-span-12 grid grid-cols-12 gap-6 mt-5">
-          <div class="col-span-12 sm:col-span-6 xl:col-span-6 intro-y">
-            <div class="intro-y box p-5">
-              <div class="flex items-center">
-                <ListIcon class="w-6 h-6 mr-3" /><span class="text-lg">Pending For Action</span>
-              </div>
-              <div class="report-timeline mt-5 relative" v-if="pendingActions.length > 0">
-                <div class="intro-x relative flex items-start pb-5" v-for="pendingAction in pendingActions" :key="pendingAction.workflowExecutionReferenceId">
-                  <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-                  <div class="px-5 ml-4 flex-1">
-                    <div class="items-center">
-                      <span class="font-bold">{{ProvenanceLang[pendingAction.action]}}</span>
-                      <div class="mt-2">Invoice Batch {{pendingAction.batchNumber}}</div>
-                      <div class="text-gray-500">Created On :  {{pendingAction.createdTime}}</div>
-                      <a :href="`/invoice/detail/${pendingAction.workflowExecutionReferenceId}`"><button class="mt-2 btn h-6 w-16 bg-pink-700 text-white btn-sm">View</button></a>
-                    </div>
+        <div class="col-span-12 grid grid-cols-3 gap-6 mt-5">
+          <div class="intro-y box p-5">
+            <div class="flex items-center">
+              <ListIcon class="w-6 h-6 mr-3" /><span class="text-lg">Pending For Action</span>
+            </div>
+            <div class="report-timeline mt-5 relative" v-if="pendingActions.length > 0">
+              <div class="intro-x relative flex items-start pb-5" v-for="pendingAction in pendingActions" :key="pendingAction.workflowExecutionReferenceId">
+                <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
+                <div class="px-5 ml-4 flex-1">
+                  <div class="items-center">
+                    <span class="font-bold">{{ProvenanceLang[pendingAction.action]}}</span>
+                    <div class="mt-2">Invoice Batch {{pendingAction.batchNumber}}</div>
+                    <div class="text-gray-500">Created On :  {{pendingAction.createdTime}}</div>
+                    <a :href="`/invoice/detail/${pendingAction.workflowExecutionReferenceId}`"><button class="mt-2 btn h-6 w-16 bg-pink-700 text-white btn-sm">View</button></a>
                   </div>
-                </div>  
-              </div>
-              <div class="mt-5 relative" v-else>
-                <div class="intro-x relative flex items-start pb-5"> 
-                  <div class="px-5 ml-4 flex-1">
-                    <div class="items-center">
-                      No pending item
-                    </div>
+                </div>
+              </div>  
+            </div>
+            <div class="mt-5 relative" v-else>
+              <div class="intro-x relative flex items-start pb-5"> 
+                <div class="px-5 ml-4 flex-1">
+                  <div class="items-center">
+                    No pending item
                   </div>
-                </div>  
-              </div>
+                </div>
+              </div>  
             </div>
           </div>
-
-          <div class="col-span-12 sm:col-span-6 xl:col-span-6 intro-y">
-            <div class="intro-y p-5">
-              <img alt="" class="intro-x w-full h-48" src="/illustration.svg" />
-              <div class="box p-8">
-                <h4 class="text-lg font-bold">Upcomming Holiday Calender</h4>
-                <div class="mt-3 overflow-y-auto h-48 scroll-primary">
-                  <div v-for="holiday in holidays" :key="holiday.holidayCalendarEntryId" class="cursor-pointer relative flex items-center mt-2">
-                    <div class="w-8 mr-1 bg-pink-200 p-1 rounded-md">
-                      <CalendarIcon class="notification__icon dark:text-gray-300 text-pink-700 text-sm" />
+          <div class="intro-y bg-theme-2">
+            <div class="p-5">
+              <img alt="" class="intro-x w-full h-36" src="/Calendar-bro.svg" />
+            </div>
+            <div class="box p-8">
+              <h4 class="text-lg font-bold">Upcomming Holiday Calender</h4>
+              <div class="mt-3 overflow-y-auto h-48 scroll-primary">
+                <div v-for="holiday in holidays" :key="holiday.holidayCalendarEntryId" class="cursor-pointer relative flex items-center mt-2">
+                  <div class="w-8 mr-1 bg-pink-200 p-1 rounded-md">
+                    <CalendarIcon class="notification__icon dark:text-gray-300 text-pink-700 text-sm" />
+                  </div>
+                  <div class="ml-2 overflow-hidden">
+                    <div class="flex items-center">
+                      <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format(dateFormat)}}</a>
                     </div>
-                    <div class="ml-2 overflow-hidden">
-                      <div class="flex items-center">
-                        <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format(dateFormat)}}</a>
-                      </div>
-                      <div class="flex items-center">
-                        <a href="javascript:;" class="font-medium truncate mr-5">{{holiday.description}}</a>
-                      </div>
-                      <div class="w-full truncate text-gray-600 mt-0.5">{{holiday.label}}</div>
+                    <div class="flex items-center">
+                      <a href="javascript:;" class="font-medium truncate mr-5">{{holiday.description}}</a>
                     </div>
+                    <div class="w-full truncate text-gray-600 mt-0.5">{{holiday.label}}</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-            
+          <ActiveBorrowers v-if="userRole == 'Funder Admin'"/>
         </div>
         <!-- END: Active Report -->
         <!-- STAER: Stock Chart-->
@@ -97,12 +96,16 @@ import moment from 'moment';
 import _ from 'lodash';
 import { appAxios } from '@/plugins/axios';
 import InvoiceUploadModal from "../invoice/InvoiceUploadModal";
+import Cards from "./Cards.vue";
+import ActiveBorrowers from "./ActiveBorrowers.vue"
 import ProvenanceLang from '@/utils/provenanceLanguage'
 
 export default defineComponent({
   components: {
     //StackedBarChart,
-    InvoiceUploadModal
+    InvoiceUploadModal,
+    Cards,
+    ActiveBorrowers
   },
  
   setup() {
@@ -124,10 +127,8 @@ export default defineComponent({
         await appAxios.get(dashboardApi).then(res => {
           let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
           let pendingAction = {};
-          if(pendingItem.length > 0)
-          {
-            for(let i=0;i<pendingItem.length;i++)
-            {
+          if(pendingItem.length > 0) {
+            for(let i=0;i<pendingItem.length;i++) {
               const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
               appAxios.get(batchApi).then(res2 => {
                 let batchData = res2.data;
@@ -142,42 +143,38 @@ export default defineComponent({
               }); 
             }
           }
-          if(store.state.account.company_type.toLowerCase() == "funder")
-          {
-            if(res.data.bidInvitations != null)
-            {
+          if(store.state.account.company_type.toLowerCase() == "funder") {
+            if(res.data.bidInvitations != null) {
               let pendingBid = res.data.bidInvitations.open;
-              console.log(pendingBid.workflowExecutionids,"workflowExecutionids");
-               if(pendingBid.workflowExecutionids.length > 0)
-              { 
-                  const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
-                  appAxios.get(batchApi).then(res2 => {
-                    let batchData = res2.data;
-                    console.log(batchData,"batchData");
-                    pendingAction = {};
-                    pendingAction.action = "INVITE_FUNDERS_TO_BID";
-                    pendingAction.batchNumber = batchData.batchNumber;
-                    pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
-                    pendingAction.createdTime = moment(batchData.createdTime).format(dateFormat);
-                    pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
-                    pendingActions.value.push(pendingAction);
+              if(pendingBid.workflowExecutionids.length > 0) {
+                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
+                appAxios.get(batchApi).then(res2 => {
+                  let batchData = res2.data;
+                  console.log(batchData,"batchData");
+                  pendingAction = {};
+                  pendingAction.action = "INVITE_FUNDERS_TO_BID";
+                  pendingAction.batchNumber = batchData.batchNumber;
+                  pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
+                  pendingAction.createdTime = moment(batchData.createdTime).format(dateFormat);
+                  pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
+                  pendingActions.value.push(pendingAction);
 
-                    console.log(pendingActions,"pendingActions");
-                  }); 
-                 
+                  console.log(pendingActions,"pendingActions");
+                }); 
               }
             }
           }
         })
-        
       }
     })
+
     return {
       dateFormat,
       pendingActions,
       holidays, 
       moment,
-      ProvenanceLang
+      ProvenanceLang,
+      userRole: store.state.auth.user_role
     };
   }
 });
