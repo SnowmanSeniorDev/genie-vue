@@ -139,7 +139,7 @@ export default {
             title: "BATCH NO.",
             field: "batchNumber",
             minWidth: 50,
-            maxWidth: 200,
+            maxWidth: 150,
             resizable: false,
             headerSort: false
           },
@@ -163,7 +163,7 @@ export default {
             title: "TOTAL AMOUNT",
             field: "totalAmount",
             minWidth: 100,
-            maxWidth: 200,
+            maxWidth: 170,
             hozAlign: "right",
             resizable: true,
             headerSort: true,
@@ -191,6 +191,7 @@ export default {
           },
           {
             title: "CREATED AT",
+            minWidth: 300,
             hozAlign: "center",
             headerHozAlign: 'center',
             resizable: true,
@@ -254,8 +255,8 @@ export default {
     const getInvoiceOverview = async () => {
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
       const invoices = await getLastUpdatedBy(await appAxios.get(api).then(res => { return res.data }));
-      invoiceOverview.value = invoices;
-      initTabulator(invoices)
+      invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc')
+      initTabulator(invoiceOverview.value)
     }
   
     const getPendingAction = async () => {
