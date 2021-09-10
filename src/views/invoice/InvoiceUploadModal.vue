@@ -81,9 +81,11 @@
                             <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].documentType" size="5"/>
                             <span v-else>{{item.documentType}}</span>
                           </td>
-                          <td class="border-b dark:border-dark-5">
-                            <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].invoiceToCompanyName"/>
-                            <span v-else>{{item.invoiceToCompanyName}}</span>
+                          <td class="border-b dark:border-dark-5">                            
+                            <input v-if="index === editRowIndex && companyTypeHeader === 'Seller Name'" type="text" v-model="jsonData[index].invoiceFromCompanyName"/>
+                            <input v-else-if="index === editRowIndex && companyTypeHeader === 'Buyer Name'" type="text" v-model="jsonData[index].invoiceToCompanyName"/>
+                            <span v-else-if="companyTypeHeader === 'Seller Name'">{{item.invoiceFromCompanyName}}</span>
+                            <span v-else-if="companyTypeHeader === 'Buyer Name'">{{item.invoiceToCompanyName}}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
                             <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].documentDate" mode="date">
