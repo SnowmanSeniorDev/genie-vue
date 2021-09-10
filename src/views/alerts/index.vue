@@ -47,6 +47,7 @@ import moment from "moment";
 
 export default {
   setup() {
+    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
     const store = useStore()
     const router = useRouter();
     const tableRef = ref();
@@ -86,9 +87,9 @@ export default {
             hozAlign: "left",
             resizable: true,
             headerSort: false,
-            formatter(cell) {
+            formatter(cell) { 
               const dateTime = cell.getData().when
-              return moment(dateTime).format("LLLL")
+              return moment(dateTime).format(dateTimeFormat.value)
             }
           },
           {
@@ -140,6 +141,7 @@ export default {
     });
 
     return {
+      dateTimeFormat,
       tableRef,
       filter,
       markReadAll

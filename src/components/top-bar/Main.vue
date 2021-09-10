@@ -30,7 +30,7 @@
                 <a href="javascript:;" class="font-medium truncate mr-5">{{alert.title}}</a>
               </div>
               <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                {{alert.when}}
+                {{moment(alert.when).format(dateTimeFormat)}}
               </div>
             </div>
           </div>
@@ -102,7 +102,7 @@
             </div>
             <div class="ml-2 overflow-hidden">
               <div class="flex items-center">
-                <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format('LL')}}</a>
+                <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format(dateFormat)}}</a>
               </div>
               <div class="flex items-center">
                 <a href="javascript:;" class="font-medium truncate mr-5">{{holiday.description}}</a>
@@ -161,6 +161,8 @@ import _ from 'lodash';
 
 export default defineComponent({
   setup() {
+    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT);
+    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
     const store = useStore()
     const alerts = ref([])
     const holidays = ref([])
@@ -178,6 +180,8 @@ export default defineComponent({
       }
     })
     return {
+      dateFormat,
+      dateTimeFormat,
       alerts,
       holidays,
       moment,

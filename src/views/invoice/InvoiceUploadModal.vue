@@ -8,9 +8,27 @@
             <h2 class="font-medium text-base mr-auto"> Upload Invoice </h2>
           </div> <!-- END: Modal Header -->
           <div class="m-8">
-            <div class="form-inline block md:flex">
+            <div class="flex items-center mt-2 md:mt-0">
+                <label for="bid-end-time" class="md:pl-4 pr-4">Bid End Time</label>
+                <DatePicker v-model="bidEndTime" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
+                  <template v-slot="{ inputValue, inputEvents }">
+                    <input
+                      id="bid-end-time"
+                      class="form-control w-56 block mx-auto border rounded focus:outline-none focus:border-blue-300"
+                      :value="inputValue"
+                      v-on="inputEvents"
+                    />
+                  </template>
+                </DatePicker>
+              </div>
+              
+            <div class="flex items-center mt-2  form-inline block md:flex">
               <div v-if="documentFormats.length">
                 <label for="role-name" class="pr-4">Document Type</label>
+                <button class="btn btn-outline-primary w-32 mr-1 inline-block" @click="chooseFiles">
+                    <UploadIcon class="w-4 h-4 mr-2" />
+                    Upload Invoice
+                  </button> 
                 <div class="dropdown inline-block" data-placement="bottom">
                   <button class="dropdown-toggle btn btn-primary w-32 mr-1" aria-expanded="false"> {{documentFormat}} </button>
                   <div class="dropdown-menu w-40">
@@ -26,23 +44,8 @@
                   </div>
                 </div>
               </div>
-              <button class="btn btn-outline-primary mt-2 md:mt-0" @click="chooseFiles">
-                <UploadIcon class="w-4 h-4 mr-2" />
-                Upload Invoice
-              </button>
-              <div class="flex items-center mt-2 md:mt-0">
-                <label for="bid-end-time" class="md:pl-4 pr-4">Bid End Time</label>
-                <DatePicker v-model="bidEndTime" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
-                  <template v-slot="{ inputValue, inputEvents }">
-                    <input
-                      id="bid-end-time"
-                      class="form-control w-56 block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                      :value="inputValue"
-                      v-on="inputEvents"
-                    />
-                  </template>
-                </DatePicker>
-              </div>
+              
+              
             </div>
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
             <div class="col-span-12 h-96 overflow-y-auto overflow-x-invisible bg-gray-200 p-1 mt-5">
@@ -338,7 +341,6 @@ export default {
     }
 
     const showValidationError = (index, errorMessage) => {
-      jsonData.value[index].supportingDocuments = [];
       cash("#error-content").text(errorMessage);
       Toastify({
         node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
