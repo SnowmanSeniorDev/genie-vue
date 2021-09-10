@@ -31,8 +31,8 @@
                 Upload Invoice
               </button>
               <div class="flex items-center mt-2 md:mt-0">
-                <label for="bid-end-time" class="md:pl-4 pr-4">Bid EndTime</label>
-                <DatePicker v-model="bidEndTime" mode="dateTime">
+                <label for="bid-end-time" class="md:pl-4 pr-4">Bid End Time</label>
+                <DatePicker v-model="bidEndTime" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
                   <template v-slot="{ inputValue, inputEvents }">
                     <input
                       id="bid-end-time"
@@ -86,30 +86,30 @@
                             <span v-else>{{item.invoiceToCompanyName}}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
-                            <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].documentDate" mode="date">
-                              <template v-slot="{  inputEvents }">
+                            <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].documentDate" mode="date" :masks="{input: dateFormat}">
+                              <template v-slot="{ inputValue, inputEvents }">
                                 <input
                                   class="block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                                  :value="jsonData[index].documentDate"
+                                  :value="inputValue"
                                   v-on="inputEvents"
                                   size="11"
                                 />
                               </template>
                             </DatePicker>
-                            <span v-else>{{moment(item.documentDate).format('MM/DD/YYYY') }}</span>
+                            <span v-else>{{moment(item.documentDate).format(dateFormat) }}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
-                            <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].paymentDueDate" mode="date">
-                              <template v-slot="{  inputEvents }">
+                            <DatePicker v-if="index === editRowIndex" v-model="jsonData[index].paymentDueDate" mode="date" :masks="{input: dateFormat}">
+                              <template v-slot="{inputValue,  inputEvents }">
                                 <input
                                   class="block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                                  :value="jsonData[index].paymentDueDate"
+                                  :value="inputValue"
                                   v-on="inputEvents"
                                   size="11"
                                 />
                               </template>
                             </DatePicker>
-                            <span v-else>{{moment(item.paymentDueDate).format('MM/DD/YYYY') }}</span>
+                            <span v-else>{{moment(item.paymentDueDate).format(dateFormat) }}</span>
                           </td>
                           <td class="border-b dark:border-dark-5">
                             <input v-if="index === editRowIndex" type="text" v-model="jsonData[index].currencyCode" size="5"/>
@@ -177,6 +177,8 @@ export default {
     }
   },
   setup(props){
+    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT); 
+    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT);
     const store = useStore();
     const jsonData = ref([]);
     const fileUpload = ref(null);
@@ -370,6 +372,8 @@ export default {
       init()
     })
     return {
+      dateFormat,
+      dateTimeFormat,
       loading,
       jsonData,
       fileUpload,
