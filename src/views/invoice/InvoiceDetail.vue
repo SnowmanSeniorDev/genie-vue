@@ -1485,6 +1485,28 @@ export default {
       await getCurrencyCode()
       //lock days consists of company holidays and it will be disabled in datepicker
       await getLockDays()
+      const company_uuid = store.state.account.company_uuid;
+      const dashboardApi = `/company/v1/${company_uuid}/dashboarddata`;
+      visibleWorkflowActions.value.visibleSubmitProposal = false;
+      await appAxios.get(dashboardApi).then(res => {
+          let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
+          let pendingAction = {}; 
+          
+            if(res.data.bidInvitations != null) {
+              let pendingBid = res.data.bidInvitations.open;
+              if(pendingBid.workflowExecutionids.length > 0) {
+                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
+                appAxios.get(batchApi).then(res2 => {
+                  
+                  let batchData = res2.data;
+                  if(batchData.workflowExecutionReferenceId == props.workflowExecutionReferenceId)
+                  {
+                    visibleWorkflowActions.value.visibleSubmitProposal = true;
+                  } 
+                }); 
+              }
+            } 
+        })
     }
     
     const updateProvenanceApi = async () => {
