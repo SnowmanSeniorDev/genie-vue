@@ -109,6 +109,8 @@ export default {
     InvoiceUploadModal
   },
   setup() {
+    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
+    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
     const selectedTab = ref();
     const store = useStore();
     const router = useRouter();
@@ -196,8 +198,8 @@ export default {
             headerHozAlign: 'center',
             resizable: true,
             headerSort: true,
-            formatter(cell) {
-              return moment(cell.getData().createdTime).format("LLLL")
+            formatter(cell) { 
+              return moment(cell.getData().createdTime).format(dateTimeFormat.value)
             }
           },
           {
@@ -346,6 +348,8 @@ export default {
     });
 
     return {
+      dateFormat,
+      dateTimeFormat,
       selectedTab,
       isCompany,
       loading,
