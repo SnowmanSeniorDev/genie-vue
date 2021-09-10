@@ -7,7 +7,7 @@
             <div class="w-full">
               <div class="text-2xl font-bold leading-8">FINANCING REQUESTED</div>
               <div class="ml-auto">Count: {{cardsData.companyDashBoard.historicalRelationship.funded.count}}</div>
-              <div class="text-base text-gray-600 mt-1">Total Amount: {{cardsData.companyDashBoard.historicalRelationship.finacingRequested.totalAmount}}</div>
+              <div class="text-base text-gray-600 mt-1">Total Amount: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.historicalRelationship.finacingRequested.totalAmount}}</div>
             </div>
             <div class="flex justify-end items-center">
               <ShoppingCartIcon class="report-box__icon text-theme-10" />
@@ -21,7 +21,7 @@
             <div class="w-full">
               <div class="text-2xl font-bold leading-8">FINANCING REQUESTED</div>
               <div class="ml-auto">Count: {{cardsData.companyDashBoard.historicalRelationship.finacingRequested.count}}</div>
-              <div class="text-base text-gray-600 mt-1">Total Amount: {{cardsData.companyDashBoard.historicalRelationship.finacingRequested.totalAmount}}</div>
+              <div class="text-base text-gray-600 mt-1">Total Amount: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.historicalRelationship.finacingRequested.totalAmount}}</div>
             </div>
             <div class="flex justify-end items-center">
               <ShoppingCartIcon class="report-box__icon text-theme-10" />
@@ -34,9 +34,9 @@
           <div class="flex">
             <div class="w-full">
               <div class="text-2xl font-bold leading-8">LINE INFORMATION</div>
-              <div class="ml-auto">Available Limite: {{cardsData.companyDashBoard.lineInformation.availableLimit}}</div>
-              <div class="text-base text-gray-600 mt-1">Overall Limite: {{cardsData.companyDashBoard.lineInformation.overallLimit}}</div>
-              <div class="text-base text-gray-600 mt-1">Utilised Amount: {{cardsData.companyDashBoard.lineInformation.utilisedAmount}}</div>
+              <div class="ml-auto">Available Limite: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.lineInformation.availableLimit}}</div>
+              <div class="text-base text-gray-600 mt-1">Overall Limite: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.lineInformation.overallLimit}}</div>
+              <div class="text-base text-gray-600 mt-1">Utilised Amount: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.lineInformation.utilisedAmount}}</div>
             </div>
             <div class="flex justify-end items-center">
               <ShoppingCartIcon class="report-box__icon text-theme-10" />
@@ -53,9 +53,9 @@
           <div class="flex">
             <div class="w-full">
               <div class="text-2xl font-bold leading-8">LINE INFORMATION</div>
-              <div class="ml-auto">Available Limite: {{cardsData.funderCompanyDashBoard.availableLimit}}</div>
-              <div class="ml-auto">Funded Amoun: {{cardsData.funderCompanyDashBoard.fundedAmount}}</div>
-              <div class="ml-auto">Total Allocated Amount: {{cardsData.funderCompanyDashBoard.totalAllocatedLimit}}</div>
+              <div class="ml-auto">Available Limite: {{cardsData.currencyCode}} {{cardsData.funderCompanyDashBoard.availableLimit}}</div>
+              <div class="ml-auto">Funded Amoun: {{cardsData.currencyCode}} {{cardsData.funderCompanyDashBoard.fundedAmount}}</div>
+              <div class="ml-auto">Total Allocated Amount: {{cardsData.currencyCode}} {{cardsData.funderCompanyDashBoard.totalAllocatedLimit}}</div>
             </div>
             <div class="flex justify-end items-center">
               <ShoppingCartIcon class="report-box__icon text-theme-10" />
