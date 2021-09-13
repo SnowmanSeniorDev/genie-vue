@@ -58,16 +58,17 @@
               <div class="flex items-center">
                 <div
                   v-if="item.passed && item.verified"
-                  class="alert show flex items-center h-5 p-3 text-sm justify-center text-blue-700 bg-blue-200"
+                  :class="'alert show flex items-center h-5 p-3 text-sm justify-center ' + ((lastWorkStatus.statusName === item.statusName)? 'text-black-700 bg-yellow-200':'text-black-700 bg-green-200' )"
                   role="alert"
                 >
                   <SendIcon v-if="lastWorkStatus.statusName === item.statusName" class="w-3 h-3 mr-3" />
                   <ShieldIcon v-else class="w-3 h-3 mr-3"/>
-                  <span class="pr-3">Verified</span>
+                  
+                  <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Verified'}}</span>
                 </div>
                 <div
                   v-else-if="item.passed && !item.verified"
-                  class="alert show flex items-center h-5 p-3 text-sm justify-center text-red-700 bg-red-200"
+                  class="alert show flex items-center h-5 p-3 text-sm justify-center text-black-700 bg-red-200"
                   role="alert"
                 >
                   <ShieldOffIcon class="w-3 h-3 mr-3" />
@@ -78,8 +79,8 @@
                   :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'alert-secondary'}`"
                   role="alert" 
                 >
-                  <SendIcon class="w-3 h-3 mr-3" v-if="lastWorkStatus.statusName === item.statusName" />
-                  <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Not Started'}}</span>
+                  <SendIcon class="w-3 h-3 mr-3"/>
+                  <span class="pr-3">Not Started</span>
                 </div>
                 <div class="items-center">
                   <span class="font-bold ml-3">{{ProvenanceLang[item.statusName]}}</span> 
@@ -1443,6 +1444,7 @@ export default {
           })
         })
       })
+
       const genieGlobalSetting = `configuration/v1/Genie Global Settings`
       await sysAxios.get(genieGlobalSetting).then(res => {
         adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value

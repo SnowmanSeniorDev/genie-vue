@@ -192,6 +192,17 @@ export default {
             }
           },
           {
+            title: "STATUS",
+            field: "action",
+            hozAlign: "center",
+            headerHozAlign: 'center',
+            resizable: true,
+            headerSort: true,
+            formatter(cell) {
+              return cell.getData().batchStatus
+            }
+          },
+          {
             title: "CREATED AT",
             minWidth: 300,
             hozAlign: "center",
@@ -257,8 +268,9 @@ export default {
     const getInvoiceOverview = async () => {
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
       const invoices = await getLastUpdatedBy(await appAxios.get(api).then(res => { return res.data }));
+      
       invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc')
-      initTabulator(invoiceOverview.value)
+      //initTabulator(invoiceOverview.value)
     }
   
     const getPendingAction = async () => {
@@ -274,6 +286,7 @@ export default {
               await appAxios.get(batchApi).then(res2 => { 
                 let batchData = res2.data; 
                 pendingAction.action = pendingItem[i].action;
+                pendingAction.batchStatus = pendingItem[i].batchStatus;
                 pendingAction = batchData; 
                 pendingActions.value.push(pendingAction); 
               }); 
@@ -294,7 +307,8 @@ export default {
             }             
           }
 
-          pendingActions.value = await getLastUpdatedBy(pendingActions.value)
+          pendingActions.value = await getLastUpdatedBy(pendingActions.value);
+          initTabulator(pendingActions.value)
         }) 
     }
 
