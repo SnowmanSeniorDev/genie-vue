@@ -839,7 +839,7 @@ export default {
             return item
           })
         })
-        provenance.value = _.map(_.map(provenance.value, 'workflowStatuses').flat().reverse(), function(item) {
+        provenance.value = _.map(_.map(provenance.value, 'workflowStatuses').flat(), function(item) {
           return _.merge(item, _.find(_.map(res.data[0].workflows, 'statusTransitions').flat(), { 'statusName' : item.statusName }));
         });
       })
@@ -1067,6 +1067,7 @@ export default {
         if(res.status === 201) {
           cash("#submit-proposal-modal").modal("hide")
           loading.value.provenance = true
+          visibleWorkflowActions.value.visibleSubmitProposal = false;
           updateProvenanceApi()
         }
       })
