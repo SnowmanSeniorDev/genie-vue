@@ -16,7 +16,7 @@
       <div class="notification-content pt-2 dropdown-menu">
         <div class="notification-content__box dropdown-menu__content box dark:bg-dark-6">
           <div class="notification-content__title">
-            Alters Center
+            Alert Center
           </div>
           <hr />
           <div v-for="(alert, index) in alerts" class="cursor-pointer relative flex items-center py-2" :key="index">
@@ -34,55 +34,7 @@
               </div>
             </div>
           </div>
-          <hr />
-          <!-- <div class="cursor-pointer relative flex items-center py-2">
-            <div class="w-12 mr-1">
-              <div class="w-8 mr-1 bg-blue-200 p-1 rounded-full text-center">
-                <UserIcon class="notification__icon dark:text-gray-300 text-blue-700 text-sm w-4" />
-              </div>
-            </div>
-            <div class="ml-2 overflow-hidden">
-              <div class="flex items-center">
-                <a href="javascript:;" class="font-medium truncate mr-5">Seller Onboarded</a>
-              </div>
-              <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                12 April 2021 09:26 
-              </div>
-            </div>
-          </div>
-          <hr />
-          <div class="cursor-pointer relative flex items-center py-2">
-            <div class="w-12 mr-1">
-              <div class="w-8 mr-1 bg-yellow-200 p-1 rounded-full text-center">
-                <MapPinIcon class="notification__icon dark:text-gray-300 text-yellow-700 text-sm w-4" />
-              </div>
-            </div>
-            <div class="ml-2 overflow-hidden">
-              <div class="flex items-center">
-                <a href="javascript:;" class="font-medium truncate mr-5">Seler Acknowledgement Status Change</a>
-              </div>
-              <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                10 April 2021 02:30PM 
-              </div>
-            </div>
-          </div>
-          <hr />
-          <div class="cursor-pointer relative flex items-center py-2">
-            <div class="w-12 mr-1">
-              <div class="w-8 mr-1 bg-yellow-200 p-1 rounded-full text-center">
-                <FileTextIcon class="notification__icon dark:text-gray-300 text-yellow-700 text-sm w-4" />
-              </div>
-            </div>
-            <div class="ml-2 overflow-hidden">
-              <div class="flex items-center">
-                <a href="javascript:;" class="font-medium truncate mr-5">Seller Validation status Change</a>
-              </div>
-              <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                05 April 2021 10:10AM
-              </div>
-            </div>
-          </div>
-          <hr /> -->
+          <hr /> 
           <button class="btn btn-primary w-full px-2 mt-2" @click="gotoAlertCenter">Show All Alerts</button>
         </div>
       </div>
@@ -172,6 +124,7 @@ export default defineComponent({
       const api = `/communications/v1/notification/${company_uuid}`
       if(company_uuid !== "00000000-0000-0000-0000-000000000000") {
         await sysAxios.get(api).then(res => {
+          console.log(res.data,"res.data");
           alerts.value = res.data.slice(0, 5)
         })
         await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
