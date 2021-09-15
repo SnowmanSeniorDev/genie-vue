@@ -111,7 +111,7 @@ export default {
   setup() {
     const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
     const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
-    const selectedTab = ref();
+    const selectedTab = ref('Pending Action');
     const store = useStore();
     const router = useRouter();
     const tableRef = ref();

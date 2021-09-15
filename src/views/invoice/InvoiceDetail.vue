@@ -54,8 +54,18 @@
         <div v-else class="report-timeline mt-5 relative">
           <div v-for="(item, index) in provenance" class="intro-x relative flex items-start pb-5" :key="index">
             <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
-            <div class="px-5 ml-4 flex-1">
-              <div class="flex items-center">
+            <div class="px-5 ml-4 flex-1"> 
+                <div v-if="item.loading" class="flex items-center">
+                  <div
+                   
+                  class="alert show flex items-center h-5 p-3 text-sm justify-center alert-secondary"
+                  role="alert"
+                >
+                  <ShieldOffIcon class="w-3 h-3 mr-3" />
+                  <span class="pr-3">Verifying</span> 
+                </div>
+                </div>
+                <div v-else class="flex items-center">
                 <div
                   v-if="item.passed && item.verified"
                   :class="'alert show flex items-center h-5 p-3 text-sm justify-center ' + ((lastWorkStatus.statusName === item.statusName)? 'text-black-700 bg-yellow-200':'text-black-700 bg-green-200' )"
@@ -89,8 +99,7 @@
                     Awarded by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
                   </div>
                 </div>
-                
-              </div>
+                </div> 
               <hr class="mt-5">
             </div>
           </div>
@@ -877,21 +886,18 @@ export default {
           }
         })
       )
-      console.log("loading.value.provenance = ", loading.value.provenance)
-      console.log("verify request body = ", verifyRequestBody.value)
-      console.log("loading = ", loading.value)
-      sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}`, verifyRequestBody.value).then(res => {
-        console.log("verification res = ", res.data)
-        provenance.value.forEach((workStatus, index) => {
-          if(workStatus.passed) {
-            console.log(_.find(res.data.transactionWorkflowStatuses, {status: workStatus.statusName}).verificationStatus)
-            provenance.value[index].verified = _.find(res.data.transactionWorkflowStatuses, {status: workStatus.statusName}).verificationStatus
-          }
-        })
-         loading.value.provenance = false
-      })
-     
-      console.log(provenance.value,"provenance data");
+      loading.value.provenance = false;
+      let workStatusList = []; 
+      verifyRequestBody.value.TransactionWorkflowStatuses.forEach((workStatus, index) => {
+       workStatusList = []; 
+       provenance.value[index].loading= true;
+      Object.keys(workStatus).forEach(k => (workStatus[k] == null || typeof workStatus[k] == "undefined") && delete workStatus[k]);
+        workStatusList.push(workStatus);
+        sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
+           provenance.value[index].verified = res.data[0].verificationStatus;
+           provenance.value[index].loading= false;
+        }); 
+      })   
       return new Promise(resolve => resolve("provenance api function done"))
     }
     
