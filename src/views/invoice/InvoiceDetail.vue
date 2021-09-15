@@ -892,15 +892,22 @@ export default {
        workStatusList = []; 
        provenance.value[index].loading= true;
       Object.keys(workStatus).forEach(k => (workStatus[k] == null || typeof workStatus[k] == "undefined") && delete workStatus[k]);
-        workStatusList.push(workStatus);
-        sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
-           provenance.value[index].verified = res.data[0].verificationStatus;
-           provenance.value[index].loading= false;
-        }); 
+        if(provenance.value[index].passed){
+          workStatusList.push(workStatus);
+          sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
+            provenance.value[index].verified = res.data[0].verificationStatus;
+            provenance.value[index].loading= false;
+          }); 
+        }
+        else
+        {
+          provenance.value[index].verified = false;
+          provenance.value[index].loading= false;
+        }
       })   
       return new Promise(resolve => resolve("provenance api function done"))
     }
-    
+     console.log(provenance.value,"passed2");
     const getLockDays = async () => {
       await appAxios.get(`/company/v1/${batchDetails.value.buyerCompanyId}/holidays`).then(res => {
         res.data.forEach(item => {
