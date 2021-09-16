@@ -18,9 +18,9 @@
               v-model="filter.field"
               class="form-select w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto"
             >
-              <option value="name">Name</option>
-              <option value="category">Category</option>
-              <option value="remaining_stock">Remaining Stock</option>
+              <option value="lastUpdatedBy">Last Updated By</option>
+              <option value="sellerCompanyName">Seller</option>
+              <option value="buyerCompanyName">Buyer</option>
             </select>
           </div>
           <div class="sm:flex items-center sm:mr-4 mt-2 xl:mt-0">
@@ -111,7 +111,7 @@ export default {
   setup() {
     const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
     const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
-    const selectedTab = ref();
+    const selectedTab = ref('Pending Action');
     const store = useStore();
     const router = useRouter();
     const tableRef = ref();
@@ -121,7 +121,7 @@ export default {
     const invoiceOverview = ref([]);
     const pendingActions = ref([]);
     const filter = reactive({
-      field: "name",
+      field: "lastUpdatedBy",
       type: "like",
       value: ""
     });
@@ -143,7 +143,6 @@ export default {
             minWidth: 50,
             maxWidth: 150,
             resizable: false,
-            headerSort: false
           },
           {
             title: "BUYER",
@@ -151,7 +150,6 @@ export default {
             headerHozAlign: 'center',
             hozAlign: "center",
             resizable: true,
-            headerSort: false
           },
           {
             title: "SELLER",
@@ -159,7 +157,6 @@ export default {
             headerHozAlign: 'center',
             hozAlign: "center",
             resizable: true,
-            headerSort: false
           },
           {
             title: "TOTAL AMOUNT",
@@ -181,19 +178,38 @@ export default {
             headerSort: true
           },
           {
-            title: "LASTEST PHASE",
+            title: "CURRENT STAGE",
             field: "action",
             hozAlign: "center",
             headerHozAlign: 'center',
             resizable: true,
-            headerSort: true,
             formatter(cell) {
               return ProvenanceLang[cell.getData().action]//moment(cell.getData().paymentDueDate).format("LL")
             }
           },
           {
+            title: "BATCH REMARK",
+            field: "remarks",
+            hozAlign: "center",
+            resizable: true,
+          },
+          {
+            title: "BATCH STATUS",
+            field: "batchStatus",
+            hozAlign: "center",
+            headerHozAlign: 'center',
+            resizable: true,
+          },
+          {
+            title: "BATCH REMARK",
+            field: "batchStatus",
+            hozAlign: "center",
+            headerHozAlign: 'center',
+            resizable: true,
+          },
+          {
             title: "CREATED AT",
-            minWidth: 300,
+            minWidth: 150,
             hozAlign: "center",
             headerHozAlign: 'center',
             resizable: true,
@@ -204,8 +220,7 @@ export default {
           },
           {
             title: "ACTIONS",
-            minWidth: 100,
-            maxWidth: 150,
+            maxWidth: 130,
             responsive: 1,
             headerHozAlign: "center",
             hozAlign: "center",
@@ -257,45 +272,46 @@ export default {
     const getInvoiceOverview = async () => {
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
       const invoices = await getLastUpdatedBy(await appAxios.get(api).then(res => { return res.data }));
-      invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc')
-      initTabulator(invoiceOverview.value)
+      invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc');
+      console.log(invoiceOverview.value)
     }
   
     const getPendingAction = async () => {
       const company_uuid = store.state.account.company_uuid;
       const pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`;
  
-        await appAxios.get(pendingActionApi).then(async res => {
-          let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
-          let pendingAction = {};
-          if(pendingItem.length > 0) {
-            for(let i = 0; i < pendingItem.length; i ++) {
-              const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
-              await appAxios.get(batchApi).then(res2 => { 
-                let batchData = res2.data; 
-                pendingAction.action = pendingItem[i].action;
-                pendingAction = batchData; 
-                pendingActions.value.push(pendingAction); 
-              }); 
-            }   
-            if(store.state.account.company_type.toLowerCase() == "funder") {
-              if(res.data.bidInvitations != null) {
-                let pendingBid = res.data.bidInvitations.open; 
-                if(pendingBid.workflowExecutionids.length > 0) {
-                  const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
-                  await appAxios.get(batchApi).then(res2 => {
-                    let batchData = res2.data; 
-                    pendingAction = batchData;
-                    pendingAction.action = "INVITE_FUNDERS_TO_BID"; 
-                    pendingActions.value.push(pendingAction); 
-                  });  
-                }
+      await appAxios.get(pendingActionApi).then(async res => {
+        let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
+        let pendingAction = {};
+        if(pendingItem.length > 0) {
+          for(let i = 0; i < pendingItem.length; i ++) {
+            const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
+            await appAxios.get(batchApi).then(res2 => { 
+              let batchData = res2.data; 
+              pendingAction.action = pendingItem[i].action;
+              pendingAction = batchData; 
+              pendingActions.value.push(pendingAction); 
+            }); 
+          }   
+          if(store.state.account.company_type.toLowerCase() == "funder") {
+            if(res.data.bidInvitations != null) {
+              let pendingBid = res.data.bidInvitations.open; 
+              if(pendingBid.workflowExecutionids.length > 0) {
+                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
+                await appAxios.get(batchApi).then(res2 => {
+                  let batchData = res2.data; 
+                  pendingAction = batchData;
+                  pendingAction.action = "INVITE_FUNDERS_TO_BID"; 
+                  pendingActions.value.push(pendingAction); 
+                });  
               }
-            }             
-          }
+            }
+          }             
+        }
 
-          pendingActions.value = await getLastUpdatedBy(pendingActions.value)
-        }) 
+        pendingActions.value = await getLastUpdatedBy(pendingActions.value)
+        initTabulator(pendingActions.value)
+      }) 
     }
 
     const getLastUpdatedBy = async (invoices) => {

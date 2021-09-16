@@ -11,7 +11,7 @@
   </div> 
     <div class="justify-center flex-flow" > 
         <div v-for="(item, index) in data" :key="index" >
-          {{item.documentName}} <button @click="onRemove(index,item)" style="color:red;"><Trash2Icon class="w-3 h-3" /></button>
+          {{item.documentName}} <button @click="onRemove(index)" style="color:red;"><Trash2Icon class="w-3 h-3" /></button>
           <br /> 
       </div>
     </div>
@@ -31,6 +31,10 @@ export default {
     removeSupportDoc: {
       type: Function,
       default: () => ({})
+    },
+    batchIndex: {
+      type: Number,
+      default: null
     },
     index: {
       type: Number,
@@ -59,14 +63,13 @@ export default {
         if(res.status === 200) {
           files.value.push(file)
           uploadingFiles.value = false
-          props.addSupportDoc(props.index, res.data, file.name);
+          props.addSupportDoc(props.batchIndex, props.index, res.data, file.name);
         }
       })
       
     }
-    const onRemove = async(index, item) => { 
-      
-      props.removeSupportDoc(props.index, index, item);
+    const onRemove = async(index) => { 
+      props.removeSupportDoc(props.batchIndex, props.index, index);
     }
 
     const { getRootProps, getInputProps, ...rest } = useDropzone({ onDrop })
