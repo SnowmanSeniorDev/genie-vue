@@ -10,7 +10,7 @@
     <!-- END: Breadcrumb -->
     <!-- BEGIN: Notifications -->
     <div class="intro-x dropdown mr-auto sm:mr-6">
-      <div class="dropdown-toggle notification notification--bullet cursor-pointer" role="button" aria-expanded="false">
+      <div :class="`dropdown-toggle notification cursor-pointer ${unreadAlerts ? 'notification--bullet': ''}`" role="button" aria-expanded="false">
         <BellIcon class="notification__icon dark:text-gray-300" />
       </div>
       <div class="notification-content pt-2 dropdown-menu">
@@ -20,12 +20,12 @@
           </div>
           <hr />
           <div v-for="(alert, index) in alerts" class="cursor-pointer relative flex items-center py-2" :key="index">
-            <div class="w-12 mr-1">
+            <div>
               <div class="w-8 mr-1 bg-pink-200 p-1 rounded-full text-center">
                 <FileTextIcon class="notification__icon dark:text-gray-300 text-pink-700 text-sm w-4" />
               </div>
             </div>
-            <div class="ml-2 overflow-hidden">
+            <div class="ml-2 overflow-hidden text-left">
               <div class="flex items-center">
                 <a href="javascript:;" class="font-medium truncate mr-5">{{alert.title}}</a>
               </div>
@@ -42,7 +42,7 @@
     <!-- END: Notifications -->
     <!-- BEGIN: Calendar -->
     <div class="intro-x dropdown mr-auto sm:mr-6">
-      <div class="dropdown-toggle notification notification--bullet cursor-pointer" role="button" aria-expanded="false">
+      <div :class="`dropdown-toggle notification cursor-pointer ${dayDiff < 8 ? 'notification--bullet': ''}`" role="button" aria-expanded="false">
         <CalendarIcon class="notification__icon dark:text-gray-300" />
       </div>
       <div class="notification-content pt-2 dropdown-menu">
@@ -67,12 +67,12 @@
     </div>
     <!-- END: Calendar -->
     <div class="pr-2">
-      <span>Hi, {{user.display_name}}!</span>
+      <span>Hi, </span>
     </div>
     <!-- BEGIN: Account Menu -->
-    <div class="intro-x dropdown w-8 h-8">
-      <div class="dropdown-toggle w-8 h-8 rounded-full overflow-hidden shadow-lg image-fit zoom-in" role="button" aria-expanded="false">
-        <img alt="Midone Tailwind HTML Admin Template" :src="require(`@/assets/images/${$f()[9].photos[0]}`)"/>
+    <div class="intro-x dropdown h-8">
+      <div class="dropdown-toggle h-8 flex items-center text-theme-1" role="button" aria-expanded="false">
+        {{user.display_name}}
       </div>
       <div class="dropdown-menu w-56">
         <div class="dropdown-menu__content box bg-theme-26 dark:bg-dark-6 text-white">
@@ -117,18 +117,21 @@ export default defineComponent({
     const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
     const store = useStore()
     const alerts = ref([])
+    const unreadAlerts = ref(false)
     const holidays = ref([])
     const user = ref(store.state.auth)
+    const dayDiff = ref(100)
     onMounted(async () => {
       const company_uuid = store.state.account.company_uuid
       const api = `/communications/v1/notification/${company_uuid}`
       if(company_uuid !== "00000000-0000-0000-0000-000000000000") {
         await sysAxios.get(api).then(res => {
-          console.log(res.data,"res.data");
-          alerts.value = res.data.slice(0, 5)
+          alerts.value = _.filter(res.data, {status: "Complete"}).slice(0, 5)
+          if(_.findIndex(res.data, {status: "Complete"}) != -1) unreadAlerts.value = true
         })
         await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
           holidays.value = _.filter(res.data, (holiday) => {return new Date(holiday.date) > new Date()}).slice(0, 3)
+          dayDiff.value = moment(holidays.value[0].date).diff(moment(new Date()), 'days');
         })
       }
     })
@@ -138,7 +141,9 @@ export default defineComponent({
       alerts,
       holidays,
       moment,
-      user
+      user,
+      dayDiff,
+      unreadAlerts
     };
   },
   methods: {

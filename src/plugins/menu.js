@@ -36,7 +36,7 @@ const menu = [{
     title: "Company",
     subMenu: [{
         icon: "AirplayIcon",
-        title: "profile",
+        title: "Profile",
         pageName: "GENIE_COMPANY_PROFILE",
         permission: "GENIE_COMPANY_PROFILE"
       }

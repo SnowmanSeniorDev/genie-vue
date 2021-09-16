@@ -166,11 +166,11 @@
               </tr> 
               <tr class="hover:bg-gray-200">
                 <td class="border">First Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount1DueDate}}</td>
-                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Second Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount2DueDate}}</td>
-                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Repayment Amount To Funder</td>
@@ -828,8 +828,6 @@ export default {
         if(res.data[0].rootWorkflowId === initWorkflowId.value.sellerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
         if(res.data[0].rootWorkflowId === initWorkflowId.value.buyerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
         provenance.value = await getBranchLists(res.data[0].rootWorkflowId)
-        console.log(res.data[0],"res.data[0]");
-        console.log(paymentAdviceWorksStatus.value,"paymentAdviceWorksStatus.value");
         paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
@@ -892,15 +890,14 @@ export default {
        workStatusList = []; 
        provenance.value[index].loading= true;
       Object.keys(workStatus).forEach(k => (workStatus[k] == null || typeof workStatus[k] == "undefined") && delete workStatus[k]);
-        if(provenance.value[index].passed){
+        if(provenance.value[index].passed) {
           workStatusList.push(workStatus);
           sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
             provenance.value[index].verified = res.data[0].verificationStatus;
             provenance.value[index].loading= false;
           }); 
         }
-        else
-        {
+        else {
           provenance.value[index].verified = false;
           provenance.value[index].loading= false;
         }

@@ -5,27 +5,23 @@
     </div>
     <div class="intro-y box p-4 mt-5">
       <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
-        <div class="sm:flex items-center w-48 sm:w-96">
-          <label class="w-12 flex-none xl:w-auto xl:flex-initial mr-2">Search</label>
-          <input
-            id="tabulator-html-filter-value"
-            v-model="filter.value"
-            type="text"
-            class="form-control xxl:w-full"
-            placeholder="Search..."
-          />
-        </div>
-        <div class="w-full xl:flex xl:justify-end">
+        <div class="w-full xl:flex xl:justify-start">
           <div class="">
             <button
               id="tabulator-html-filter-go"
               type="button"
-              class="btn btn-primary w-full sm:w-32"
+              class="btn btn-primary w-full"
               @click="markReadAll"
             >
-              Mark Read All
+              Mark all as Read
             </button>
           </div>
+        </div>
+        <div class="sm:flex items-center w-full sm:w-96">
+          <input v-model="filter.value" type="text" class="form-control xxl:w-full" placeholder="Search..."/>
+          <button type="button" class="btn btn-primary btn-sm ml-1" @click="search">
+            <SearchIcon />
+          </button>
         </div>
       </div>
     </div>
@@ -39,7 +35,6 @@
 <script>
 import { ref, reactive, onMounted } from "vue";
 import { useStore } from 'vuex';
-import { useRouter } from "vue-router";
 import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
 import { sysAxios } from "@/plugins/axios";
@@ -49,20 +44,14 @@ export default {
   setup() {
     const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
     const store = useStore()
-    const router = useRouter();
     const tableRef = ref();
     const tabulator = ref();
-    const notifications = ref([
-      {
-        notification: "Corporate Document(s) Status Change",
-        eventTime: "13 April 2021 09:26PM",
-        lastStatus: 'verified'
-      }
-    ]);
+    const notifications = ref([]);
     const filter = reactive({
+      field: "content",
+      type: "like",
       value: ""
     });
-    
     
     const initTabulator = () => {
       tabulator.value = new Tabulator(tableRef.value, {
@@ -75,14 +64,14 @@ export default {
         placeholder: "No matching records found",
         columns: [
           {
-            title: "NOTIFICATIONS",
+            title: "Notifications",
             field: "content",
             hozAlign: "left",
             resizable: true,
             headerSort: false
           },
           {
-            title: "EVENT DATE & TIME",
+            title: "Event Timestamp",
             maxWidth: 300,
             hozAlign: "left",
             resizable: true,
@@ -108,6 +97,28 @@ export default {
               return a
             }
           },
+          {
+            title: "Actions",
+            maxWidth: 100,
+            hozAlign: "center",
+            resizable: true,
+            headerSort: false,
+            formatter(cell) {
+              const notificationId = cell.getData().notificationId
+              const a = cash(`<div class="flex items-center justify-center">
+                <a>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </a>
+              </div>`)
+              cash(a).on("click", function() {
+                makeAsRead(notificationId)
+              })
+              return a[0]
+            }
+          },
         ],
         renderComplete() {
           feather.replace({
@@ -127,24 +138,47 @@ export default {
       });
     };
 
+    const markReadAll = async () => {
+      await new Promise.all(notifications.value.forEach(notification => {
+        if(notification.status == 'read') return;
+        const api = `communications/v1/notification/${notification.notificationId}/read`
+        sysAxios.put(api)
+      }))
 
-    const markReadAll = () => {
-
+      init()
     }
-    onMounted(async () => {
-      const api = `/communications/v1/notification/${store.state.account.company_uuid}`
-      await sysAxios.get(api).then(res => {
-        notifications.value = res.data
-      })
+
+    const makeAsRead = async (notificationId) => {
+      const api = `communications/v1/notification/${notificationId}/read`
+      await sysAxios.put(api)
+      init()
+    }
+
+    const search = () => {
+      tabulator.value.setFilter(filter.field, filter.type, filter.value);
+      console.log(filter.value)
+    }
+    const init = async () => {
+      const api = `communications/v1/notification/${store.state.account.company_uuid}`
+      notifications.value = await sysAxios.get(api).then(res => {return res.data})
+
       initTabulator()
-      reInitOnResizeWindow();
+      return new Promise(resolve => {
+        resolve(notifications.value)
+      })
+    }
+
+    onMounted(async () => {
+      await init()
+      reInitOnResizeWindow()
     });
 
     return {
       dateTimeFormat,
       tableRef,
       filter,
-      markReadAll
+      markReadAll,
+      search
     };
   },
 }
