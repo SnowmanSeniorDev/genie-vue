@@ -6,18 +6,32 @@
     <div class="intro-y box p-4 mt-5">
       <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
         <div class="w-full xl:flex xl:justify-start">
+          <div class="flex justify-center rounded-lg text-lg" role="group">
+            <a
+              class="bg-white border border-theme-1 rounded-l-lg px-4 py-2 text-sm  cursor-pointer"
+              :class="`${split ? 'text-theme-1' : 'bg-theme-1 text-white'}`"
+              @click="showAllNotification"
+            >All</a>
+            <a
+              class="bg-white border border-theme-1 rounded-r-lg px-4 py-2 text-sm cursor-pointer"
+              :class="`${split ? 'bg-theme-1 text-white' : 'text-theme-1'}`"
+              @click="showUnreadNotification"
+            >Unread</a>
+          </div>
+        </div>
+        <div class="w-full xl:flex xl:justify-start">
           <div class="">
             <button
               id="tabulator-html-filter-go"
               type="button"
-              class="btn btn-primary w-full"
+              class="btn btn-primary w-full sm:w-36"
               @click="markReadAll"
             >
               Mark all as Read
             </button>
           </div>
         </div>
-        <div class="sm:flex items-center w-full sm:w-96">
+        <div class="mt-2 sm:mt-0 flex items-center w-full sm:w-96">
           <input v-model="filter.value" type="text" class="form-control xxl:w-full" placeholder="Search..."/>
           <button type="button" class="btn btn-primary btn-sm ml-1" @click="search">
             <SearchIcon />
@@ -28,6 +42,28 @@
     <div class="intro-y box px-3 pb-3 mt-3">
       <div class="overflow-x-auto scrollbar-hidden">
         <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
+      </div>
+    </div>
+    <div id="acknowledge-notification" class="modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <!-- BEGIN: Modal Header -->
+          <div class="modal-header">
+            <h2 class="font-medium text-base mr-auto"> {{viewingNotification.title}} </h2>
+          </div>
+          <!-- END: Modal Header -->
+          <div class="modal-body mx-8">
+            {{viewingNotification.content}}
+            <div class="text-right">
+              <br />
+              {{moment(viewingNotification.when).format(dateTimeFormat)}}
+            </div>
+          </div>
+          <div class="modal-footer text-right">
+            <button v-if="viewingNotification.status == 'Complete'" type="button" class="btn btn-primary w-24" @click="makeAsRead">OK</button>
+            <button v-else type="button" data-dismiss="modal" class="btn btn-primary w-24">Cancel</button>
+          </div> <!-- END: Modal Footer -->
+        </div>
       </div>
     </div>
   </div>
@@ -42,7 +78,6 @@ import moment from "moment";
 
 export default {
   setup() {
-    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
     const store = useStore()
     const tableRef = ref();
     const tabulator = ref();
@@ -52,10 +87,19 @@ export default {
       type: "like",
       value: ""
     });
+    const viewingNotification = ref({
+      notificationId: null,
+      title: null,
+      content: null,
+      when: null,
+    });
+    const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
+    var split = ref(true);
     
     const initTabulator = () => {
+      const tabelData = split.value ? _.filter(notifications.value, {status: "Complete"}) : notifications.value
       tabulator.value = new Tabulator(tableRef.value, {
-        data: notifications.value,
+        data: tabelData,
         pagination: "local",
         paginationSize: 10,
         paginationSizeSelector: [5, 10, 20, 30, 40],
@@ -78,7 +122,7 @@ export default {
             headerSort: false,
             formatter(cell) { 
               const dateTime = cell.getData().when
-              return moment(dateTime).format(dateTimeFormat.value)
+              return moment(dateTime).format(dateTimeFormat)
             }
           },
           {
@@ -104,7 +148,7 @@ export default {
             resizable: true,
             headerSort: false,
             formatter(cell) {
-              const notificationId = cell.getData().notificationId
+              const notification = cell.getData()
               const a = cash(`<div class="flex items-center justify-center">
                 <a>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye">
@@ -114,7 +158,7 @@ export default {
                 </a>
               </div>`)
               cash(a).on("click", function() {
-                makeAsRead(notificationId)
+                openAcknowledgeNotificationModal(notification)
               })
               return a[0]
             }
@@ -144,13 +188,18 @@ export default {
         const api = `communications/v1/notification/${notification.notificationId}/read`
         sysAxios.put(api)
       }))
-
       init()
     }
 
-    const makeAsRead = async (notificationId) => {
-      const api = `communications/v1/notification/${notificationId}/read`
+    const openAcknowledgeNotificationModal = (notification) => {
+      viewingNotification.value = notification;
+      cash("#acknowledge-notification").modal("show")
+    }
+
+    const makeAsRead = async () => {
+      const api = `communications/v1/notification/${viewingNotification.value.notificationId}/Read`
       await sysAxios.put(api)
+      cash("#acknowledge-notification").modal("hide")
       init()
     }
 
@@ -158,10 +207,24 @@ export default {
       tabulator.value.setFilter(filter.field, filter.type, filter.value);
       console.log(filter.value)
     }
+
+    const showUnreadNotification = () => {
+      split.value = true
+      initTabulator()
+    }
+
+    const showAllNotification = () => {
+      split.value = false
+      initTabulator()
+    }
+
     const init = async () => {
       const api = `communications/v1/notification/${store.state.account.company_uuid}`
-      notifications.value = await sysAxios.get(api).then(res => {return res.data})
-
+      notifications.value = await sysAxios.get(api + '?status=Complete').then(res => {return res.data})
+      await sysAxios.get(api + '?status=Read').then(res => {
+        console.log("read", res.data)
+        notifications.value.push(...res.data)
+      })
       initTabulator()
       return new Promise(resolve => {
         resolve(notifications.value)
@@ -174,11 +237,18 @@ export default {
     });
 
     return {
-      dateTimeFormat,
       tableRef,
       filter,
       markReadAll,
-      search
+      search,
+      openAcknowledgeNotificationModal,
+      makeAsRead,
+      viewingNotification,
+      moment,
+      dateTimeFormat,
+      split,
+      showUnreadNotification,
+      showAllNotification
     };
   },
 }

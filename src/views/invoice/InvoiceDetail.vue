@@ -144,7 +144,17 @@
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
               <td class="border w-1/2">Payment Bank Account</td>
-              <td class="border">{{batchDetails.bankDetails.bank && batchDetails.bankDetails.bank.bankName}}</td>
+              <td class="border">
+                <p v-if="batchDetails.extraData.disbursableAccount">
+                Account number: {{batchDetails.extraData.disbursableAccount.accountNumber}}
+                <br>
+                Bank Name: {{batchDetails.extraData.disbursableAccount.bankName}}
+                <br>
+                Address: {{batchDetails.extraData.disbursableAccount.address}}
+                <br>
+                Swift Code: {{batchDetails.extraData.disbursableAccount.swiftCode}}
+                </p>
+              </td>
             </tr>
           </table>
         </div>
@@ -889,7 +899,7 @@ export default {
       verifyRequestBody.value.TransactionWorkflowStatuses.forEach((workStatus, index) => {
        workStatusList = []; 
        provenance.value[index].loading= true;
-      Object.keys(workStatus).forEach(k => (workStatus[k] == null || typeof workStatus[k] == "undefined") && delete workStatus[k]);
+        Object.keys(workStatus).forEach(k => (workStatus[k] == null || typeof workStatus[k] == "undefined") && delete workStatus[k]);
         if(provenance.value[index].passed) {
           workStatusList.push(workStatus);
           sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
@@ -901,7 +911,7 @@ export default {
           provenance.value[index].verified = false;
           provenance.value[index].loading= false;
         }
-      })   
+      })
       return new Promise(resolve => resolve("provenance api function done"))
     }
      console.log(provenance.value,"passed2");
