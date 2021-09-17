@@ -249,9 +249,11 @@ export default {
             if(i == jsonData.value.length - 1) invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
           }
         }
+        invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
 
         //identify the invoice detail show table header and it will use to determine current invoice is seller led or buyer led
         console.log("workflow led = ", res.data.workflow)
+        console.log("invoiceBatch = ", invoicesBatch.value)
         if(res.data.workflow === 'Buyer Led') {
           companyTypeHeader.value = "Seller Name";
           invoiceToCompanyName.value = res.data.invoiceToCompanyName;
