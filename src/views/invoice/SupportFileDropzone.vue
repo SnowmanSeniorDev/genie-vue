@@ -1,21 +1,20 @@
 <template>
   <div v-bind="getRootProps()" class="flex justify-center">
-    <div v-if="!files.length">
+    <div>
       <input v-bind="getInputProps()" :id="index">
       <UploadCloudIcon v-if="!uploadingFiles" class="w-4 h-4 text-red-400" />
       <div v-if="uploadingFiles" class="w-4, h-4 flex items-center">
         uploading
         <LoadingIcon icon="oval" color="red" class="w-3 h-3 ml-2" />
       </div>
-    </div>
-    <div v-else  class="dropzone-document-title">
-      <input v-bind="getInputProps()" :id="index">
-      <div v-for="(item, index) in files" :key="index">
-        {{item.name}}
-        <br />
+    </div> 
+  </div> 
+    <div class="justify-center flex-flow" > 
+        <div v-for="(item, index) in data" :key="index" >
+          {{item.documentName}} <button @click="onRemove(index)" style="color:red;"><Trash2Icon class="w-3 h-3" /></button>
+          <br /> 
       </div>
     </div>
-  </div>
 </template>
 
 <script>
@@ -33,8 +32,16 @@ export default {
       type: Function,
       default: () => ({})
     },
+    batchIndex: {
+      type: Number,
+      default: null
+    },
     index: {
       type: Number,
+      default: null
+    },
+    data:{
+      type: Object,
       default: null
     }
   },
@@ -45,7 +52,6 @@ export default {
       const fileUploadApi = 'uploads/v1/supporting_document';
       let formData = new FormData();
       uploadingFiles.value = true
-      console.log("acceptFiles = ", acceptFiles)
       acceptFiles.forEach(async file => {
         uploadingFiles.value = true
         formData.append('file', file)
@@ -57,15 +63,19 @@ export default {
         if(res.status === 200) {
           files.value.push(file)
           uploadingFiles.value = false
-          props.addSupportDoc(props.index, res.data, file.name);
+          props.addSupportDoc(props.batchIndex, props.index, res.data, file.name);
         }
       })
       
+    }
+    const onRemove = async(index) => { 
+      props.removeSupportDoc(props.batchIndex, props.index, index);
     }
 
     const { getRootProps, getInputProps, ...rest } = useDropzone({ onDrop })
 
     return {
+      onRemove,
       files,
       getRootProps,
       getInputProps,

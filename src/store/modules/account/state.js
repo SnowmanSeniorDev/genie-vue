@@ -8,4 +8,5 @@
 export default {
   step: "company-information",
   company_uuid: "",
+  company_type: "",
 };

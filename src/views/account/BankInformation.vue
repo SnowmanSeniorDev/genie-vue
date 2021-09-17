@@ -136,7 +136,6 @@ export default {
 		}
 		
 		const registerBankRequest = async (banks) => {
-			console.log("I have to be after delete bank")
 			const registerBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount`;
 			const res = await appAxios.post(registerBankApiUrl, [...banks]);
 			if(res.status === 201) return {result: true};
@@ -156,7 +155,6 @@ export default {
 		const deleteBankRequest = async (bankId) => {
 			const deleteBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount/${bankId}`;
 			const res = await appAxios.delete(deleteBankApiUrl);
-			console.log("I have to be before the registerbank");
 			if(res.status === 200 || res.status === 204) return {result: true};
 			return {result: false, response: res.data};
 		}

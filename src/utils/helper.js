@@ -32,19 +32,22 @@ const helpers = {
     }
   },
   formatCurrency(number) {
+    number = parseFloat(number).toFixed(2)
+    const decimal = number.toString().split(".")[1]
+    number = parseInt(number)
     if (number) {
       const formattedNumber = number.toString().replace(/\D/g, "");
-      const rest = formattedNumber.length % 3;
+      const rest = (formattedNumber.length) % 3;
       let currency = formattedNumber.substr(0, rest);
       const thousand = formattedNumber.substr(rest).match(/\d{3}/g);
       let separator;
 
       if (thousand) {
-        separator = rest ? "." : "";
-        currency += separator + thousand.join(".");
+        separator = rest ? "," : "";
+        currency += separator + thousand.join(",");
       }
 
-      return currency;
+      return currency + "." + decimal;
     } else {
       return "";
     }

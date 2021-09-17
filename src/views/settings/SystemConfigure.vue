@@ -335,7 +335,6 @@ export default {
       await sysAxios.get(api).then((res) => {
         configurations.value = jsonDecodeArray(res.data);
       });
-      console.log("configurations.value = ", configurations.value)
     };
 
     const jsonDecodeArray = (data) => {
@@ -366,7 +365,6 @@ export default {
     }
 
     const saveConfigurations = (itemKey) => {
-      console.log("itemKey = ", itemKey)
       const api = `configuration/v1/${configurations.value[itemKey].configurationGroupName}`;
       console.log(api)
       console.log(configurations.value[itemKey].configurations)

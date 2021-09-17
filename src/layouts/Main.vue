@@ -14,6 +14,26 @@
           <!-- BEGIN: First Child -->
           <template v-for="(menu, menuKey) in formattedMenu">
             <li v-if="menu == 'devider'" :key="menu + menuKey" class="side-nav__devider my-6"></li>
+            <li v-else-if="menu.subMenu.length === 1" :key="menu + menuKey">
+              <SideMenuTooltip
+                tag="a"
+                :content="menu.subMenu[0].title"
+                href="javascript:;"
+                class="side-menu"
+                :class="{ 'side-menu--active': menu.subMenu[0].active }"
+                @click="linkTo(menu.subMenu[0], router)"
+              >
+                <div class="side-menu__icon">
+                  <component :is="menu.subMenu[0].icon" />
+                </div>
+                <div class="side-menu__title">
+                  {{ menu.subMenu[0].title }}
+                  <div v-if="menu.subMenu[0].subMenu" class="side-menu__sub-icon" :class="{'transform rotate-180': menu.subMenu[0].activeDropdown}">
+                    <ChevronDownIcon />
+                  </div>
+                </div>
+              </SideMenuTooltip>
+            </li>
             <li v-else :key="menu + menuKey">
               <SideMenuTooltip
                 tag="a"
@@ -53,38 +73,11 @@
                       </div>
                       <div class="side-menu__title">
                         {{ subMenu.title }}
-                        <div v-if="subMenu.subMenu" class="side-menu__sub-icon"
-                          :class="{
-                            'transform rotate-180': subMenu.activeDropdown
-                          }"
-                        >
+                        <div v-if="subMenu.subMenu" class="side-menu__sub-icon" :class="{'transform rotate-180': subMenu.activeDropdown}">
                           <ChevronDownIcon />
                         </div>
                       </div>
                     </SideMenuTooltip>
-                    <!-- BEGIN: Third Child -->
-                    <transition @enter="enter" @leave="leave">
-                      <ul v-if="subMenu.subMenu && subMenu.activeDropdown">
-                        <li v-for="(lastSubMenu, lastSubMenuKey) in subMenu.subMenu" :key="lastSubMenuKey">
-                          <SideMenuTooltip
-                            tag="a"
-                            :content="lastSubMenu.title"
-                            href="javascript:;"
-                            class="side-menu"
-                            :class="{ 'side-menu--active': lastSubMenu.active }"
-                            @click="linkTo(lastSubMenu, router)"
-                          >
-                            <div class="side-menu__icon">
-                              <ZapIcon />
-                            </div>
-                            <div class="side-menu__title">
-                              {{ lastSubMenu.title }}
-                            </div>
-                          </SideMenuTooltip>
-                        </li>
-                      </ul>
-                    </transition>
-                    <!-- END: Third Child -->
                   </li>
                 </ul>
               </transition>

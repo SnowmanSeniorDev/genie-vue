@@ -10,79 +10,31 @@
     <!-- END: Breadcrumb -->
     <!-- BEGIN: Notifications -->
     <div class="intro-x dropdown mr-auto sm:mr-6">
-      <div class="dropdown-toggle notification notification--bullet cursor-pointer" role="button" aria-expanded="false">
+      <div :class="`dropdown-toggle notification cursor-pointer ${unreadAlerts ? 'notification--bullet': ''}`" role="button" aria-expanded="false">
         <BellIcon class="notification__icon dark:text-gray-300" />
       </div>
       <div class="notification-content pt-2 dropdown-menu">
         <div class="notification-content__box dropdown-menu__content box dark:bg-dark-6">
           <div class="notification-content__title">
-            Alters Center
+            Alert Center
           </div>
           <hr />
           <div v-for="(alert, index) in alerts" class="cursor-pointer relative flex items-center py-2" :key="index">
-            <div class="w-12 mr-1">
+            <div>
               <div class="w-8 mr-1 bg-pink-200 p-1 rounded-full text-center">
                 <FileTextIcon class="notification__icon dark:text-gray-300 text-pink-700 text-sm w-4" />
               </div>
             </div>
-            <div class="ml-2 overflow-hidden">
+            <div class="ml-2 overflow-hidden text-left">
               <div class="flex items-center">
                 <a href="javascript:;" class="font-medium truncate mr-5">{{alert.title}}</a>
               </div>
               <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                {{alert.when}}
+                {{moment(alert.when).format(dateTimeFormat)}}
               </div>
             </div>
           </div>
-          <hr />
-          <!-- <div class="cursor-pointer relative flex items-center py-2">
-            <div class="w-12 mr-1">
-              <div class="w-8 mr-1 bg-blue-200 p-1 rounded-full text-center">
-                <UserIcon class="notification__icon dark:text-gray-300 text-blue-700 text-sm w-4" />
-              </div>
-            </div>
-            <div class="ml-2 overflow-hidden">
-              <div class="flex items-center">
-                <a href="javascript:;" class="font-medium truncate mr-5">Seller Onboarded</a>
-              </div>
-              <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                12 April 2021 09:26 
-              </div>
-            </div>
-          </div>
-          <hr />
-          <div class="cursor-pointer relative flex items-center py-2">
-            <div class="w-12 mr-1">
-              <div class="w-8 mr-1 bg-yellow-200 p-1 rounded-full text-center">
-                <MapPinIcon class="notification__icon dark:text-gray-300 text-yellow-700 text-sm w-4" />
-              </div>
-            </div>
-            <div class="ml-2 overflow-hidden">
-              <div class="flex items-center">
-                <a href="javascript:;" class="font-medium truncate mr-5">Seler Acknowledgement Status Change</a>
-              </div>
-              <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                10 April 2021 02:30PM 
-              </div>
-            </div>
-          </div>
-          <hr />
-          <div class="cursor-pointer relative flex items-center py-2">
-            <div class="w-12 mr-1">
-              <div class="w-8 mr-1 bg-yellow-200 p-1 rounded-full text-center">
-                <FileTextIcon class="notification__icon dark:text-gray-300 text-yellow-700 text-sm w-4" />
-              </div>
-            </div>
-            <div class="ml-2 overflow-hidden">
-              <div class="flex items-center">
-                <a href="javascript:;" class="font-medium truncate mr-5">Seller Validation status Change</a>
-              </div>
-              <div class="w-full truncate text-gray-600 mt-0.5 text-xs">
-                05 April 2021 10:10AM
-              </div>
-            </div>
-          </div>
-          <hr /> -->
+          <hr /> 
           <button class="btn btn-primary w-full px-2 mt-2" @click="gotoAlertCenter">Show All Alerts</button>
         </div>
       </div>
@@ -90,7 +42,7 @@
     <!-- END: Notifications -->
     <!-- BEGIN: Calendar -->
     <div class="intro-x dropdown mr-auto sm:mr-6">
-      <div class="dropdown-toggle notification notification--bullet cursor-pointer" role="button" aria-expanded="false">
+      <div :class="`dropdown-toggle notification cursor-pointer ${dayDiff < 8 ? 'notification--bullet': ''}`" role="button" aria-expanded="false">
         <CalendarIcon class="notification__icon dark:text-gray-300" />
       </div>
       <div class="notification-content pt-2 dropdown-menu">
@@ -102,7 +54,7 @@
             </div>
             <div class="ml-2 overflow-hidden">
               <div class="flex items-center">
-                <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format('LL')}}</a>
+                <a href="javascript:;" class="truncate mr-5">{{moment(holiday.date).format(dateFormat)}}</a>
               </div>
               <div class="flex items-center">
                 <a href="javascript:;" class="font-medium truncate mr-5">{{holiday.description}}</a>
@@ -115,12 +67,12 @@
     </div>
     <!-- END: Calendar -->
     <div class="pr-2">
-      <span>Hi, {{user.display_name}}!</span>
+      <span>Hi, </span>
     </div>
     <!-- BEGIN: Account Menu -->
-    <div class="intro-x dropdown w-8 h-8">
-      <div class="dropdown-toggle w-8 h-8 rounded-full overflow-hidden shadow-lg image-fit zoom-in" role="button" aria-expanded="false">
-        <img alt="Midone Tailwind HTML Admin Template" :src="require(`@/assets/images/${$f()[9].photos[0]}`)"/>
+    <div class="intro-x dropdown h-8">
+      <div class="dropdown-toggle h-8 flex items-center text-theme-1" role="button" aria-expanded="false">
+        {{user.display_name}}
       </div>
       <div class="dropdown-menu w-56">
         <div class="dropdown-menu__content box bg-theme-26 dark:bg-dark-6 text-white">
@@ -131,7 +83,7 @@
             </div>
           </div>
           <div class="p-2">
-            <a href="javascript:;" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md">
+            <a href="/account" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md">
               <UserIcon class="w-4 h-4 mr-2" /> Profile
             </a>
             <a href="javascript:;" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md" @click="gotoUpdatePassword" >
@@ -161,27 +113,37 @@ import _ from 'lodash';
 
 export default defineComponent({
   setup() {
+    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT);
+    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
     const store = useStore()
     const alerts = ref([])
+    const unreadAlerts = ref(false)
     const holidays = ref([])
     const user = ref(store.state.auth)
+    const dayDiff = ref(100)
     onMounted(async () => {
       const company_uuid = store.state.account.company_uuid
       const api = `/communications/v1/notification/${company_uuid}`
       if(company_uuid !== "00000000-0000-0000-0000-000000000000") {
         await sysAxios.get(api).then(res => {
-          alerts.value = res.data.slice(0, 5)
+          alerts.value = _.filter(res.data, {status: "Complete"}).slice(0, 5)
+          if(_.findIndex(res.data, {status: "Complete"}) != -1) unreadAlerts.value = true
         })
         await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
           holidays.value = _.filter(res.data, (holiday) => {return new Date(holiday.date) > new Date()}).slice(0, 3)
+          dayDiff.value = moment(holidays.value[0].date).diff(moment(new Date()), 'days');
         })
       }
     })
     return {
+      dateFormat,
+      dateTimeFormat,
       alerts,
       holidays,
       moment,
-      user
+      user,
+      dayDiff,
+      unreadAlerts
     };
   },
   methods: {

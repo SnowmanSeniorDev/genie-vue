@@ -57,7 +57,6 @@ export default {
       cash("body").removeClass("main").removeClass("error-page").addClass("login");
       const api = `user/v1/resetpassword/${route.params.checkValidity}/checkvalidity`;
       sysAxios.post(api).then( res => {
-        console.log("res = ", res.data)
         userId.value = res.data.userId
         sysAxios.defaults.headers.common['Authorization'] = "Bearer " + res.data.token;
       })

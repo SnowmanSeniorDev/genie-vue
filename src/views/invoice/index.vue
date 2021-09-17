@@ -6,7 +6,7 @@
     <div class="intro-y box p-5 mt-5">
       <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
         <div class="flex mt-5 sm:mt-0">
-          <a href="javascript:;" data-toggle="modal" data-target="#upload-invoice-modal" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2" >
+          <a href="javascript:;" data-toggle="modal" data-target="#upload-invoice-modal" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2" v-if="isCompany">
             <UploadIcon class="w-4 h-4 mr-2" /> Upload&nbsp;Invoice
           </a>
         </div>
@@ -18,9 +18,9 @@
               v-model="filter.field"
               class="form-select w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto"
             >
-              <option value="name">Name</option>
-              <option value="category">Category</option>
-              <option value="remaining_stock">Remaining Stock</option>
+              <option value="lastUpdatedBy">Last Updated By</option>
+              <option value="sellerCompanyName">Seller</option>
+              <option value="buyerCompanyName">Buyer</option>
             </select>
           </div>
           <div class="sm:flex items-center sm:mr-4 mt-2 xl:mt-0">
@@ -70,7 +70,15 @@
         </div>
       </div>
     </div>
-    <h4 class="text-lg underline mt-5 ml-2 text-red-400 font-bold">Invoice Overview</h4>
+    <br />
+    <div class="flex divide-x-2">
+      <div>
+      <button :class="`btn btn-sm mr-2 ${selectedTab =='Pending Action' ? 'btn-primary' : 'btn-outline-primary'}`" @click="invoiceFromPendingAction">Pending Action</button>
+      </div>
+      <div>
+      <button :class="`btn btn-sm ml-2 ${selectedTab =='My Invoice' ? 'btn-primary' : 'btn-outline-primary'}`" @click="invoiceFromMe">My Invoice</button>
+      </div>
+    </div>
     <div class="intro-y box px-3 pb-3 mt-3">
       <div v-if="loading" class="py-16">
         <div class="w-full h-8 px-8">
@@ -93,28 +101,35 @@ import Tabulator from "tabulator-tables";
 import InvoiceUploadModal from "./InvoiceUploadModal";
 import { sysAxios, appAxios } from "@/plugins/axios";
 import _ from "lodash";
+import moment from 'moment'
+import ProvenanceLang from '@/utils/provenanceLanguage'
 
 export default {
   components: {
     InvoiceUploadModal
   },
   setup() {
+    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
+    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
+    const selectedTab = ref('Pending Action');
     const store = useStore();
     const router = useRouter();
     const tableRef = ref();
     const tabulator = ref();
     const loading = ref(true);
+    const isCompany = ref(false);
     const invoiceOverview = ref([]);
+    const pendingActions = ref([]);
     const filter = reactive({
-      field: "name",
+      field: "lastUpdatedBy",
       type: "like",
       value: ""
     });
     
     
-    const initTabulator = () => {
+    const initTabulator = (data) => { 
       tabulator.value = new Tabulator(tableRef.value, {
-        data: invoiceOverview.value,
+        data: data,
         pagination: "local",
         paginationSize: 10,
         paginationSizeSelector: [5, 10, 20, 30, 40],
@@ -126,57 +141,86 @@ export default {
             title: "BATCH NO.",
             field: "batchNumber",
             minWidth: 50,
-            maxWidth: 200,
+            maxWidth: 150,
             resizable: false,
-            headerSort: false
           },
           {
             title: "BUYER",
             field: "buyerCompanyName",
             headerHozAlign: 'center',
             hozAlign: "center",
-            resizable: false,
-            headerSort: false
+            resizable: true,
           },
           {
             title: "SELLER",
             field: "sellerCompanyName",
             headerHozAlign: 'center',
             hozAlign: "center",
-            resizable: false,
-            headerSort: false
+            resizable: true,
           },
           {
-            title: "TOTAL AMOUNT (RM)",
+            title: "TOTAL AMOUNT",
             field: "totalAmount",
             minWidth: 100,
-            maxWidth: 200,
+            maxWidth: 170,
             hozAlign: "right",
-            resizable: false,
-            headerSort: false,
+            resizable: true,
+            headerSort: true,
             formatter(cell) {
-              return cell.getData().totalAmount.toFixed(2)
+              return cell.getData().currencyCode + " " +cell.getData().totalAmount.toFixed(2)
             },
           },
           {
             title: "LAST UPDATED BY",
-            field: "documentDate",
+            field: "lastUpdatedBy",
             hozAlign: "center",
-            resizable: false,
-            headerSort: false
+            resizable: true,
+            headerSort: true
           },
           {
-            title: "LASTEST PHASE",
-            field: "paymentDueDate",
+            title: "CURRENT STAGE",
+            field: "action",
             hozAlign: "center",
-            resizable: false,
-            headerSort: false
+            headerHozAlign: 'center',
+            resizable: true,
+            formatter(cell) {
+              return ProvenanceLang[cell.getData().action]//moment(cell.getData().paymentDueDate).format("LL")
+            }
+          },
+          {
+            title: "BATCH REMARK",
+            field: "remarks",
+            hozAlign: "center",
+            resizable: true,
+          },
+          {
+            title: "BATCH STATUS",
+            field: "batchStatus",
+            hozAlign: "center",
+            headerHozAlign: 'center',
+            resizable: true,
+          },
+          {
+            title: "BATCH REMARK",
+            field: "batchStatus",
+            hozAlign: "center",
+            headerHozAlign: 'center',
+            resizable: true,
+          },
+          {
+            title: "CREATED AT",
+            minWidth: 150,
+            hozAlign: "center",
+            headerHozAlign: 'center',
+            resizable: true,
+            headerSort: true,
+            formatter(cell) { 
+              return moment(cell.getData().createdTime).format(dateTimeFormat.value)
+            }
           },
           {
             title: "ACTIONS",
-            minWidth: 100,
-            maxWidth: 150,
-            field: "actions",
+            maxWidth: 130,
             responsive: 1,
             headerHozAlign: "center",
             hozAlign: "center",
@@ -225,28 +269,121 @@ export default {
       onFilter();
     };
 
-    const getInvoiceOverview = () => {
+    const getInvoiceOverview = async () => {
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
-      appAxios.get(api).then(res => {
-        console.log("invoices = ", res.data)
-        invoiceOverview.value = _.sortBy(res.data, ['documentDate', 'paymentDueDate']);
-        initTabulator()
-      })
+      const invoices = await getLastUpdatedBy(await appAxios.get(api).then(res => { return res.data }));
+      invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc');
+      console.log(invoiceOverview.value)
+    }
+  
+    const getPendingAction = async () => {
+      const company_uuid = store.state.account.company_uuid;
+      const pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`;
+ 
+      await appAxios.get(pendingActionApi).then(async res => {
+        let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
+        let pendingAction = {};
+        if(pendingItem.length > 0) {
+          for(let i = 0; i < pendingItem.length; i ++) {
+            const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
+            await appAxios.get(batchApi).then(res2 => { 
+              let batchData = res2.data; 
+              pendingAction.action = pendingItem[i].action;
+              pendingAction = batchData; 
+              pendingActions.value.push(pendingAction); 
+            }); 
+          }   
+          if(store.state.account.company_type.toLowerCase() == "funder") {
+            if(res.data.bidInvitations != null) {
+              let pendingBid = res.data.bidInvitations.open; 
+              if(pendingBid.workflowExecutionids.length > 0) {
+                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
+                await appAxios.get(batchApi).then(res2 => {
+                  let batchData = res2.data; 
+                  pendingAction = batchData;
+                  pendingAction.action = "INVITE_FUNDERS_TO_BID"; 
+                  pendingActions.value.push(pendingAction); 
+                });  
+              }
+            }
+          }             
+        }
+
+        pendingActions.value = await getLastUpdatedBy(pendingActions.value)
+        initTabulator(pendingActions.value)
+      }) 
+    }
+
+    const getLastUpdatedBy = async (invoices) => {
+      const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition';
+      const lastWorkflowDatas = await appAxios.post(api, _.map(invoices, 'workflowExecutionReferenceId'));
+      var withLastUpdatedBy = [];
+      await Promise.all(
+        invoices.map( async (invoice, index) => {
+          const lastWorkflowData = _.find(lastWorkflowDatas.data, {externalReferenceId: invoice.workflowExecutionReferenceId});
+          const userId = lastWorkflowData.workflow.lastStatusTransition.updateBy;
+          if(userId === '00000000-0000-0000-0000-000000000000') {
+            withLastUpdatedBy.push({...invoice, lastUpdatedBy: 'System', action: lastWorkflowData.workflow.lastStatusTransition.statusName})
+          }
+          else {
+            const userData = await sysAxios.get(`/user/v1/${userId}`) 
+            withLastUpdatedBy.push({...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName, action: lastWorkflowData.workflow.lastStatusTransition.statusName})
+          }
+        })
+      )
+      return new Promise(resolve => resolve(withLastUpdatedBy))
+    }
+
+    const invoiceFromMe = () => { 
+      selectedTab.value = "My Invoice";
+      let updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc');
+
+      if(store.state.account.company_type.toLowerCase() == "funder") {
+        updatedData = _.orderBy(_.filter(invoiceOverview.value, {funderCompanyId: store.state.account.company_uuid}),'createdTime','desc');
+      }
+      
+      tabulator.value.clearData()
+      if(updatedData.length > 0 ){
+        tabulator.value.addRow(updatedData)
+      }      
+    }
+
+    const invoiceFromPendingAction = () => {
+      selectedTab.value = 'Pending Action';
+      const updatedData = _.orderBy(pendingActions.value, 'createdTime', 'desc');
+      console.log(updatedData);
+      tabulator.value.clearData()
+      if(updatedData.length > 0 ){
+        tabulator.value.addRow(updatedData)
+      }      
     }
 
     onMounted(async () => {
-      await getInvoiceOverview();
+      
+      getInvoiceOverview();
+      getPendingAction();
+      if(store.state.account.company_type.toLowerCase() == "company"){
+        isCompany.value = true;
+      }
       reInitOnResizeWindow();
       loading.value = false
     });
 
     return {
+      dateFormat,
+      dateTimeFormat,
+      selectedTab,
+      isCompany,
       loading,
       tableRef,
       filter,
       onFilter,
       onResetFilter,
-      getInvoiceOverview
+      getPendingAction,
+      getInvoiceOverview,
+      invoiceFromMe,
+      invoiceFromPendingAction,
+      ProvenanceLang
     };
   },
 }

@@ -164,7 +164,6 @@ import moment from "moment"
 export default {
   setup() {
     const route = useRoute();
-    console.log("route.params.id = ", route.params.permissionId)
     const formData = reactive({
       permissionName: '',
       resourceURI: '',
@@ -195,7 +194,6 @@ export default {
       },
       setup: (picker) => {
         picker.on('button:apply', (date) => {
-          console.log("date = ", helper.formatDate(date.dateInstance, "D MMM, YYYY"));
           formData.validUntil = helper.formatDate(date.dateInstance, "D MMM, YYYY")
         });
       },
@@ -240,7 +238,6 @@ export default {
       const api = "access/v1/permission"
       sysAxios.get(api).then(res => {
         const permission = _.find(res.data, {permissionId: route.params.permissionId})
-        console.log("permission = ", permission)
         formData.accessVerbs = permission.accessVerbs
         formData.permissionName = permission.permissionName
         formData.resourceURI = permission.resourceURI

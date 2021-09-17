@@ -12,6 +12,30 @@
         <!-- BEGIN: First Child -->
         <template v-for="(menu, menuKey) in formattedMenu">
           <li v-if="menu == 'devider'" :key="menu + menuKey" class="menu__devider my-6"></li>
+          <li v-else-if="menu.subMenu.length === 1" :key="menu + menuKey">
+            <a
+              href="javascript:;"
+              class="menu"
+              :class="{ 'menu--active': menu.subMenu[0].active }"
+              @click="linkTo(menu.subMenu[0], router)"
+            >
+              <div class="menu__icon">
+                <component :is="menu.subMenu[0].icon" />
+              </div>
+              <div class="menu__title">
+                {{ menu.subMenu[0].title }}
+                <div
+                  v-if="menu.subMenu[0].subMenu"
+                  class="menu__sub-icon"
+                  :class="{
+                    'transform rotate-180': menu.subMenu[0].activeDropdown
+                  }"
+                >
+                  <ChevronDownIcon />
+                </div>
+              </div>
+            </a>
+          </li>
           <li v-else :key="menu + menuKey">
             <a
               href="javascript:;"
