@@ -68,9 +68,9 @@
           <tr class="bg-gray-400">
             <th class="dark:border-dark-5 whitespace-nowrap w-2/7"> COMPANY NAME </th>
             <th class="dark:border-dark-5 whitespace-nowrap w-1/7"> COMPANY CODE </th>
-            <th class="dark:border-dark-5 whitespace-nowrap w-1/7"> CREDIT LIMIT </th>
-            <th class="dark:border-dark-5 whitespace-nowrap w-1/7"> START DATE </th>
-            <th class="dark:border-dark-5 whitespace-nowrap w-1/7"> END DATE </th>
+            <th class="dark:border-dark-5 whitespace-nowrap w-1/7"> EMAIL </th>
+            <th class="dark:border-dark-5 whitespace-nowrap w-1/7"> DISPLAY NAME </th>
+            <th class="dark:border-dark-5 whitespace-nowrap w-1/7"> ADDRESS </th>
             <th class="dark:border-dark-5 whitespace-nowrap w-1/7 text-center"> ACTIONS </th>
           </tr>
         </thead>
@@ -79,7 +79,7 @@
             <td class="dark:border-dark-5">{{company.companyDisplayName}}</td>
             <td class="dark:border-dark-5">{{company.registrationNo}}</td>
             <td class="dark:border-dark-5">{{company.primaryEmail}}</td>
-            <td class="dark:border-dark-5">{{company.primaryEmail}}</td>
+            <td class="dark:border-dark-5">{{company.displayName}}</td>
             <td class="dark:border-dark-5">
               <div class="alert show flex items-center h-5 p-3 text-sm justify-center text-yellow-700 bg-yellow-200" role="alert">
                 Pending
