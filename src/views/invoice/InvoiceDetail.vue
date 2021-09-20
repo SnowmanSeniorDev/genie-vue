@@ -45,7 +45,7 @@
         <div class="flex items-center">
           <LockIcon class="w-6 h-6 mr-3" /><span class="text-lg">Provenance</span>
         </div>
-        <img alt="" class="intro-x w-full h-48" :src="require(`@/assets/images/illustration.svg`)"/>
+        <img alt="" class="intro-x w-full h-48" :src="require(`@/assets/images/security-cuate.svg`)"/>
         <div v-if="loading.provenance" class="py-16">
           <div class="w-full h-8 px-8">
             <LoadingIcon icon="spinning-circles" color="gray" class="w-4 h-4 py-8" />

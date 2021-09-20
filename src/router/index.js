@@ -33,6 +33,9 @@ import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Error.vue";
 import AccessDenied from "../views/error-page/AccessDenied.vue";
 import Alerts from "../views/alerts/index.vue";
+import Eco from "../views/eco/index.vue";
+import Relationship from "../views/eco/Relationship.vue";
+import Workflow from "../views/eco/Workflow.vue";
 import { auth } from "../middleware/auth";
 import { log } from "../middleware/log";
 
@@ -137,6 +140,7 @@ const routes = [
         }
       }, {
         path: "company-onboard",
+        name: "COMPANY_ONBOARD",
         component: CompanyOnboard
       }, {
         path: "invoice",
@@ -150,7 +154,22 @@ const routes = [
       }, {
         path: "alerts",
         component: Alerts,
-      }
+      }, {
+        path: "eco",
+        component: Eco,
+        children: [{
+          path: "",
+          component: Relationship,
+          name: "GENIE_ECO_RELASHIONSHIP",
+        }, {
+          path: "workflow",
+          component: Workflow,
+          name: "GENIE_ECO_WORKFLOW"
+        }],
+        meta: {
+          permission: "GENIE_ECO_SYSTEM"
+        }
+      },
     ],
     meta: {
       middleware: [auth, log],

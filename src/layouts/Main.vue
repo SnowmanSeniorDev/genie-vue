@@ -6,7 +6,8 @@
       <nav class="side-nav">
         <!-- BEGIN: Logo -->
         <router-link :to="{ name: 'GENIE_DASHBOARD' }" tag="a" class="intro-x flex items-center pt-4 flex justify-center">
-          <img alt="Midone Tailwind HTML Admin Template" class="" src="@/assets/images/logo.svg"/>
+          <img alt="Midone Tailwind HTML Admin Template" class="hidden xl:block w-24" src="@/assets/images/logo.svg"/>
+          <img alt="Midone Tailwind HTML Admin Template" class="xl:hidden w-24" src="@/assets/images/logo-lines.svg"/>
         </router-link>
         <!-- END: Logo -->
         <div class="my-6"></div>
