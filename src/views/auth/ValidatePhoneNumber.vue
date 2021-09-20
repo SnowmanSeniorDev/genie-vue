@@ -9,7 +9,6 @@
             <span class="text-white text-lg ml-3">Genie</span>
           </a>
           <div class="my-auto">
-            <img alt="Midone Tailwind HTML Admin Template" class="-intro-x w-1/2 -mt-16" :src="require(`@/assets/images/illustration.svg`)"/>
             <div class="-intro-x text-white font-medium text-4xl leading-tight mt-10">
               Genie Financial Portal<br />
             </div>

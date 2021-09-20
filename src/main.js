@@ -1,5 +1,5 @@
 import { createApp } from "vue";
-import { VueReCaptcha } from "vue-recaptcha-v3";
+// import { VueReCaptcha } from "vue-recaptcha-v3";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
@@ -18,7 +18,7 @@ app.use(i18n);
 app.use(store);
 app.use(router);
 app.use(SetupCalendar, {});
-app.use(VueReCaptcha, { siteKey: process.env.VUE_APP_RECAPTCHA_SITE_KEY });
+// app.use(VueReCaptcha, { siteKey: process.env.VUE_APP_RECAPTCHA_SITE_KEY });
 
 
 app.config.performance = true;
