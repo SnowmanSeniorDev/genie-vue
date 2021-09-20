@@ -292,28 +292,31 @@ export default {
               pendingAction = batchData; 
               pendingActions.value.push(pendingAction); 
             }); 
-          }   
+          }               
+        }
           if(store.state.account.company_type.toLowerCase() == "funder") {
             if(res.data.bidInvitations != null) {
               let pendingBid = res.data.bidInvitations.open; 
               if(pendingBid.workflowExecutionids.length > 0) {
-                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
-                await appAxios.get(batchApi).then(res2 => {
-                  let batchData = res2.data; 
-                  pendingAction = batchData;
-                  pendingAction.action = "INVITE_FUNDERS_TO_BID"; 
-                  pendingActions.value.push(pendingAction); 
-                });  
+                for(let i = 0; i < pendingBid.workflowExecutionids.length; i ++) {
+                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[i]}`; 
+                  await appAxios.get(batchApi).then(res2 => {
+                    console.log("test22");
+                    let batchData = res2.data; 
+                    pendingAction = batchData;
+                    pendingAction.action = "BIDDING_IN_PROGRESS"; 
+                    pendingActions.value.push(pendingAction); 
+                  });  
+                }
+                
               }
             }
-          }             
-        }
+          }
 
         pendingActions.value = await getLastUpdatedBy(pendingActions.value)
         initTabulator(pendingActions.value)
       }) 
     }
-
     const getLastUpdatedBy = async (invoices) => {
       const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition';
       const lastWorkflowDatas = await appAxios.post(api, _.map(invoices, 'workflowExecutionReferenceId'));

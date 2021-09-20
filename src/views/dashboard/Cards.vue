@@ -38,8 +38,8 @@
           <div class="flex">
             <div class="w-full">
               <div class="text-2xl font-bold leading-8">LINE INFORMATION</div>
-              <div class="ml-auto">Available Limite: {{cardsData.currencyCode}} {{cardsData.funderCompanyDashBoard.availableLimit}}</div>
-              <div class="ml-auto">Funded Amoun: {{cardsData.currencyCode}} {{cardsData.funderCompanyDashBoard.fundedAmount}}</div>
+              <div class="ml-auto">Available Limit: {{cardsData.currencyCode}} {{cardsData.funderCompanyDashBoard.availableLimit}}</div>
+              <div class="ml-auto">Funded Amount: {{cardsData.currencyCode}} {{cardsData.funderCompanyDashBoard.fundedAmount}}</div>
               <div class="ml-auto">Total Allocated Amount: {{cardsData.currencyCode}} {{cardsData.funderCompanyDashBoard.totalAllocatedLimit}}</div>
             </div>
             <div class="flex justify-end items-center">

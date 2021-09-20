@@ -147,20 +147,19 @@ export default defineComponent({
             if(res.data.bidInvitations != null) {
               let pendingBid = res.data.bidInvitations.open;
               if(pendingBid.workflowExecutionids.length > 0) {
-                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
-                appAxios.get(batchApi).then(res2 => {
-                  let batchData = res2.data;
-                  console.log(batchData,"batchData");
-                  pendingAction = {};
-                  pendingAction.action = "INVITE_FUNDERS_TO_BID";
-                  pendingAction.batchNumber = batchData.batchNumber;
-                  pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
-                  pendingAction.createdTime = moment(batchData.createdTime).format(dateFormat);
-                  pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
-                  pendingActions.value.push(pendingAction);
-
-                  console.log(pendingActions,"pendingActions");
-                }); 
+                for(let i=0;i<pendingBid.workflowExecutionids.length;i++) {
+                  const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[i]}`; 
+                  appAxios.get(batchApi).then(res2 => {
+                    let batchData = res2.data; 
+                    pendingAction = {};
+                    pendingAction.action = "BIDDING_IN_PROGRESS";
+                    pendingAction.batchNumber = batchData.batchNumber;
+                    pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId;
+                    pendingAction.createdTime = moment(batchData.createdTime).format(dateFormat);
+                    pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName;
+                    pendingActions.value.push(pendingAction);
+                  });              
+                }
               }
             }
           }
