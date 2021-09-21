@@ -382,7 +382,7 @@ export default {
               buyerCompanyId: buyerCompanyId,
               journalBatchEntries,
               bidEndTime: moment(bidEndTime.value).format(),
-              remark: batch.remark
+              remarks: batch.remark
             })
           })
         )
