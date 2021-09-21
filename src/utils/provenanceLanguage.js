@@ -1,6 +1,6 @@
 const lang = {
   TRANSACTION_COMPLETE: 'Transaction complete',
-  AWAITING_FINAL_DISBURSEMENT_ACKNOWLEDGEMENT_COMMUNICATION: 'Awaiting final disbursement acknowledgement communication',
+  AWAITING_FINAL_DISBURSEMENT_ACKNOWLEDGEMENT_COMMUNICATION: 'Email notification to funder on seller acknowledgement',
   AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT: 'Seller Acknowledge Settlement from Funder',
   AWAITING_FINAL_FUND_DISBURSEMENT_NOTIFICATION_TO_SELLER: 'Email notification to seller for fund Settlement',
   AWAITING_FUNDER_FINAL_DISBURSEMENT: 'Disbursement of balance settlement amount to seller',
@@ -11,7 +11,7 @@ const lang = {
   AWAITING_SELLER_ACKNOWLEDGE_DISBURSEMENT: 'Awaiting seller acknowledge disbursement',
   AWAITING_FUND_DISBURSEMENT_NOTIFICATION_TO_SELLER: 'Awaiting fund disbursement notification to seller',
   AWAITING_FUNDER_DISBURSEMENT: 'Awaiting funder disbursement',
-  AWAITING_FIRST_DISBURSEMENT_ACKNOWLEDGEMENT_COMMUNICATION: 'Awaiting first disbursement acknowledgement communication',
+  AWAITING_FIRST_DISBURSEMENT_ACKNOWLEDGEMENT_COMMUNICATION: 'Email notification to funder on seller acknowledgement',
   AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT: 'Seller Acknowledge Disbursement from Funder',
   AWAITING_FIRST_FUND_DISBURSEMENT_NOTIFICATION_TO_SELLER: 'Email notification to seller for fund disbursement',
   AWAITING_FUNDER_FIRST_DISBURSEMENT: 'Disbursement of the amount financed less interest and fees',
