@@ -199,14 +199,7 @@ export default {
             hozAlign: "center",
             headerHozAlign: 'center',
             resizable: true,
-          },
-          {
-            title: "BATCH REMARK",
-            field: "batchStatus",
-            hozAlign: "center",
-            headerHozAlign: 'center',
-            resizable: true,
-          },
+          }, 
           {
             title: "CREATED AT",
             minWidth: 150,
@@ -300,8 +293,7 @@ export default {
               if(pendingBid.workflowExecutionids.length > 0) {
                 for(let i = 0; i < pendingBid.workflowExecutionids.length; i ++) {
                 const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[i]}`; 
-                  await appAxios.get(batchApi).then(res2 => {
-                    console.log("test22");
+                  await appAxios.get(batchApi).then(res2 => { 
                     let batchData = res2.data; 
                     pendingAction = batchData;
                     pendingAction.action = "BIDDING_IN_PROGRESS"; 
