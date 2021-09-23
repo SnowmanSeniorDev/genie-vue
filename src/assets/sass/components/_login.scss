@@ -25,15 +25,4 @@
             }
         }
     }
-
-    .dark {
-        .login {
-            &:before {
-                background-image: url(../images/bg-login-page-dark.svg);
-            }
-            @include media-breakpoint-down(xl) {
-                background: #232a3b;
-            }
-        }
-    }
 }

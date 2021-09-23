@@ -31,6 +31,17 @@ const menu = [{
       }
     ]
   },{
+    icon: "KeyIcon",
+    pageName: "COMPANY_ONBOARD",
+    title: "Company Onboarding",
+    subMenu: [{
+        icon: "KeyIcon",
+        title: "Company Onboarding",
+        pageName: "COMPANY_ONBOARD",
+        permission: "COMPANY_ONBOARD"
+      }
+    ]
+  },{
     icon: "AirplayIcon",
     pageName: "GENIE_COMPANY_PROFILE",
     title: "Company",
@@ -73,10 +84,27 @@ const menu = [{
         permission: "GENIE_USERS_ASSIGN_ROLE"
       }
     ]
+  },{
+    icon: "GridIcon",
+    pageName: "GENIE_ECO_SYSTEM",
+    title: "Eco System",
+    subMenu: [{
+        icon: "GlobeIcon",
+        pageName: "GENIE_ECO_RELASHIONSHIP",
+        title: "Relasionship",
+        permission: "GENIE_ECO_SYSTEM"
+      },{
+        icon: "ApertureIcon",
+        pageName: "GENIE_ECO_WORKFLOW",
+        title: "Workflow",
+        permission: "GENIE_ECO_SYSTEM"
+      }
+    ]
   }
 ];
 
 export const custom_menu = (permissions) => {
+  console.log("permissions = ", permissions)
   var ret = [] ;
   menu.forEach(iMenu => {
     var nextSubMenu = [] ;

@@ -180,7 +180,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onErrorCaptured } from "vue";
+import { ref, onMounted } from "vue";
 import { useStore } from 'vuex';
 import moment from "moment";
 import _ from "lodash";
@@ -246,10 +246,14 @@ export default {
             batch.push({...jsonData.value[i]})
             paymentDueDate = jsonData.value[i].paymentDueDate
             companyName = jsonData.value[i].invoiceFromCompanyName ? jsonData.value[0].invoiceFromCompanyName : jsonData.value[0].invoiceToCompanyName
-            if(i == jsonData.value.length - 1) invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
+            if(i == jsonData.value.length - 1) {
+              invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
+              batch = []
+            }
           }
         }
-        invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
+        if(batch.length) invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
+        // invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
 
         //identify the invoice detail show table header and it will use to determine current invoice is seller led or buyer led
         console.log("workflow led = ", res.data.workflow)
