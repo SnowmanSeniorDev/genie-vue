@@ -915,6 +915,7 @@ export default {
       return new Promise(resolve => resolve("provenance api function done"))
     }
      console.log(provenance.value,"passed2");
+
     const getLockDays = async () => {
       await appAxios.get(`/company/v1/${batchDetails.value.buyerCompanyId}/holidays`).then(res => {
         res.data.forEach(item => {
@@ -1601,6 +1602,7 @@ export default {
       lockDays,
       getEstimateCalc,
       uploadErrorMessage
+
     }
   },
 }
