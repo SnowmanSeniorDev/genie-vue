@@ -49,7 +49,7 @@
               <img alt="" class="intro-x w-full h-36" src="/Calendar-bro.svg" />
             </div>
             <div class="box p-8">
-              <h4 class="text-lg font-bold">Upcomming Holiday Calender</h4>
+              <h4 class="text-lg font-bold">Upcoming Holiday Calendar</h4>
               <div class="mt-3 overflow-y-auto h-48 scroll-primary">
                 <div v-for="holiday in holidays" :key="holiday.holidayCalendarEntryId" class="cursor-pointer relative flex items-center mt-2">
                   <div class="w-8 mr-1 bg-pink-200 p-1 rounded-md">
