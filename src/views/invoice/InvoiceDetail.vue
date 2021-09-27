@@ -75,13 +75,12 @@
                   <ShieldIcon v-else class="w-3 h-3 mr-3"/>
                   
                   <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Verified'}}</span>
-                </div>
-                <div
-                  v-else-if="item.passed && !item.verified"
+                </div> 
+                <div  v-else-if="item.passed && !item.verified"
                   class="alert show flex items-center h-5 p-3 text-sm justify-center text-black-700 bg-red-200"
                   role="alert"
                 >
-                  <ShieldOffIcon class="w-3 h-3 mr-3" />
+                  <ShieldIcon class="w-3 h-3 mr-3"/>
                   <span class="pr-3">Not Verified</span>
                 </div>
                 <div
@@ -93,10 +92,11 @@
                   <span class="pr-3">Not Started</span>
                 </div>
                 <div class="items-center">
+                  <!-- span class="font-bold ml-3">Label : {{ProvenanceLang[item.statusName]}}<br /> eventName : {{item.eventName}}<br /> statusName : {{item.statusName}}</!-- --> 
                   <span class="font-bold ml-3">{{ProvenanceLang[item.statusName]}}</span> 
                   <div v-if="item.updateTime != undefined" class="text-gray-500 ml-3">Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
                   <div  class="text-gray-500 ml-3" v-if="batchDetails.bidEndTime != undefined && item.statusName=='BIDDING_IN_PROGRESS'">
-                    Awarded by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
+                    Approval by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
                   </div>
                 </div>
                 </div> 
@@ -135,7 +135,7 @@
             </tr>
             <tr class="hover:bg-gray-200">
               <td class="border">Total Amount</td>
-              <td class="border">{{batchDetails.currencyCode + ' ' + batchDetails.batchInformation.totalAmount}}</td>
+              <td class="border">{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</td>
             </tr>
           </table>
         </div>
@@ -143,7 +143,7 @@
           <span>Bank Details</span>
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
-              <td class="border w-1/2">Payment Bank Account</td>
+              <td class="border w-1/2">Disbursement Bank Account</td>
               <td class="border">
                 <p v-if="batchDetails.extraData.disbursableAccount">
                 Account number: {{batchDetails.extraData.disbursableAccount.accountNumber}}
@@ -158,33 +158,33 @@
             </tr>
           </table>
         </div>
-
+        
         <div class="mt-5" v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
           <span>Formular</span>
           <table class="table mt-2">
-            <tr class="hover:bg-gray-200">
+            <tr class="hover:bg-gray-200" v-if='user.user_role === "Funder Admin" || batchDetails.sellerCompanyId == currentLoginCompanyId'>
               <td class="border w-1/2">Interest Rate (Annual Rate %)</td>
-              <td class="border">{{batchDetails.formula.interestRate}}</td>
+              <td class="border">{{batchDetails.formula.interestRate}}%</td>
             </tr>
-              <tr class="hover:bg-gray-200">
+              <tr class="hover:bg-gray-200" v-if='user.user_role === "Funder Admin" || batchDetails.sellerCompanyId == currentLoginCompanyId'>
                 <td class="border">Interest Earn</td>
                 <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
               </tr> 
-              <tr class="hover:bg-gray-200">
+              <tr class="hover:bg-gray-200" v-if='user.user_role === "Funder Admin" || batchDetails.sellerCompanyId == currentLoginCompanyId'>
                 <td class="border">Platform Fee Amount</td>
-                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
               </tr> 
-              <tr class="hover:bg-gray-200">
-                <td class="border">First Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount1DueDate}}</td>
+              <tr class="hover:bg-gray-200" v-if='user.user_role === "Funder Admin" || batchDetails.sellerCompanyId == currentLoginCompanyId'>
+                <td class="border">Disbursement Amount Financed Less Interest and Fees</td>
                 <td class="border">{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
               </tr>  
-              <tr class="hover:bg-gray-200">
-                <td class="border">Second Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount2DueDate}}</td>
+              <tr class="hover:bg-gray-200" v-if='user.user_role === "Funder Admin" || batchDetails.sellerCompanyId == currentLoginCompanyId'>
+                <td class="border">Balance Settlement Amount to Seller</td>
                 <td class="border">{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
                 <td class="border">Repayment Amount To Funder</td>
-                <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.repaymentAmountToFunder}}</td>
+                <td class="border">{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
               </tr> 
             <tr class="hover:bg-gray-200">
               <td class="border">Repayment Date</td>
@@ -192,13 +192,14 @@
             </tr>
           </table>
         </div>
-        <div v-if="initComponent">
+        
+        <div v-if="initComponent && errorStepsMsg == ''">
           <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center">
             <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
             <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
           </div>
           <div v-if="visibleWorkflowActions.visibleSubmitProposal" class="pt-8 flex justify-center">
-            <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Proposal</a>
+            <a href="javascript:;" data-toggle="modal" data-target="#submit-proposal-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve Transaction</a>
           </div>
           <div v-if="visibleWorkflowActions.visibleSubmitDisbursmentAdvice" class="pt-8 flex justify-center">
             <a href="javascript:;" data-toggle="modal" data-target="#submit-disbursment-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Submit Disbursment</a>
@@ -212,6 +213,11 @@
           <div v-if="visibleWorkflowActions.visibleFunderAcknowledgeRepaymentAdvice" class="pt-8 flex justify-center">
             <a href="javascript:;" @click="openFunderAcknowledgeUploadRepaymentAdviceModel" class="btn btn-primary w-48 sm:w-auto mr-2" >Acknowledge Repayment Advice</a>
           </div>
+        </div> 
+        <div v-else>
+          <br />
+          <div class="text-red-500 ml-3">{{errorStepsMsg}}</div>
+          
         </div>
       </div>
     </div>
@@ -298,7 +304,7 @@
       <div class="modal-content">
         <!-- BEGIN: Modal Header -->
         <div class="modal-header">
-          <h2 class="font-medium text-base mr-auto"> Submit Proposal </h2>
+          <h2 class="font-medium text-base mr-auto"> Approve Transaction </h2>
         </div>
         <!-- END: Modal Header -->
         <div class="modal-body mx-8">
@@ -363,11 +369,11 @@
                 <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount}}</td>
               </tr> 
               <tr class="hover:bg-gray-200">
-                <td class="border">First Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount1DueDate}}</td>
+                <td class="border">Disbursement Amount Financed Less Interest and Fees</td>
                 <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
-                <td class="border">Second Disbursable Amount To Seller by {{batchDetails.formula.disburableAmount2DueDate}}</td>
+                <td class="border">Balance Settlement Amount to Seller</td>
                 <td class="border">{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2}}</td>
               </tr>  
               <tr class="hover:bg-gray-200">
@@ -379,7 +385,7 @@
         </div>
         <div class="modal-footer text-right">
           <button type="button" class="btn btn-primary w-24 mr-1" @click="submitProposal" :disabled="modalLoading"> 
-            Confirm
+            Approve
             <LoadingIcon v-if="modalLoading" icon="oval" color="white" class="w-4 h-4 ml-2" />
           </button>
           <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20"> Cancel </button>
@@ -686,6 +692,8 @@ export default {
     SignaturePad
   },
   setup(props) {
+    
+    const errorStepsMsg = ref('');
     const transactionType = ref();
     const journalBatchEntry = ref()
     const adminCompany = ref()
@@ -741,7 +749,8 @@ export default {
       }
     })
     const store = useStore()
-    const user = store.state.auth
+    const user = store.state.auth; 
+    const currentLoginCompanyId = store.state.account.company_uuid;
     const valueDate = ref()
     const bidValue = ref(null)
     const files = ref()
@@ -841,12 +850,19 @@ export default {
         paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
+
+        console.log(res.data[0].workflows,"res.data[0].workflows");
+        console.log(provenance.value,"provenance.value");
+
         res.data[0].workflows.forEach(passedWorkflow => {
           provenance.value = provenance.value.map(item => {
             if(item.workflowId === passedWorkflow.workflowId){
               item.workflowStatuses.map(workflowState => {
+                
                 if(_.find(passedWorkflow.statusTransitions, (passedWorkflowStatusTransitionEntity) => {
+                  console.log(passedWorkflow.statusTransitions,"passedWorkflow.statusTransitions");
                   if(passedWorkflowStatusTransitionEntity.statusName === workflowState.statusName) {
+                    console.log(passedWorkflowStatusTransitionEntity.statusName, workflowState.statusName);
                     return true
                   }
                 })){
@@ -893,18 +909,23 @@ export default {
             })
           }
         })
-      )
-      loading.value.provenance = false;
+      ) 
       let workStatusList = []; 
-      verifyRequestBody.value.TransactionWorkflowStatuses.forEach((workStatus, index) => {
+      verifyRequestBody.value.TransactionWorkflowStatuses.forEach(async (workStatus, index) => {
        workStatusList = []; 
+       loading.value.provenance = true;
        provenance.value[index].loading= true;
-        Object.keys(workStatus).forEach(k => (workStatus[k] == null || typeof workStatus[k] == "undefined") && delete workStatus[k]);
+        Object.keys(workStatus).forEach(async k => (workStatus[k] == null || typeof workStatus[k] == "undefined") && delete workStatus[k]);
         if(provenance.value[index].passed) {
           workStatusList.push(workStatus);
-          sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
+          await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
             provenance.value[index].verified = res.data[0].verificationStatus;
             provenance.value[index].loading= false;
+            if(!res.data[0].verificationStatus)
+            { 
+              errorStepsMsg.value ='Data Verification failed, the Database data has been compromise. Please contact Genie Support for further action.';
+              return;
+            }
           }); 
         }
         else {
@@ -912,6 +933,7 @@ export default {
           provenance.value[index].loading= false;
         }
       })
+      loading.value.provenance = false;
       return new Promise(resolve => resolve("provenance api function done"))
     }
      console.log(provenance.value,"passed2");
@@ -1082,6 +1104,14 @@ export default {
           companyId: store.state.account.company_uuid,
           bidValue: bidValue.value,
           valueDate: moment.utc(valueDate.value).format(),
+           repaymentAccount: {
+            bankName: "Singapore Bank",
+            branchName: "10032",
+            address: "Hong Kong Sar",
+            accountNumber: "1003210189102",
+            swiftCode: "1009",
+            currency: "SGD"
+    }
         }
       }).then(res => {
         modalLoading.value = false
@@ -1490,7 +1520,7 @@ export default {
         if(batchDetails.value.initiatedByCompanyId == store.state.account.company_uuid) currentCompanyRole.value = "Seller Admin";
         else currentCompanyRole.value = "Buyer Admin"
       }
-
+ 
       //determine what action button should be showed in Batch Detail page
       if(lastWorkStatus.value['statusName'] === "AWAITING_SELLER_ACKNOWLEDGEMENT" && currentCompanyRole.value === "Seller Admin") visibleWorkflowActions.value.visibleApproveButton = true
       else if(lastWorkStatus.value['statusName'] === "AWAITING_BUYER_ACKNOWLEDGEMENT" && currentCompanyRole.value === "Buyer Admin") visibleWorkflowActions.value.visibleApproveButton = true
@@ -1518,15 +1548,12 @@ export default {
             if(res.data.bidInvitations != null) {
               let pendingBid = res.data.bidInvitations.open;
               if(pendingBid.workflowExecutionids.length > 0) {
-                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[0]}`; 
-                appAxios.get(batchApi).then(res2 => {
-                  
-                  let batchData = res2.data;
-                  if(batchData.workflowExecutionReferenceId == props.workflowExecutionReferenceId)
+                for(let i=0;i<pendingBid.workflowExecutionids.length;i++){ 
+                  if(pendingBid.workflowExecutionids[i] == props.workflowExecutionReferenceId)
                   {
-                    visibleWorkflowActions.value.visibleSubmitProposal = true;
-                  } 
-                }); 
+                    visibleWorkflowActions.value.visibleSubmitProposal = true; 
+                  }
+                }
               }
             } 
         })
@@ -1549,6 +1576,8 @@ export default {
     })
     
     return { 
+      currentLoginCompanyId,
+      errorStepsMsg, 
       dateFormat,
       dateTimeFormat,
       transactionType,
