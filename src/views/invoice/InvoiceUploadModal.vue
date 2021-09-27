@@ -11,11 +11,10 @@
             <div class="flex items-center mt-2 md:mt-0">
                 <div class="flex items-center mt-2  form-inline block md:flex">
                   <div v-if="documentFormats.length">
-                    <button class="btn btn-outline-primary  mr-1 inline-block" @click="chooseFiles">
+                    <button class="btn btn-outline-primary w-32 mr-1 inline-block" @click="chooseFiles">
                       <UploadIcon class="w-4 h-4 mr-2" />
                       Upload Invoice
                     </button> 
-                    <label class="pl-4 pr-2">Document Type</label>
                     <div class="dropdown inline-block" data-placement="bottom">
                       <button class="dropdown-toggle btn btn-primary w-32 mr-1" aria-expanded="false"> {{documentFormat}} </button>
                       <div class="dropdown-menu w-40">
@@ -31,7 +30,11 @@
                       </div>
                     </div>
                   </div>
-                  <label for="bid-end-time" class="md:pl-4 pr-4">Bid End Time</label>
+                   
+                </div>
+              </div>
+              <div class="flex items-center mt-2 md:mt-0" style="margin-top:15px;">
+                <label for="bid-end-time" class="md:pl-4 pr-4">Bid End Time</label>
                   <DatePicker v-model="bidEndTime" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
                     <template v-slot="{ inputValue, inputEvents }">
                       <input
@@ -41,8 +44,7 @@
                         v-on="inputEvents"
                       />
                     </template>
-                  </DatePicker>
-                </div>
+                  </DatePicker> 
               </div>
               
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
@@ -76,17 +78,17 @@
                         <tr>
                           <td colspan="4" v-if="workflowLed == 'Seller Led'">
                             <div class="flex w-100 items-center">
-                              <label class="w-32">select bank</label>
+                              <label class="w-32">Select Disbursement Bank Account</label>
                               <select v-model="invoicesBatch[batchIndex].bankId" class="form-select">
                                 <option v-for="bank in bankAccount" :key="bank.bankAccountId" :value="bank.bankAccountId">
-                                  {{bank.bankName}}
+                                  {{bank.accountNumber}} ({{bank.bankName}})
                                 </option>
                               </select>
                             </div>
                           </td>
                           <td colspan="4">
                             <div class="flex w-100 items-center">
-                              <label class="w-24">remark</label>
+                              <label class="w-24">Batch Remark</label>
                               <input type="text" v-model="invoicesBatch[batchIndex].remark" class="form-control"/>
                             </div>
                           </td>
@@ -205,7 +207,7 @@ export default {
     const bankAccount = ref([]);
     const jsonData = ref([]);
     const fileUpload = ref(null);
-    const documentFormat = ref("Select");
+    const documentFormat = ref("Select Document Type");
     const companyTypeHeader = ref("Company Name");
     const documentFormats = ref([])
     const bidEndTime = ref(new Date());
@@ -380,7 +382,7 @@ export default {
               buyerCompanyId: buyerCompanyId,
               journalBatchEntries,
               bidEndTime: moment(bidEndTime.value).format(),
-              remark: batch.remark
+              remarks: batch.remark
             })
           })
         )
