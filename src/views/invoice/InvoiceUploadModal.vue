@@ -182,7 +182,7 @@
 </template>
 
 <script>
-import { ref, onMounted, onErrorCaptured } from "vue";
+import { ref, onMounted } from "vue";
 import { useStore } from 'vuex';
 import moment from "moment";
 import _ from "lodash";
