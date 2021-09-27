@@ -9,44 +9,42 @@
           </div> <!-- END: Modal Header -->
           <div class="m-8 mt-4">
             <div class="flex items-center mt-2 md:mt-0">
-                <div class="flex items-center mt-2  form-inline block md:flex">
-                  <div v-if="documentFormats.length">
-                    <button class="btn btn-outline-primary w-32 mr-1 inline-block" @click="chooseFiles">
-                      <UploadIcon class="w-4 h-4 mr-2" />
-                      Upload Invoice
-                    </button> 
-                    <div class="dropdown inline-block" data-placement="bottom">
-                      <button class="dropdown-toggle btn btn-primary w-32 mr-1" aria-expanded="false"> {{documentFormat}} </button>
-                      <div class="dropdown-menu w-40">
-                        <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
-                          <a v-for="(document, index) in documentFormats" :key="index"
-                            href="javascript:;"
-                            class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                            @click="setDocumentFromat(document.dataSourceSystemName)"
-                          >
-                            {{document.dataSourceSystemName}}
-                          </a>
-                        </div>
+              <div class="flex items-center form-inline block md:flex">
+                <div v-if="documentFormats.length">
+                  <button class="btn btn-outline-primary w-40 mr-1 inline-block" @click="chooseFiles">
+                    <UploadIcon class="w-4 h-4 mr-2" />
+                    Upload Invoice
+                  </button> 
+                  <div class="dropdown inline-block" data-placement="bottom">
+                    <button class="dropdown-toggle btn btn-primary w-44 mr-1" aria-expanded="false"> {{documentFormat}} </button>
+                    <div class="dropdown-menu w-40">
+                      <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
+                        <a v-for="(document, index) in documentFormats" :key="index"
+                          href="javascript:;"
+                          class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                          @click="setDocumentFromat(document.dataSourceSystemName)"
+                        >
+                          {{document.dataSourceSystemName}}
+                        </a>
                       </div>
                     </div>
                   </div>
-                   
                 </div>
               </div>
-              <div class="flex items-center mt-2 md:mt-0" style="margin-top:15px;">
+              <div class="flex items-center md:mt-0">
                 <label for="bid-end-time" class="md:pl-4 pr-4">Bid End Time</label>
-                  <DatePicker v-model="bidEndTime" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
-                    <template v-slot="{ inputValue, inputEvents }">
-                      <input
-                        id="bid-end-time"
-                        class="form-control w-56 block mx-auto border rounded focus:outline-none focus:border-blue-300"
-                        :value="inputValue"
-                        v-on="inputEvents"
-                      />
-                    </template>
-                  </DatePicker> 
+                <DatePicker v-model="bidEndTime" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
+                  <template v-slot="{ inputValue, inputEvents }">
+                    <input
+                      id="bid-end-time"
+                      class="form-control w-56 block mx-auto border rounded focus:outline-none focus:border-blue-300"
+                      :value="inputValue"
+                      v-on="inputEvents"
+                    />
+                  </template>
+                </DatePicker> 
               </div>
-              
+            </div>
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
             <div class="col-span-12 h-full overflow-y-auto overflow-x-invisible bg-gray-200 p-1 mt-5">
               <div v-if="loading" class="py-16 h-full flex">
