@@ -143,22 +143,19 @@ export default {
             minWidth: 50,
             maxWidth: 150,
             resizable: false,
-          },
-          {
+          }, {
             title: "BUYER",
             field: "buyerCompanyName",
             headerHozAlign: 'center',
             hozAlign: "center",
             resizable: true,
-          },
-          {
+          }, {
             title: "SELLER",
             field: "sellerCompanyName",
             headerHozAlign: 'center',
             hozAlign: "center",
             resizable: true,
-          },
-          {
+          }, {
             title: "TOTAL AMOUNT",
             field: "totalAmount",
             minWidth: 100,
@@ -169,15 +166,13 @@ export default {
             formatter(cell) {
               return cell.getData().currencyCode + " " +cell.getData().totalAmount.toFixed(2)
             },
-          },
-          {
+          }, {
             title: "LAST UPDATED BY",
             field: "lastUpdatedBy",
             hozAlign: "center",
             resizable: true,
             headerSort: true
-          },
-          {
+          }, {
             title: "CURRENT STAGE",
             field: "action",
             hozAlign: "center",
@@ -186,21 +181,18 @@ export default {
             formatter(cell) {
               return ProvenanceLang[cell.getData().action]//moment(cell.getData().paymentDueDate).format("LL")
             }
-          },
-          {
+          }, {
             title: "BATCH REMARK",
             field: "remarks",
             hozAlign: "center",
             resizable: true,
-          },
-          {
+          }, {
             title: "BATCH STATUS",
             field: "batchStatus",
             hozAlign: "center",
             headerHozAlign: 'center',
             resizable: true,
-          }, 
-          {
+          }, {
             title: "CREATED AT",
             minWidth: 150,
             hozAlign: "center",
@@ -210,8 +202,7 @@ export default {
             formatter(cell) { 
               return moment(cell.getData().createdTime).format(dateTimeFormat.value)
             }
-          },
-          {
+          }, {
             title: "ACTIONS",
             maxWidth: 130,
             responsive: 1,
@@ -309,6 +300,7 @@ export default {
         initTabulator(pendingActions.value)
       }) 
     }
+    
     const getLastUpdatedBy = async (invoices) => {
       const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition';
       const lastWorkflowDatas = await appAxios.post(api, _.map(invoices, 'workflowExecutionReferenceId'));

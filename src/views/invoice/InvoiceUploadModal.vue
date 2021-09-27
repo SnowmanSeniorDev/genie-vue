@@ -495,6 +495,7 @@ export default {
     const init = async () => {
       await getCompanyBankAccounts()
       documentFormats.value = await appAxios.get(`/company/v1/${store.state.account.company_uuid}/datasourcesystem`).then(res => {
+        console.log("document formats = ", res)
         return res.data
       })
       loading.value = false

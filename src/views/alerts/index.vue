@@ -66,6 +66,23 @@
         </div>
       </div>
     </div>
+
+    <!-- testing for the file viewer for uploaded file -->
+    <div id="show-file-viewer" class="modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="text-xl">Here is file content</h1>
+          </div>
+          <div class="modal-body mx-8 xlsx-viewer">
+            <xlsx-read :file="xlsx.file">
+              <xlsx-table />
+            </xlsx-read>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary mt-4" @click="openFileViewer">click me to open the file viewer</button>
   </div>
 </template>
 <script>
@@ -75,8 +92,13 @@ import feather from "feather-icons";
 import Tabulator from "tabulator-tables";
 import { sysAxios } from "@/plugins/axios";
 import moment from "moment";
+import { XlsxRead, XlsxTable } from "vue3-xlsx";
 
 export default {
+  components: {
+    XlsxRead,
+    XlsxTable,
+  },
   setup() {
     const store = useStore()
     const tableRef = ref();
@@ -95,6 +117,14 @@ export default {
     });
     const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
     var split = ref(true);
+    const openFileUrl = ref('');
+    const xlsx = ref({
+      file: null,
+      selectedSheet: null,
+      sheetName: null,
+      sheets: null,
+      collection: null
+    });
     
     const initTabulator = () => {
       const tabelData = split.value ? _.filter(notifications.value, {status: "Complete"}) : notifications.value
@@ -218,11 +248,37 @@ export default {
       initTabulator()
     }
 
+    const openFileViewer = async () => {
+      // const api = '/uploads/v1/cefcd620-ebfd-469f-9139-807b66aa2f95'
+      // const api = '/uploads/v1/eb4107db-4f31-4a8b-b66f-ec8aac941189'
+      const api = '/uploads/v1/d75b0a3d-3506-42fd-ad8a-535efc4ac018'
+      const fileResponse = await sysAxios.get(api, {responseType: 'blob'})
+      console.log("file response = ", fileResponse)
+      if(fileResponse.headers['content-type'] === 'application/pdf') {
+        const file = new Blob([fileResponse.data], {type: 'application/pdf'});
+        const fileURL = URL.createObjectURL(file);
+        openFileUrl.value = fileURL
+        window.open(fileURL);
+      } else if (fileResponse.headers['content-type'] === 'image/jpeg') {
+        const file = new Blob([fileResponse.data], {type: 'image/jpeg'});
+        const fileURL = URL.createObjectURL(file);
+        openFileUrl.value = fileURL
+        window.open(fileURL);
+        // cash("#show-file-viewer").modal("show")
+      } else if (fileResponse.headers['content-type'] === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        const file = new Blob([fileResponse.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        console.log("file = ", file)
+        xlsx.value.file = file
+        cash("#show-file-viewer").modal("show")
+      }
+      else {
+      }
+    }
+
     const init = async () => {
       const api = `communications/v1/notification/${store.state.account.company_uuid}`
       notifications.value = await sysAxios.get(api + '?status=Complete').then(res => {return res.data})
       await sysAxios.get(api + '?status=Read').then(res => {
-        console.log("read", res.data)
         notifications.value.push(...res.data)
       })
       initTabulator()
@@ -248,8 +304,23 @@ export default {
       dateTimeFormat,
       split,
       showUnreadNotification,
-      showAllNotification
+      showAllNotification,
+      openFileViewer,
+      openFileUrl,
+      xlsx,
     };
   },
 }
 </script>
+
+<style>
+  .xlsx-viewer tr:nth-child(odd) {
+    background: #adb3bd80;
+  }
+  .xlsx-viewer tr {
+    border: 1px solid black;
+  }
+  .xlsx-viewer td {
+    height: 20px;
+  }
+</style>
