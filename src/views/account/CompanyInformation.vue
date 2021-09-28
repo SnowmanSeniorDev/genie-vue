@@ -52,6 +52,13 @@
 				<label for="account-1-email" class="form-label">Primary Email</label>
 				<input id="account-1-email" v-model="companyProfile.primaryEmail" type="text" class="form-control" placeholder="Primary Email"/>
 			</div>
+			<div class="intro-y col-span-12 sm:col-span-6">
+				<label for="company-type" class="form-label">Company Type</label>
+				<select v-model="companyProfile.companyType" class="form-select">
+					<option value="company">Company</option>
+					<option value="funder">Funder</option>
+				</select>
+			</div>
 			<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
 				<button class="btn btn-primary w-24" @click="submitCompanyProfile">Save</button>
 			</div>
@@ -63,11 +70,11 @@
 			</div>
 		</div>
 		<div id="failed-notification-content" class="toastify-content hidden flex">
-				<XCircleIcon class="text-theme-6" />
-				<div class="ml-4 mr-4">
-					<div class="font-medium">Add Company profile was failed!</div>
-					<div class="text-gray-600 mt-1">Please fillin correct value of the company profile.</div>
-				</div>
+			<XCircleIcon class="text-theme-6" />
+			<div class="ml-4 mr-4">
+				<div class="font-medium">Add Company profile was failed!</div>
+				<div class="text-gray-600 mt-1">Please fillin correct value of the company profile.</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -99,6 +106,7 @@ export default {
 			country: null,
 			phone: '',
 			primaryEmail: '',
+			companyType: 'company'
 		});
 
 		const originalCompanyProfile = ref(null);

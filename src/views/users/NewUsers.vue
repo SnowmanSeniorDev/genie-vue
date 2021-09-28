@@ -7,7 +7,7 @@
         <LoadingIcon icon="spinning-circles" color="gray" class="w-4 h-4 py-8" />
       </div>
     </div>
-    <div class="overflow-x-auto scrollbar-hidden">
+    <div :class="`${companyLoading ? 'hidden' : 'block'}`" class="overflow-x-auto scrollbar-hidden">
       <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
     </div>
   </div>
@@ -78,38 +78,33 @@ export default {
             hozAlign: "left",
             resizable: true,
             headerSort: false
-          },
-          {
+          }, {
             title: "Company Name",
             field: "companyDisplayName",
             resizable: false,
             headerSort: false
-          },
-          {
+          }, {
             title: "Company Legal Name",
             field: "companyLegalName",
             headerHozAlign: 'center',
             hozAlign: "center",
             resizable: true,
             headerSort: false
-          },
-          {
+          }, {
             title: "Address",
             field: "addressLine1",
             headerHozAlign: 'center',
             hozAlign: "center",
             resizable: true,
             headerSort: false
-          },
-          {
+          }, {
             title: "Type",
             field: "companyType",
             headerHozAlign: 'center',
             hozAlign: "center",
             resizable: true,
             headerSort: false
-          },
-          {
+          }, {
             title: "Phone",
             field: "phone",
             minWidth: 100,
@@ -117,15 +112,13 @@ export default {
             hozAlign: "right",
             resizable: true,
             headerSort: true,
-          },
-          {
+          }, {
             title: "Email",
             field: "primaryEmail",
             hozAlign: "center",
             resizable: true,
             headerSort: false
-          },
-          {
+          }, {
             title: "ACTIONS",
             minWidth: 100,
             maxWidth: 150,
@@ -175,6 +168,7 @@ export default {
         }
       })
     }
+
     const reInitOnResizeWindow = () => {
       window.addEventListener("resize", () => {
         tabulator.value.redraw();
@@ -183,6 +177,7 @@ export default {
         });
       });
     };
+
     onMounted(async () => {
       approveRoleId.value = await sysAxios.get('access/v1/role').then(res => {
         return _.find(res.data, {roleName: 'System Admin'}).roleId;

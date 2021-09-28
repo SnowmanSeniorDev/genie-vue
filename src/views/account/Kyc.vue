@@ -107,7 +107,7 @@ export default {
     const options = reactive({
       multiple: true,
       onDrop,
-      accept: '.jpg, .csv',
+      accept: '.jpg, .csv, .txt, .pdf, .docx, .xlsx',
     })
 
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
@@ -178,6 +178,7 @@ export default {
               }
             }
           ).then(() => {
+            files.value = null
             cash("#kyc-doc-file-upload").modal("hide");
           })
         } else {
@@ -188,7 +189,7 @@ export default {
               }
             }
           ]).then((res) => {
-            console.log(res);
+            files.value = null
             docList.value[setDocIndex.value].corporateInfoHeaderId = res.data[0];
             docList.value[setDocIndex.value].status = "Pending";
             cash("#kyc-doc-file-upload").modal("hide");
