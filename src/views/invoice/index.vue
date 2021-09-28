@@ -5,7 +5,7 @@
     </div>
     <div class="intro-y box p-5 mt-5">
       <div class="flex flex-col sm:flex-row sm:items-end xl:items-start">
-        <div class="flex mt-5 sm:mt-0">
+        <div class="flex mt-5 sm:mt-0" v-if="userRole == 'System Admin'">
           <a href="javascript:;" data-toggle="modal" data-target="#upload-invoice-modal" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2" v-if="isCompany">
             <UploadIcon class="w-4 h-4 mr-2" /> Upload&nbsp;Invoice
           </a>
@@ -370,7 +370,8 @@ export default {
       getInvoiceOverview,
       invoiceFromMe,
       invoiceFromPendingAction,
-      ProvenanceLang
+      ProvenanceLang,
+      userRole: store.state.auth.user_role
     };
   },
 }

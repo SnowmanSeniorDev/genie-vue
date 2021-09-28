@@ -139,7 +139,7 @@
             </tr>
           </table>
         </div>
-         <div class="mt-8" v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
+        <div class="mt-8" v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
           <span>Bank Details</span>
           <table class="table mt-2">
             <tr class="hover:bg-gray-200">
@@ -217,7 +217,6 @@
         <div v-else>
           <br />
           <div class="text-red-500 ml-3">{{errorStepsMsg}}</div>
-          
         </div>
       </div>
     </div>
@@ -660,12 +659,12 @@
     </div>
   </div>
   <div id="failed-notification-content" class="toastify-content hidden flex">
-        <XCircleIcon class="text-theme-6" />
-        <div class="ml-4 mr-4">
-          <div class="font-medium">Upload failed!</div>
-          <div class="text-gray-600 mt-1" id="error-content">{{uploadErrorMessage}}.</div>
-        </div>
-      </div>
+    <XCircleIcon class="text-theme-6" />
+    <div class="ml-4 mr-4">
+      <div class="font-medium">Upload failed!</div>
+      <div class="text-gray-600 mt-1" id="error-content">{{uploadErrorMessage}}.</div>
+    </div>
+  </div>
 </template>
 
 <script>
