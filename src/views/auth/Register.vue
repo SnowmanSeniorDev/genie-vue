@@ -4,7 +4,7 @@
       <!-- BEGIN: Register Form -->
       <div></div>
       <div class="box intro-x col-span-4 self-center px-8 py-12">
-        <img class="" :src="require(`@/assets/images/logo.svg`)"/>
+        <img class="" :src="require(`@/assets/images/logo.svg`)" height="100" width="100"/>
         <h2 class="intro-x font-bold text-2xl xl:text-3xl text-center xl:text-left pt-4">Genie Financial Portal</h2>
         <div class="intro-x mt-2 dark:text-gray-500">
           New account registration
@@ -126,7 +126,7 @@ export default {
     const router = useRouter()
     const formData = reactive({
       userName: null,
-      secret: '123',
+      secret: '',
       confirmSecret: '',
       emailAddress: null,
       firstName: null,
