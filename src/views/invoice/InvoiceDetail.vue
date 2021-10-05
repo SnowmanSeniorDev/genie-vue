@@ -36,7 +36,13 @@
               </button>
             </td>
           </tr>
-          <Docments v-if="!supportingDocumentAccordionIndex.includes(index)" :journalBatchHeaderId="item.journalBatchHeaderId" :journalBatchEntryId="item.journalBatchEntryId"/>
+          <Docments
+            v-if="!supportingDocumentAccordionIndex.includes(index)"
+            :journalBatchHeaderId="item.journalBatchHeaderId"
+            :journalBatchEntryId="item.journalBatchEntryId"
+            :entryType="item.documentType"
+            :traceId="batchDetails.traceId"
+          />
         </tbody>
       </table>
     </div>
@@ -935,7 +941,6 @@ export default {
       loading.value.provenance = false;
       return new Promise(resolve => resolve("provenance api function done"))
     }
-     console.log(provenance.value,"passed2");
 
     const getLockDays = async () => {
       await appAxios.get(`/company/v1/${batchDetails.value.buyerCompanyId}/holidays`).then(res => {
@@ -1467,9 +1472,10 @@ export default {
         batchEntries: [],
         TransactionWorkflowStatuses: []
       }
+
       await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
         journalBatchEntry.value = res.data
-        console.log(journalBatchEntry.value);
+        console.log("journalbtchEntry = ", journalBatchEntry.value);
         res.data.forEach(async entry => {
           const api = `/journalbatch/v1/header/${entry.journalBatchHeaderId }/entry/${entry.journalBatchEntryId }/supportingdocuments`;
           let supportingDocument = []
