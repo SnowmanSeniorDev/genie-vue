@@ -247,7 +247,7 @@
             <div class="self-center">{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
             <div class="self-center">Remark</div>
             <div class="self-center">
-              <textarea v-model="remark" class="border-2 border w-full" rows="3" />
+              <textarea v-model="remark" class="border-2 w-full" rows="3" />
             </div>
           </div>
           <signature-pad
@@ -293,7 +293,7 @@
             <div class="self-center">{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
             <div class="self-center">Remark</div>
             <div class="self-center">
-              <textarea v-model="remark" class="border-2 border w-full" rows="3" />
+              <textarea v-model="remark" class="border-2 w-full" rows="3" />
             </div>
           </div>
         </div>
@@ -1452,6 +1452,7 @@ export default {
             repaymentDate: moment.utc(res.data.paymentDueDate).format(dateFormat)
           }
         }
+        
         batchDetails.value.valueDate = moment().add(2,'days'); 
         valueDate.value = batchDetails.value.valueDate; 
         let dueDt = moment(batchDetails.value.paymentDueDate);
