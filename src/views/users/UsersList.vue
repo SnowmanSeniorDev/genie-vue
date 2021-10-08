@@ -204,7 +204,10 @@ export default {
     const search = (key) => {
       if(key.length) {
         searchedUsers.value = users.value.filter(user => {
-          return Object.values(user).join("").includes(key)
+          console.log(Object.values(user).join(""))
+          console.log(key)
+          console.log(Object.values(user).join("").includes(key))
+          return Object.values(user).join("").toLowerCase().includes(key)
         })
         updatePageNation()
       } else {
