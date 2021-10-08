@@ -16,7 +16,7 @@
             <select
               id="tabulator-html-filter-field"
               v-model="filter.field"
-              class="form-select w-full sm:w-32 xxl:w-full mt-2 sm:mt-0 sm:w-auto"
+              class="form-select w-full xxl:w-full mt-2 sm:mt-0 sm:w-auto"
             >
               <option value="lastUpdatedBy">Last Updated By</option>
               <option value="sellerCompanyName">Seller</option>
@@ -125,8 +125,7 @@ export default {
       type: "like",
       value: ""
     });
-    
-    
+      
     const initTabulator = (data) => { 
       tabulator.value = new Tabulator(tableRef.value, {
         data: data,
@@ -255,9 +254,8 @@ export default {
 
     const getInvoiceOverview = async () => {
       const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
-      const invoices = await getLastUpdatedBy(await appAxios.get(api).then(res => { return res.data }));
+      const invoices = await getLastUpdatedBy(await appAxios.get(api).then(res => { return _.filter(res.data, {workflowVersion: 'v2'}) }));
       invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc');
-      console.log(invoiceOverview.value)
     }
   
     const getPendingAction = async () => {
@@ -270,45 +268,46 @@ export default {
         if(pendingItem.length > 0) {
           for(let i = 0; i < pendingItem.length; i ++) {
             const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
-            await appAxios.get(batchApi).then(res2 => { 
-              let batchData = res2.data; 
+            await appAxios.get(batchApi).then(res2 => {
+              let batchData = _.filter(res2.data, {workflowVersion: 'v2'}); 
               pendingAction.action = pendingItem[i].action;
               pendingAction = batchData; 
               pendingActions.value.push(pendingAction); 
             }); 
           }               
         }
-          if(store.state.account.company_type.toLowerCase() == "funder") {
-            if(res.data.bidInvitations != null) {
-              let pendingBid = res.data.bidInvitations.open; 
-              if(pendingBid.workflowExecutionids.length > 0) {
-                for(let i = 0; i < pendingBid.workflowExecutionids.length; i ++) {
+        if(store.state.account.company_type.toLowerCase() == "funder") {
+          if(res.data.bidInvitations != null) {
+            let pendingBid = res.data.bidInvitations.open; 
+            if(pendingBid.workflowExecutionids.length > 0) {
+              for(let i = 0; i < pendingBid.workflowExecutionids.length; i ++) {
                 const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[i]}`; 
-                  await appAxios.get(batchApi).then(res2 => { 
-                    let batchData = res2.data; 
-                    pendingAction = batchData;
-                    pendingAction.action = "BIDDING_IN_PROGRESS"; 
-                    pendingActions.value.push(pendingAction); 
-                  });  
-                }
-                
+                await appAxios.get(batchApi).then(res2 => { 
+                  let batchData = res2.data; 
+                  pendingAction = batchData;
+                  pendingAction.action = "BIDDING_IN_PROGRESS"; 
+                  pendingActions.value.push(pendingAction); 
+                });  
               }
             }
           }
+        }
 
-        pendingActions.value = await getLastUpdatedBy(pendingActions.value)
+        pendingActions.value = await getLastUpdatedBy(...pendingActions.value)
         initTabulator(pendingActions.value)
       }) 
     }
     
     const getLastUpdatedBy = async (invoices) => {
-      const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition';
-      const lastWorkflowDatas = await appAxios.post(api, _.map(invoices, 'workflowExecutionReferenceId'));
-      var withLastUpdatedBy = [];
+      invoices = invoices ?? []
+      const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
+      const lastWorkflowDatas = await appAxios.post(api, _.map(invoices, 'workflowExecutionReferenceId'))
+      var withLastUpdatedBy = []
       await Promise.all(
         invoices.map( async (invoice, index) => {
-          const lastWorkflowData = _.find(lastWorkflowDatas.data, {externalReferenceId: invoice.workflowExecutionReferenceId});
-          const userId = lastWorkflowData.workflow.lastStatusTransition.updateBy;
+          const lastWorkflowData = _.find(lastWorkflowDatas.data, {externalReferenceId: invoice.workflowExecutionReferenceId})
+          const userId = lastWorkflowData.workflow.lastStatusTransition.updateBy
+
           if(userId === '00000000-0000-0000-0000-000000000000') {
             withLastUpdatedBy.push({...invoice, lastUpdatedBy: 'System', action: lastWorkflowData.workflow.lastStatusTransition.statusName})
           }

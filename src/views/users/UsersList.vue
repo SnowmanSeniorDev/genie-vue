@@ -9,13 +9,22 @@
         </div>
         <div class="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-auto md:ml-0">
           <div class="w-56 relative text-gray-700 dark:text-gray-300">
-            <input type="text" class="form-control w-56 box pr-10 placeholder-theme-13" placeholder="Search..."/>
+            <input
+              type="text"
+              class="form-control w-56 box pr-10 placeholder-theme-13"
+              placeholder="Search..."
+              v-model="searchKey"
+            />
             <SearchIcon class="w-4 h-4 absolute my-auto inset-y-0 mr-3 right-0"/>
           </div>
         </div>
       </div>
       <!-- BEGIN: Users Layout -->
-      <div v-for="user in users" :key="user.Id" class="intro-y col-span-12 md:col-span-6 lg:col-span-4">
+      <div
+        v-for="user in searchedUsers.slice(pageNation.entities * (pageNation.currentPage - 1), pageNation.entities * pageNation.currentPage)"
+        class="intro-y col-span-12 md:col-span-6 lg:col-span-4"
+        :key="user.Id"
+      >
         <div class="box">
           <div class="flex items-start px-5 pt-5">
             <div class="w-full flex flex-col lg:flex-row items-center">
@@ -37,16 +46,16 @@
                 <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
                   <a 
                     :href="'/users/edit/' + user.userId"
-                    class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                    class="items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
                   >
                     <Edit2Icon class="w-4 h-4 mr-2" /> Edit
                   </a>
-                  <button
-                    class="flex items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
+                  <a
+                    class="items-center block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
                     @click="deleteUser(user.userId)"
                   >
                     <TrashIcon class="w-4 h-4 mr-2" /> Delete
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -71,46 +80,97 @@
       <div class="intro-y col-span-12 flex flex-wrap sm:flex-row sm:flex-nowrap items-center">
         <ul class="pagination">
           <li>
-            <a class="pagination__link" href="">
+            <a
+              class="pagination__link"
+              :class="`${pageNation.currentPage == 1 ? 'pointer-events-none opacity-50' : ''}`"
+              href=""
+              @click="(e) => gotoPage(e, 1)"
+            >
               <ChevronsLeftIcon class="w-4 h-4" />
             </a>
           </li>
           <li>
-            <a class="pagination__link" href="">
+            <a
+              class="pagination__link"
+              :class="`${pageNation.currentPage == 1 ? 'pointer-events-none opacity-50' : ''}`"
+              href=""
+              @click="(e) => gotoPage(e, pageNation.currentPage - 1)"
+            >
               <ChevronLeftIcon class="w-4 h-4" />
             </a>
           </li>
           <li>
             <a class="pagination__link" href="">...</a>
           </li>
-          <li>
-            <a class="pagination__link" href="">1</a>
+          <li v-if="pageNation.currentPage - 2 > 0 && pageNation.currentPage == pageNation.pageSize">
+            <a
+              class="pagination__link"
+              href=""
+              @click="(e) => gotoPage(e, pageNation.currentPage - 2)"
+            >
+              {{pageNation.currentPage - 2}}
+            </a>
+          </li>
+          <li v-if="pageNation.currentPage - 1 > 0">
+            <a
+              class="pagination__link"
+              href=""
+              @click="(e) => gotoPage(e, pageNation.currentPage - 1)"
+            >
+              {{pageNation.currentPage - 1}}
+            </a>
           </li>
           <li>
-            <a class="pagination__link pagination__link--active" href="">2</a>
+            <a class="pagination__link pagination__link--active" href="">{{pageNation.currentPage}}</a>
           </li>
-          <li>
-            <a class="pagination__link" href="">3</a>
+          <li v-if="pageNation.currentPage + 1 <= pageNation.pageSize">
+            <a
+              class="pagination__link"
+              href=""
+              @click="(e) => gotoPage(e, pageNation.currentPage + 1)"
+            >
+              {{pageNation.currentPage + 1}}
+            </a>
+          </li>
+          <li v-if="pageNation.currentPage + 2 <= pageNation.pageSize && pageNation.currentPage == 1">
+            <a
+              class="pagination__link"
+              href=""
+              @click="(e) => gotoPage(e, pageNation.currentPage + 2)"
+            >
+              {{pageNation.currentPage + 2}}
+            </a>
           </li>
           <li>
             <a class="pagination__link" href="">...</a>
           </li>
           <li>
-            <a class="pagination__link" href="">
+            <a
+              class="pagination__link"
+              :class="`${pageNation.currentPage == pageNation.pageSize ? 'pointer-events-none opacity-50' : ''}`"
+              href=""
+              @click="(e) => gotoPage(e, pageNation.currentPage + 1)"
+            >
               <ChevronRightIcon class="w-4 h-4" />
             </a>
           </li>
           <li>
-            <a class="pagination__link" href="">
+            <a
+              class="pagination__link"
+              :class="`${pageNation.currentPage == pageNation.pageSize ? 'pointer-events-none opacity-50' : ''}`"
+              href=""
+              @click="(e) => gotoPage(e, pageNation.pageSize)"
+            >
               <ChevronsRightIcon class="w-4 h-4" />
             </a>
           </li>
         </ul>
-        <select class="w-20 form-select box mt-3 sm:mt-0">
-          <option>10</option>
-          <option>25</option>
-          <option>35</option>
-          <option>50</option>
+        <select class="w-20 form-select box mt-3 sm:mt-0" @change="(e) => updatePageEntities(e)">
+          <option value=5>5</option>
+          <option value=10>10</option>
+          <option value=25>25</option>
+          <option value=35>35</option>
+          <option value=50>50</option>
         </select>
       </div>
       <!-- END: Pagination -->
@@ -120,17 +180,71 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { sysAxios } from "@/plugins/axios";
 import _ from "lodash";
 
 export default {
   setup() {
-    const api = "user/v1/";
-    const users = ref(null);
-    sysAxios.get(api).then(res => {users.value = res.data});
+    const users = ref([])
+    const searchedUsers = ref([])
+    const searchKey = ref("")
+    const pageNation = ref({
+      entities: 5,
+      pageSize: 1,
+      currentPage: 1
+    })
+
+    const updatePageNation = () => {
+      pageNation.value.pageSize = Math.ceil(searchedUsers.value.length / pageNation.value.entities)
+      if(pageNation.value.pageSize < pageNation.value.currentPage) {
+        pageNation.value.currentPage = pageNation.value.pageSize
+      }
+    }
+    const search = (key) => {
+      if(key.length) {
+        searchedUsers.value = users.value.filter(user => {
+          return Object.values(user).join("").includes(key)
+        })
+        updatePageNation()
+      } else {
+        searchedUsers.value = users.value
+        updatePageNation()
+      }
+    }
+
+    const gotoPage = (e, page) => {
+      e.preventDefault()
+      pageNation.value.currentPage = page
+    }
+
+    const updatePageEntities = (e) => {
+      pageNation.value.entities = e.target.value
+      updatePageNation()
+    }
+
+    const init = async () => {
+      const api = "user/v1/"
+      users.value = await sysAxios.get(api).then(res => res.data)
+      searchedUsers.value = users.value
+      updatePageNation()
+    }
+
+    watch(searchKey, (newValue, oldValue) => {
+      search(newValue.trim())
+    })
+
+    onMounted(() => {
+      init()
+    })
+
     return {
-      users
+      users,
+      searchedUsers,
+      searchKey,
+      pageNation,
+      gotoPage,
+      updatePageEntities
     }
   },
   methods: {
