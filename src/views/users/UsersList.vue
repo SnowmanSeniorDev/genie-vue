@@ -196,7 +196,7 @@ export default {
     })
 
     const updatePageNation = () => {
-      pageNation.value.pageSize = Math.ceil(searchedUsers.value.length / pageNation.value.entities)
+      pageNation.value.pageSize = Math.max(1, Math.ceil(searchedUsers.value.length / pageNation.value.entities))
       if(pageNation.value.pageSize < pageNation.value.currentPage) {
         pageNation.value.currentPage = pageNation.value.pageSize
       }
@@ -204,9 +204,6 @@ export default {
     const search = (key) => {
       if(key.length) {
         searchedUsers.value = users.value.filter(user => {
-          console.log(Object.values(user).join(""))
-          console.log(key)
-          console.log(Object.values(user).join("").includes(key))
           return Object.values(user).join("").toLowerCase().includes(key)
         })
         updatePageNation()
