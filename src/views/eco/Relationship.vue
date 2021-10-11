@@ -77,13 +77,17 @@
       <div>
         <label>Buyer Led Workflow</label>
         <select v-model="ecoSystemBody.buyerLedWorkflowId" class="form-select">
-          <!-- <option v-for=""></option> -->
+          <option v-for="workflow in workflowLists" :value="workflow.workflowId" :key="workflow.workflowId">
+              {{workflow.name}}
+          </option>
         </select>
       </div>
       <div>
         <label>Seller Led Workflow</label>
         <select v-model="ecoSystemBody.sellerLedWorkflowId" class="form-select">
-          <!-- <option v-for=""></option> -->
+          <option v-for="workflow in workflowLists" :value="workflow.workflowId" :key="workflow.workflowId">
+              {{workflow.name}}
+          </option>
         </select>
       </div>
     </div>
@@ -127,6 +131,7 @@ export default {
       sellerLedWorkflowId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
     })
     const ecoSystems = ref([])
+    const workflowLists = ref({})
     const systemCompanies = ref([])
     const funderCompanies = ref([])
     const currencies = ref([])
@@ -181,6 +186,8 @@ export default {
       const companyProfileSystemConfig = 'configuration/v1/Company Profile'
       const genieSystemConfigure = 'configuration/v1/Genie Global Settings'
       const getSystemCompaniesApi = 'company/v1'
+      const getWorkflowsId = 'workflow/v2/00000000-0000-0000-0000-000000000000/children?visibility=true';
+
       await appAxios.get(getEcoSystems).then(res => {
         ecoSystems.value = res.data
       })
@@ -196,6 +203,9 @@ export default {
       await appAxios.get(`${getSystemCompaniesApi}?type=Funder`).then(res => {
         funderCompanies.value = [...res.data]
       })
+      await appAxios.get(getWorkflowsId).then(res => {
+        workflowLists.value = res.data
+      })
 
       loading.value = false
       initTabulator(ecoSystems.value)
@@ -210,6 +220,7 @@ export default {
       reInitOnResizeWindow();
     })
     return {
+      workflowLists,
       loading,
       dateFormat,
       tableRef,
