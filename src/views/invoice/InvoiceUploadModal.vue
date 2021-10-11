@@ -9,7 +9,7 @@
           </div> <!-- END: Modal Header -->
           <div class="m-8 mt-4">
             <div class="flex items-center mt-2 md:mt-0">
-              <div class="flex items-center form-inline block md:flex">
+              <div class="items-center form-inline block md:flex">
                 <div v-if="documentFormats.length">
                   <button class="btn btn-outline-primary w-40 mr-1 inline-block" @click="chooseFiles">
                     <UploadIcon class="w-4 h-4 mr-2" />
@@ -362,7 +362,7 @@ export default {
       }
       //preparing invoice upload request body
       if(workflowLed.value === 'Buyer Led') {
-        api = "/workflow/v1/buyer-led-invoice-financing-workflow-0/0"
+        api = "/workflow/v2/buyer-led-invoice-financing-workflow-0/0"
         buyerCompanyId = await getCompanyIdByCompanyName(invoiceToCompanyName.value)
         await Promise.all(
           invoicesBatch.value.map(async batch => {
@@ -385,7 +385,7 @@ export default {
           })
         )
       } else {
-        api = "/workflow/v1/seller-led-invoice-financing-workflow-1/0"
+        api = "/workflow/v2/seller-led-invoice-financing-workflow-1/0"
         sellerCompanyId = await getCompanyIdByCompanyName(invoiceFromCompanyName.value)
 
         await Promise.all(
@@ -494,12 +494,10 @@ export default {
 
     const init = async () => {
       await getCompanyBankAccounts()
-      documentFormats.value = await appAxios.get(`/company/v1/${store.state.account.company_uuid}/datasourcesystem`).then(res => {
-        console.log("document formats = ", res)
-        return res.data
-      })
+      documentFormats.value = await appAxios.get(`/company/v1/${store.state.account.company_uuid}/datasourcesystem`).then(res => res.data)
       loading.value = false
     }
+
     onMounted(() => {
       init()
     })
