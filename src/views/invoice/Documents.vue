@@ -75,6 +75,10 @@ export default {
     entryType: {
       type: String,
       required: true
+    },
+    documentNumber: {
+      type: String,
+      required: true
     }
   },
   components: {
@@ -96,7 +100,6 @@ export default {
     const openFileViewer = async (doc) => {
       const api = doc.documentURI
       const fileResponse = await sysAxios.get(api, {responseType: 'blob'})
-      console.log("file response = ", fileResponse)
       if(fileResponse.headers['content-type'] === 'image/jpeg') {
         const file = new Blob([fileResponse.data], {type: 'image/jpeg'});
         const fileURL = URL.createObjectURL(file);
@@ -107,7 +110,6 @@ export default {
         const file = new Blob([fileResponse.data], {type: 'application/pdf'});
 
         const fileURL = URL.createObjectURL(file);
-        console.log("file url = ", fileURL)
         openFileUrl.value = fileURL
         cash(`#show-pdf-file-viewer-${props.journalBatchEntryId}`).modal("show")
       } else if (fileResponse.headers['content-type'] === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
@@ -151,7 +153,7 @@ export default {
       const verifyApi = `traceability/v2/verify/journalbatch/${props.traceId}/${props.journalBatchEntryId}/supportingdocument`
       const requestBody = [
         {
-          entryId: props.journalBatchEntryId,
+          entryId: props.documentNumber,
           entryType: props.entryType,
           supportingDocument: []
         }
@@ -206,10 +208,8 @@ export default {
         })
       )
       documentsVerification.value = await sysAxios.post(verifyApi, requestBody).then(res => {
-        console.log("verification = ", res.data[0].supportingDocument)
         return res.data[0].supportingDocument
       })
-      console.log("document verification = ", documentsVerification.value)
 
       return new Promise(resolve => {
         resolve('init done')

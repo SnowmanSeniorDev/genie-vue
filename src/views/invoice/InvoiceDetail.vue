@@ -36,12 +36,13 @@
               </button>
             </td>
           </tr>
-          <Docments
+          <Documents
             v-if="!supportingDocumentAccordionIndex.includes(index)"
             :journalBatchHeaderId="item.journalBatchHeaderId"
             :journalBatchEntryId="item.journalBatchEntryId"
             :entryType="item.documentType"
             :traceId="batchDetails.traceId"
+            :documentNumber="item.documentNumber"
           />
         </tbody>
       </table>
@@ -680,7 +681,7 @@ import SignaturePad from "vue3-signature-pad";
 import moment from 'moment'
 import _ from 'lodash'
 import { sysAxios, appAxios } from '@/plugins/axios'
-import Docments from './Documents'
+import Documents from './Documents'
 import { useDropzone } from 'vue3-dropzone';
 import ProvenanceLang from '@/utils/provenanceLanguage'
 import Toastify from "toastify-js";
@@ -693,7 +694,7 @@ export default {
     }
   },
   components: {
-    Docments,
+    Documents,
     SignaturePad
   },
   setup(props) {
@@ -856,18 +857,13 @@ export default {
 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
 
-        console.log(res.data[0].workflows,"res.data[0].workflows");
-        console.log(provenance.value,"provenance.value");
-
         res.data[0].workflows.forEach(passedWorkflow => {
           provenance.value = provenance.value.map(item => {
             if(item.workflowId === passedWorkflow.workflowId){
               item.workflowStatuses.map(workflowState => {
                 
                 if(_.find(passedWorkflow.statusTransitions, (passedWorkflowStatusTransitionEntity) => {
-                  console.log(passedWorkflow.statusTransitions,"passedWorkflow.statusTransitions");
                   if(passedWorkflowStatusTransitionEntity.statusName === workflowState.statusName) {
-                    console.log(passedWorkflowStatusTransitionEntity.statusName, workflowState.statusName);
                     return true
                   }
                 })){
@@ -1012,7 +1008,6 @@ export default {
           batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat);
           batchDetails.value.formula.repaymentAmount = data.repaymentAmount.toFixed(2);
           batchDetails.value.formula.repaymentAmountDueDate = moment(data.repaymentAmountDueDate).format(dateFormat);
-         console.log(res.data,"my estimate");
         });
       }
     };
@@ -1050,7 +1045,6 @@ export default {
       await saveSignature().then( async()=>{  
         if(signatureFileUrl.value == null) {
           uploadErrorMessage.value = "Your signature is required!";
-          console.log(cash("#error-content"))
           Toastify({
             node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
             duration: 3000,
@@ -1191,7 +1185,6 @@ export default {
       await saveSignature().then( async()=>{ 
         if(signatureFileUrl.value == null) {
             uploadErrorMessage.value = "Your signature is required!";
-            console.log(cash("#error-content"))
             Toastify({
               node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
               duration: 3000,
@@ -1216,7 +1209,6 @@ export default {
         }
         await appAxios.post(api, request).then(res => {
           modalLoading.value = false
-          console.log(res)
           if(res.status === 200) {
             cash("#seller-acknowledge-of-receive-disbursement").modal("hide")
             loading.value.provenance = true
@@ -1235,7 +1227,6 @@ export default {
       await saveSignature().then( async()=>{ 
         if(signatureFileUrl.value == null) {
             uploadErrorMessage.value = "Your signature is required!";
-            console.log(cash("#error-content"))
             Toastify({
               node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
               duration: 3000,
@@ -1258,7 +1249,6 @@ export default {
           }
           await appAxios.post(api, request).then(res => {
             modalLoading.value = false
-            console.log(res)
             if(res.status === 200){
               cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
               loading.value.provenance = true
@@ -1272,7 +1262,6 @@ export default {
     const funderAcknowledgeOfRepaymentDecline = async () => {
       if(signatureFileUrl.value == null) {
         uploadErrorMessage.value = "Your signature is required!";
-        console.log(cash("#error-content"))
         Toastify({
           node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
           duration: 3000,
@@ -1292,7 +1281,6 @@ export default {
             remarks: remark.value
           }
           await appAxios.post(api, request).then(res => {
-            console.log(res)
             cash("#funder-acknowledge-upload-repayment-advice").modal("hide")
             loading.value.provenance = true
             updateProvenanceApi()
@@ -1324,7 +1312,6 @@ export default {
       }
       appAxios.post(api, request).then(res => {
         modalLoading.value = false
-        console.log(res)
         if(res.status === 200) cash("#buyer-upload-repayment-advice").modal("hide")
         loading.value.provenance = true
         updateProvenanceApi()
@@ -1365,7 +1352,6 @@ export default {
     const removeFile = () => files.value = null
 
     const getSignaturePad = () => {
-      console.log(signaturePad,"signaturePad")
       if (!signaturePad.value) {
         throw new Error("No signature pad ref could be found");
       }
@@ -1385,15 +1371,12 @@ export default {
       const signature = getSignaturePad().saveSignature();
       const fileUploadApi = 'uploads/v1/acknowledgement_signature';
       let formData = new FormData();
-      console.log(signature,"signature");
-      if(signature.isEmpty)
-      {
+      if(signature.isEmpty) {
         return new Promise(resolve => {
           resolve("Error!")
         })
       }
-      else
-      {
+      else {
         formData.append('file', signature.file)
         await sysAxios.post(fileUploadApi, formData, {
             headers: {
@@ -1433,7 +1416,6 @@ export default {
     const init = async () => {
       //geting invoice detail information
       await appAxios.get(`/journalbatch/v1/header/byworkflowexecutionid/${props.workflowExecutionReferenceId}`).then( res => {
-        console.log(res)
 
         const batch = {
           ...res.data,
@@ -1476,7 +1458,6 @@ export default {
 
       await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
         journalBatchEntry.value = res.data
-        console.log("journalbtchEntry = ", journalBatchEntry.value);
         res.data.forEach(async entry => {
           const api = `/journalbatch/v1/header/${entry.journalBatchHeaderId }/entry/${entry.journalBatchEntryId }/supportingdocuments`;
           let supportingDocument = []
@@ -1540,7 +1521,6 @@ export default {
       else if(lastWorkStatus.value['statusName'] === "AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT" && currentCompanyRole.value === "Seller Admin") visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
       else if(lastWorkStatus.value['statusName'] === "AWAITING_BUYER_REPAYMENT_ON_DUE_DATE" && currentCompanyRole.value === "Buyer Admin") visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
       else if(lastWorkStatus.value['statusName'] === "AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT" && user.user_role === "Funder Admin") visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
-      console.log(lastWorkStatus.value)
       //getting currency code by using action modal currency select box
       await getCurrencyCode()
       //lock days consists of company holidays and it will be disabled in datepicker
