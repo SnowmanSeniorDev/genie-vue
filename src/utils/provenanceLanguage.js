@@ -20,7 +20,8 @@ const lang = {
   INVITE_FUNDERS_TO_BID: 'Email notification to Funder',
   AWAITING_SELLER_ACKNOWLEDGEMENT: 'Awaiting seller acknoledgement',
   AWAITING_BUYER_ACKNOWLEDGEMENT: 'Buyer Approve Transaction',
-  START: 'Financing Request Submitted'
+  START: 'Financing Request Submitted',
+  NOTIFICATION_SENT_TO_BUYER: 'Notification send to buyer'
 }
 
 export default lang

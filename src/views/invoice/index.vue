@@ -173,7 +173,6 @@ export default {
             headerSort: true
           }, {
             title: "CURRENT STAGE",
-            field: "action",
             hozAlign: "center",
             headerHozAlign: 'center',
             resizable: true,
