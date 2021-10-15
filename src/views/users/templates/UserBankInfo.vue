@@ -47,13 +47,13 @@
 		<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
 			<button class="btn btn-primary w-24 ml-2" @click="submitBanks">Save</button>
 		</div>
-		<div id="success-notification-content" class="toastify-content hidden flex">
+		<div id="success-notification-content" class="toastify-content flex">
 			<CheckCircleIcon class="text-theme-9" />
 			<div class="ml-4 mr-4">
 				<div class="font-medium">Successfly Added Bank Info</div>
 			</div>
 		</div>
-		<div id="failed-notification-content" class="toastify-content hidden flex">
+		<div id="failed-notification-content" class="toastify-content flex">
       <XCircleIcon class="text-theme-6" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Add Bank Info was failed!</div>

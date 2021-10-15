@@ -40,13 +40,13 @@
 				<button class="btn btn-primary w-24" @click="save">Save</button>
 			</div>
 		</div>
-    <div id="success-notification-content" class="toastify-content hidden flex">
+    <div id="success-notification-content" class="toastify-content flex">
 			<CheckCircleIcon class="text-theme-9" />
 			<div class="ml-4 mr-4">
 				<div class="font-medium">Successfly Set Currencies!</div>
 			</div>
 		</div>
-		<div id="failed-notification-content" class="toastify-content hidden flex">
+		<div id="failed-notification-content" class="toastify-content flex">
 				<XCircleIcon class="text-theme-6" />
 				<div class="ml-4 mr-4">
 					<div class="font-medium">Setting Currencies was failed!</div>
