@@ -146,7 +146,6 @@ export default {
     }
 
     const submit = () => {
-			console.log(store.state.account.company_uuid)
       const api = `/company/v1/register/${store.state.account.company_uuid}?step=approval`
       console.log(store.getters['account/getAccount']);
       appAxios.post(api, {
