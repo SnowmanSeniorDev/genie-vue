@@ -21,7 +21,21 @@ const lang = {
   AWAITING_SELLER_ACKNOWLEDGEMENT: 'Awaiting seller acknoledgement',
   AWAITING_BUYER_ACKNOWLEDGEMENT: 'Buyer Approve Transaction',
   START: 'Financing Request Submitted',
-  NOTIFICATION_SENT_TO_BUYER: 'Notification send to buyer'
+  NOTIFICATION_SENT_TO_BUYER: 'Notification send to buyer',
+  TRANSACTION_ACKNOWLEDGED_BY_BUYER: 'Transaction acknowledged by buyer',
+  INVITATION_SENT_TO_FUNDERS: 'Invitation send to funders',
+  TRANSACTION_APPROVED_BY_FUNDER: 'Transaction approved by funder',
+  FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER: 'First fund disbursement instruction send to funder',
+  FIRST_FUND_DISBURSED_BY_FUNDER: 'First fund disbursed by funder',
+  FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER: 'First fund disbursement notification send to seller',
+  RECEIPT_OF_FIRST_FUND_ACKNOWLEDGED_BY_SELLER: 'Receipt of first fund acknowledge by seller',
+  REPAYMENT_INSTRUCTION_SENT_TO_BUYER: 'Repayment instruction send to buyer',
+  REPAID_BY_BUYER: 'Repaid by buyer',
+  RECEIPT_OF_REPAYMENT_ACKNOWLEDGED_BY_FUNDER: 'Receipt of repayment acknowledge by funder',
+  FINAL_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER: 'Final fund disbursement instruction send to funder',
+  FINAL_FUND_DISBURSED_BY_FUNDER: 'Final fund disbursed by funder',
+  FINAL_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER: 'Final fund disbursement notification send to seller',
+  RECEIPT_OF_FINAL_FUND_ACKNOWLEDGED_BY_SELLER: 'Receipt of final fund acknowledge by seller',
 }
 
 export default lang

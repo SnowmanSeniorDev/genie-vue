@@ -62,52 +62,50 @@
           <div v-for="(item, index) in provenance" class="intro-x relative flex items-start pb-5" :key="index">
             <div class="w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2"></div>
             <div class="px-5 ml-4 flex-1"> 
-                <div v-if="item.loading" class="flex items-center">
-                  <div
-                   
+              <div v-if="item.loading" class="flex items-center">
+                <div
                   class="alert show flex items-center h-5 p-3 text-sm justify-center alert-secondary"
                   role="alert"
                 >
-                  <ShieldOffIcon class="w-3 h-3 mr-3" />
-                  <span class="pr-3">Verifying</span> 
+                <ShieldOffIcon class="w-3 h-3 mr-3" />
+                <span class="pr-3">Verifying</span> 
+              </div>
+              </div>
+              <div v-else class="flex items-center">
+              <div
+                v-if="item.passed && item.verified"
+                :class="'alert show flex items-center h-5 p-3 text-sm justify-center ' + ((lastWorkStatus.statusName === item.statusName)? 'text-black-700 bg-yellow-200':'text-black-700 bg-green-200' )"
+                role="alert"
+              >
+                <SendIcon v-if="lastWorkStatus.statusName === item.statusName" class="w-3 h-3 mr-3" />
+                <ShieldIcon v-else class="w-3 h-3 mr-3"/>
+                
+                <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Verified'}}</span>
+              </div> 
+              <div  v-else-if="item.passed && !item.verified"
+                class="alert show flex items-center h-5 p-3 text-sm justify-center text-black-700 bg-red-200"
+                role="alert"
+              >
+                <ShieldIcon class="w-3 h-3 mr-3"/>
+                <span class="pr-3">Not Verified</span>
+              </div>
+              <div
+                v-else
+                :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'alert-secondary'}`"
+                role="alert" 
+              >
+                <SendIcon class="w-3 h-3 mr-3"/>
+                <span class="pr-3">Not Started</span>
+              </div>
+              <div class="items-center">
+                <span class="font-bold ml-3">{{ProvenanceLang[item.statusName]}}</span> 
+                <div v-if="item.updateTime != undefined" class="text-gray-500 ml-3">Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
+                <div  class="text-gray-500 ml-3" v-if="batchDetails.bidEndTime != undefined && item.statusName=='BIDDING_IN_PROGRESS'">
+                  Approval by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
                 </div>
-                </div>
-                <div v-else class="flex items-center">
-                <div
-                  v-if="item.passed && item.verified"
-                  :class="'alert show flex items-center h-5 p-3 text-sm justify-center ' + ((lastWorkStatus.statusName === item.statusName)? 'text-black-700 bg-yellow-200':'text-black-700 bg-green-200' )"
-                  role="alert"
-                >
-                  <SendIcon v-if="lastWorkStatus.statusName === item.statusName" class="w-3 h-3 mr-3" />
-                  <ShieldIcon v-else class="w-3 h-3 mr-3"/>
-                  
-                  <span class="pr-3">{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Verified'}}</span>
-                </div> 
-                <div  v-else-if="item.passed && !item.verified"
-                  class="alert show flex items-center h-5 p-3 text-sm justify-center text-black-700 bg-red-200"
-                  role="alert"
-                >
-                  <ShieldIcon class="w-3 h-3 mr-3"/>
-                  <span class="pr-3">Not Verified</span>
-                </div>
-                <div
-                  v-else
-                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'alert-secondary'}`"
-                  role="alert" 
-                >
-                  <SendIcon class="w-3 h-3 mr-3"/>
-                  <span class="pr-3">Not Started</span>
-                </div>
-                <div class="items-center">
-                  <!-- span class="font-bold ml-3">Label : {{ProvenanceLang[item.statusName]}}<br /> eventName : {{item.eventName}}<br /> statusName : {{item.statusName}}</!-- --> 
-                  <span class="font-bold ml-3">{{ProvenanceLang[item.statusName]}}</span> 
-                  <div v-if="item.updateTime != undefined" class="text-gray-500 ml-3">Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
-                  <div  class="text-gray-500 ml-3" v-if="batchDetails.bidEndTime != undefined && item.statusName=='BIDDING_IN_PROGRESS'">
-                    Approval by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
-                  </div>
-                </div>
-                </div> 
-              <hr class="mt-5">
+              </div>
+              </div>
+              <hr class="mt-5" />
             </div>
           </div>
         </div>
@@ -200,7 +198,8 @@
           </table>
         </div>
         
-        <div v-if="initComponent && errorStepsMsg == ''">
+        <!-- <div v-if="initComponent && errorStepsMsg == ''"> -->
+        <div v-if="initComponent">
           <div v-if="visibleWorkflowActions.visibleApproveButton" class="pt-8 flex justify-center">
             <a href="javascript:;" data-toggle="modal" data-target="#decline-invoice-modal" class="btn btn-secondary w-48 sm:w-auto mr-2" >Decline</a>
             <a href="javascript:;" data-toggle="modal" data-target="#approve-invoice-modal" class="btn btn-primary w-48 sm:w-auto mr-2" >Approve</a>
@@ -846,13 +845,17 @@ export default {
     }
 
     const provenanceApi = async () => {
-      var workflowsApi = '/workflow/v1?visibility=true'
+      var workflowsApi = '/workflow/v2?visibility=true'
       await appAxios.get(workflowsApi).then(res => { provenance.value = res.data })
-      var currentWorkflowStatusesApi = '/workflow/v1/statustransition/retrieve/byreferenceids'
+      var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids'
+      console.log("provenance value = ", provenance.value)
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
+        console.log("current workflow status = ", res.data)
+        console.log("initworkflow id = ", initWorkflowId.value)
         if(res.data[0].rootWorkflowId === initWorkflowId.value.sellerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
         if(res.data[0].rootWorkflowId === initWorkflowId.value.buyerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
         provenance.value = await getBranchLists(res.data[0].rootWorkflowId)
+        console.log('root workflow id = ', res.data[0].rootWorkflowId)
         paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
@@ -913,21 +916,20 @@ export default {
       ) 
       let workStatusList = []; 
       verifyRequestBody.value.TransactionWorkflowStatuses.forEach(async (workStatus, index) => {
-       workStatusList = []; 
-       loading.value.provenance = true;
-       provenance.value[index].loading= true;
+        workStatusList = [];
+        loading.value.provenance = true;
+        provenance.value[index].loading= true;
         Object.keys(workStatus).forEach(async k => (workStatus[k] == null || typeof workStatus[k] == "undefined") && delete workStatus[k]);
         if(provenance.value[index].passed) {
           workStatusList.push(workStatus);
           await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
             provenance.value[index].verified = res.data[0].verificationStatus;
             provenance.value[index].loading= false;
-            if(!res.data[0].verificationStatus)
-            { 
+            if(!res.data[0].verificationStatus) {
               errorStepsMsg.value ='Data Verification failed, the Database data has been compromise. Please contact Genie Support for further action.';
               return;
             }
-          }); 
+          });
         }
         else {
           provenance.value[index].verified = false;
@@ -990,11 +992,11 @@ export default {
       ) {
         let apiUrl = '';
         if(batchDetails.value.initiatedByCompanyId == batchDetails.value.buyerCompanyId){
-          apiUrl = `/workflow/v1/buyer-led-invoice-financing-workflow-0/estimates?refId=${batchDetails.value.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`;
+          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?refId=${batchDetails.value.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`;
           //started by buyer
         }
         else{
-          apiUrl = `/workflow/v1/seller-led-invoice-financing-workflow-1/estimates?refId=${batchDetails.value.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`;
+          apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?refId=${batchDetails.value.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`;
           //started by seller
         }
         await appAxios.get(apiUrl).then(res => {
@@ -1013,8 +1015,9 @@ export default {
     };
 
     const getLastWorkflowStatus = async() => {
-      const api = '/workflow/v1/statustransition/retrieve​/byreferenceids/limittolaststatustransition'
+      const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
       await appAxios.post(api, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
+        console.log("last work status = ", res.data)
         lastWorkStatus.value = res.data[0].workflow.lastStatusTransition
       })
 
@@ -1042,7 +1045,7 @@ export default {
 
     const approveAcknowledge = async () => { 
       modalLoading.value = true
-      await saveSignature().then( async()=>{  
+      await saveSignature().then( async() => {  
         if(signatureFileUrl.value == null) {
           uploadErrorMessage.value = "Your signature is required!";
           Toastify({
@@ -1058,8 +1061,8 @@ export default {
         }
         else {
           var api = ''
-          if(currentCompanyRole.value === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
-          if(currentCompanyRole.value === 'Buyer Admin')  api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+          if(currentCompanyRole.value === 'Seller Admin' && batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+          if(currentCompanyRole.value === 'Buyer Admin' && batchDetails.value.workflowLed === 'Buyer Led')  api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
           await appAxios.post(api, {
             externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
             remark: remark.value,
@@ -1079,8 +1082,8 @@ export default {
     }
 
     const declineAcknowledge = async () => { 
-        if(currentCompanyRole.value === 'Seller Admin') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
-        if(currentCompanyRole.value === 'Buyer Admin') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
+        if(currentCompanyRole.value === 'System Admin') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
+        if(currentCompanyRole.value === 'System Admin') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
         appAxios.post(api, {
           externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
           remark: remark.value,
@@ -1110,7 +1113,7 @@ export default {
             accountNumber: "1003210189102",
             swiftCode: "1009",
             currency: "SGD"
-    }
+          }
         }
       }).then(res => {
         modalLoading.value = false
@@ -1129,14 +1132,14 @@ export default {
       var api = ''
       if(batchDetails.value.workflowLed === 'Buyer Led') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId("DisbursableAmount")
-        api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10'
+        api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10'
       }
       else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_FUNDER_FIRST_DISBURSEMENT') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId("FirstDisbursableAmount")
-        api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-identified-after-bidding-branch/10'
+        api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-identified-after-bidding-branch/10'
       } else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_FUNDER_FINAL_DISBURSEMENT') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId("FinalDisbursableAmount")
-        api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/20'
+        api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/20'
       }
       const request = {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
@@ -1180,7 +1183,6 @@ export default {
     }
 
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
-      
       modalLoading.value = true
       await saveSignature().then( async()=>{ 
         if(signatureFileUrl.value == null) {
@@ -1198,9 +1200,9 @@ export default {
         }
         else {
         var api = ''
-        if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
-        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
-        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
+        if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
+        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
+        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
         
         const request = {
           externalReferenceId: props.workflowExecutionReferenceId,
@@ -1240,8 +1242,8 @@ export default {
         }
         else {
           var api = ''
-          if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
-          if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
+          if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
+          if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
           const request = {
             externalReferenceId: props.workflowExecutionReferenceId,
             signatureUri: signatureFileUrl.value,
@@ -1274,8 +1276,8 @@ export default {
       }
       else {
         await saveSignature().then( async()=>{ 
-          if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0';
-          if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0';
+          if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0';
+          if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0';
           const request = {
             externalReferenceId: props.workflowExecutionReferenceId,
             remarks: remark.value
@@ -1297,8 +1299,8 @@ export default {
       modalLoading.value = true
       await uploadFile()
       var api = ''
-      if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20'
-      if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v1/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/20'
+      if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20'
+      if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/20'
       disbursementData.value.paymentInstructionId = await getpaymentInstructionId("RepaymentAmount")
       const request = {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
@@ -1322,7 +1324,7 @@ export default {
       await uploadFile()
       disbursementData.value.paymentInstructionId = await getpaymentInstructionId("RepaymentAmount")
 
-      const api = '/workflow/v1/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20'
+      const api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/20'
       const request = {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         paymentInstructionId: disbursementData.value.paymentInstructionId,
@@ -1486,9 +1488,10 @@ export default {
       const genieGlobalSetting = `configuration/v1/Genie Global Settings`
       await sysAxios.get(genieGlobalSetting).then(res => {
         adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
-        initWorkflowId.value = {...initWorkflowId.value, buyerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id'}).value}
-        initWorkflowId.value = {...initWorkflowId.value, sellerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id'}).value}
-        paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow Status With Payment Advice'}).value)
+        initWorkflowId.value = {...initWorkflowId.value, buyerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id V2'}).value}
+        initWorkflowId.value = {...initWorkflowId.value, sellerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id V2'}).value}
+        paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow V2 Status With Payment Advice'}).value)
+        console.log("payment advice work status = ", paymentAdviceWorksStatus.value)
       })
 
       //getting invoice detail data from journalbatch api endpoint
@@ -1508,9 +1511,12 @@ export default {
         if(batchDetails.value.initiatedByCompanyId == store.state.account.company_uuid) currentCompanyRole.value = "Seller Admin";
         else currentCompanyRole.value = "Buyer Admin"
       }
+
  
       //determine what action button should be showed in Batch Detail page
-      if(lastWorkStatus.value['statusName'] === "AWAITING_SELLER_ACKNOWLEDGEMENT" && currentCompanyRole.value === "Seller Admin") visibleWorkflowActions.value.visibleApproveButton = true
+      if(lastWorkStatus.value['statusName'] === "NOTIFICATION_SENT_TO_BUYER" && lastWorkStatus.value['state'] === 'Completed' && currentCompanyRole.value === "Seller Admin") visibleWorkflowActions.value.visibleApproveButton = true
+
+
       else if(lastWorkStatus.value['statusName'] === "AWAITING_BUYER_ACKNOWLEDGEMENT" && currentCompanyRole.value === "Buyer Admin") visibleWorkflowActions.value.visibleApproveButton = true
       else if(lastWorkStatus.value['statusName'] === "BIDDING_IN_PROGRESS" && user.user_role === "Funder Admin") visibleWorkflowActions.value.visibleSubmitProposal = true
       else if(lastWorkStatus.value['statusName'] === "AWAITING_FUNDER_DISBURSEMENT" && user.user_role === "Funder Admin") visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
@@ -1521,6 +1527,8 @@ export default {
       else if(lastWorkStatus.value['statusName'] === "AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT" && currentCompanyRole.value === "Seller Admin") visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
       else if(lastWorkStatus.value['statusName'] === "AWAITING_BUYER_REPAYMENT_ON_DUE_DATE" && currentCompanyRole.value === "Buyer Admin") visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
       else if(lastWorkStatus.value['statusName'] === "AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT" && user.user_role === "Funder Admin") visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
+
+      console.log("visibleWorkflowActions = ", visibleWorkflowActions.value)
       //getting currency code by using action modal currency select box
       await getCurrencyCode()
       //lock days consists of company holidays and it will be disabled in datepicker
@@ -1529,21 +1537,20 @@ export default {
       const dashboardApi = `/company/v1/${company_uuid}/dashboarddata`;
       visibleWorkflowActions.value.visibleSubmitProposal = false;
       await appAxios.get(dashboardApi).then(res => {
-          let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
-          let pendingAction = {}; 
-          
-            if(res.data.bidInvitations != null) {
-              let pendingBid = res.data.bidInvitations.open;
-              if(pendingBid.workflowExecutionids.length > 0) {
-                for(let i=0;i<pendingBid.workflowExecutionids.length;i++){ 
-                  if(pendingBid.workflowExecutionids[i] == props.workflowExecutionReferenceId)
-                  {
-                    visibleWorkflowActions.value.visibleSubmitProposal = true; 
-                  }
-                }
+        let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
+        let pendingAction = {}; 
+        
+        if(res.data.bidInvitations != null) {
+          let pendingBid = res.data.bidInvitations.open;
+          if(pendingBid.workflowExecutionids.length > 0) {
+            for(let i=0;i<pendingBid.workflowExecutionids.length;i++){ 
+              if(pendingBid.workflowExecutionids[i] == props.workflowExecutionReferenceId){
+                visibleWorkflowActions.value.visibleSubmitProposal = true; 
               }
-            } 
-        })
+            }
+          }
+        }
+      })
     }
     
     const updateProvenanceApi = async () => {
