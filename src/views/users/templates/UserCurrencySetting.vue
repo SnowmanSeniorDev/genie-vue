@@ -14,17 +14,17 @@
           </thead>
           <tbody>
             <tr class="odd:bg-gray-200" v-for="(currency, index) in currencies" :key="index">
-              <td class="dark:border-dark-5">{{currency.currencyCode}}</td>
-              <td class="dark:border-dark-5">{{currency.currencyName}}</td>
-              <td class="dark:border-dark-5">{{currency.currencySymbol}}</td>
-              <td class="dark:border-dark-5">
+              <td class="">{{currency.currencyCode}}</td>
+              <td class="">{{currency.currencyName}}</td>
+              <td class="">{{currency.currencySymbol}}</td>
+              <td class="">
                 <input id="input-wizard-4-currency-eur"
                   v-model="support"
                   type="checkbox"
                   class="form-check-input"
                   :value="currency.currencyCode" />
               </td>
-              <td class="dark:border-dark-5">
+              <td class="">
                 <input id="input-wizard-4-currency-eur-default"
                   v-model="defaultCurrency"
                   type="radio"
