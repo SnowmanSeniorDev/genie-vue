@@ -1,16 +1,16 @@
 <template>
   <Chart
-    type="bar"
-    :width="width"
-    :height="height"
-    :data="data"
-    :options="options"
-    ref-key="reportBarChartRef"
+    type='bar'
+    :width='width'
+    :height='height'
+    :data='data'
+    :options='options'
+    ref-key='reportBarChartRef'
   />
 </template>
 
 <script>
-import { defineComponent, onMounted, computed, ref, provide } from "vue";
+import { defineComponent, onMounted, computed, ref, provide } from 'vue'
 
 export default defineComponent({
   props: {
@@ -24,36 +24,36 @@ export default defineComponent({
     }
   },
   setup() {
-    const reportBarChartRef = ref();
+    const reportBarChartRef = ref()
 
-    provide("bind[reportBarChartRef]", el => {
-      reportBarChartRef.value = el;
-    });
+    provide('bind[reportBarChartRef]', el => {
+      reportBarChartRef.value = el
+    })
 
     // Fake visitor data
     const reportBarChartData = new Array(40).fill(0).map((data, key) => {
       if (key % 3 == 0 || key % 5 == 0) {
-        return Math.ceil(Math.random() * (0 - 20) + 20);
+        return Math.ceil(Math.random() * (0 - 20) + 20)
       } else {
-        return Math.ceil(Math.random() * (0 - 7) + 7);
+        return Math.ceil(Math.random() * (0 - 7) + 7)
       }
-    });
+    })
     // Fake visitor bar color
     const reportBarChartColor = reportBarChartData.map(data => {
       if (data >= 8 && data <= 14) {
-        return "#1c3faaa6";
+        return '#1c3faaa6'
       } else if (data >= 15) {
-        return "#1C3FAA";
+        return '#1C3FAA'
       }
 
-      return "#1c3faa59";
-    });
+      return '#1c3faa59'
+    })
     const data = computed(() => {
       return {
         labels: reportBarChartData,
         datasets: [
           {
-            label: "Html Template",
+            label: 'Html Template',
             barPercentage: 0.5,
             barThickness: 6,
             maxBarThickness: 8,
@@ -62,8 +62,8 @@ export default defineComponent({
             backgroundColor: reportBarChartColor
           }
         ]
-      };
-    });
+      }
+    })
     const options = computed(() => {
       return {
         legend: {
@@ -91,32 +91,32 @@ export default defineComponent({
             }
           ]
         }
-      };
-    });
+      }
+    })
 
     onMounted(() => {
       setInterval(() => {
-        const chartInstance = reportBarChartRef.value.instance;
-        const chartConfig = chartInstance.config;
+        const chartInstance = reportBarChartRef.value.instance
+        const chartConfig = chartInstance.config
 
         // Swap visitor data
-        const newData = chartConfig.data.datasets[0].data[0];
-        chartConfig.data.datasets[0].data.shift();
-        chartConfig.data.datasets[0].data.push(newData);
-        chartInstance.update();
+        const newData = chartConfig.data.datasets[0].data[0]
+        chartConfig.data.datasets[0].data.shift()
+        chartConfig.data.datasets[0].data.push(newData)
+        chartInstance.update()
 
         // Swap visitor bar color
-        const newColor = chartConfig.data.datasets[0].backgroundColor[0];
-        chartConfig.data.datasets[0].backgroundColor.shift();
-        chartConfig.data.datasets[0].backgroundColor.push(newColor);
-        chartInstance.update();
-      }, 1000);
-    });
+        const newColor = chartConfig.data.datasets[0].backgroundColor[0]
+        chartConfig.data.datasets[0].backgroundColor.shift()
+        chartConfig.data.datasets[0].backgroundColor.push(newColor)
+        chartInstance.update()
+      }, 1000)
+    })
 
     return {
       data,
       options
-    };
+    }
   }
-});
+})
 </script>

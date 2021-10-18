@@ -188,7 +188,6 @@ export default {
     },
   },
   setup(props) {
-    console.log("company profile = ", props.companyInfo)
     const companyProfile = ref({
       ...props.companyInfo,
     });

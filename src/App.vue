@@ -7,7 +7,7 @@
 
 export default {
   mounted() {
-    // initSession();
+    // initSession()
   }
 }
 </script>
