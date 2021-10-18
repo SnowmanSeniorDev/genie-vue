@@ -93,14 +93,14 @@
   </div>
 </template>
 <script>
-import { ref, reactive, onMounted } from "vue";
-import { useStore } from 'vuex';
-import { useRouter } from "vue-router";
-import feather from "feather-icons";
-import Tabulator from "tabulator-tables";
-import InvoiceUploadModal from "./InvoiceUploadModal";
-import { sysAxios, appAxios } from "@/plugins/axios";
-import _ from "lodash";
+import { ref, reactive, onMounted } from "vue"
+import { useStore } from 'vuex'
+import { useRouter } from "vue-router"
+import feather from "feather-icons"
+import Tabulator from "tabulator-tables"
+import InvoiceUploadModal from "./InvoiceUploadModal"
+import { sysAxios, appAxios } from "@/plugins/axios"
+import _ from "lodash"
 import moment from 'moment'
 import ProvenanceLang from '@/utils/provenanceLanguage'
 
@@ -109,22 +109,22 @@ export default {
     InvoiceUploadModal
   },
   setup() {
-    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
-    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
-    const selectedTab = ref('Pending Action');
-    const store = useStore();
-    const router = useRouter();
-    const tableRef = ref();
-    const tabulator = ref();
-    const loading = ref(true);
-    const isCompany = ref(false);
-    const invoiceOverview = ref([]);
-    const pendingActions = ref([]);
+    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT)
+    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT) 
+    const selectedTab = ref('Pending Action')
+    const store = useStore()
+    const router = useRouter()
+    const tableRef = ref()
+    const tabulator = ref()
+    const loading = ref(true)
+    const isCompany = ref(false)
+    const invoiceOverview = ref([])
+    const pendingActions = ref([])
     const filter = reactive({
       field: "lastUpdatedBy",
       type: "like",
       value: ""
-    });
+    })
       
     const initTabulator = (data) => { 
       tabulator.value = new Tabulator(tableRef.value, {
@@ -212,94 +212,96 @@ export default {
                 <a class="flex items-center btn btn-sm btn-primary" href="javascript:;">
                   View
                 </a>
-              </div>`);
+              </div>`)
               cash(a).on("click", function() {
-                router.push({name: "batchDetail", params: {'workflowExecutionReferenceId': cell.getData().workflowExecutionReferenceId}});
+                router.push({name: "batchDetail", params: {'workflowExecutionReferenceId': cell.getData().workflowExecutionReferenceId}})
               })
-              return a[0];
+              return a[0]
             }
           },
         ],
         renderComplete() {
           feather.replace({
             "stroke-width": 1.5
-          });
+          })
         }
-      });
-    };
+      })
+    }
 
     // Redraw table onresize
     const reInitOnResizeWindow = () => {
       window.addEventListener("resize", () => {
-        tabulator.value.redraw();
+        tabulator.value.redraw()
         feather.replace({
           "stroke-width": 1.5
-        });
-      });
-    };
+        })
+      })
+    }
 
     // Filter function
     const onFilter = () => {
-      tabulator.value.setFilter(filter.field, filter.type, filter.value);
-    };
+      tabulator.value.setFilter(filter.field, filter.type, filter.value)
+    }
 
     // On reset filter
     const onResetFilter = () => {
-      filter.field = "name";
-      filter.type = "like";
-      filter.value = "";
-      onFilter();
-    };
+      filter.field = "name"
+      filter.type = "like"
+      filter.value = ""
+      onFilter()
+    }
 
     const getInvoiceOverview = async () => {
-      const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`;
-      const invoices = await getLastUpdatedBy(await appAxios.get(api).then(res => { return _.filter(res.data, {workflowVersion: 'v2'}) }));
-      invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc');
+      const api = `/journalbatch/v1/header/${store.state.account.company_uuid}`
+      const invoices = await getLastUpdatedBy(
+        await appAxios.get(api).then(res => _.filter(res.data, {workflowVersion: 'v2'}))
+      )
+      invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc')
     }
   
     const getPendingAction = async () => {
-      const company_uuid = store.state.account.company_uuid;
-      const pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`;
+      const company_uuid = store.state.account.company_uuid
+      const pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`
  
       await appAxios.get(pendingActionApi).then(async res => {
-        let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction;
-        let pendingAction = {};
+        let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction
+        let pendingAction = {}
         if(pendingItem.length > 0) {
           for(let i = 0; i < pendingItem.length; i ++) {
-            const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
-            await appAxios.get(batchApi).then(res2 => {
-              let batchData = _.filter(res2.data, {workflowVersion: 'v2'}); 
-              pendingAction.action = pendingItem[i].action;
-              pendingAction = batchData; 
-              pendingActions.value.push(pendingAction); 
-            }); 
-          }               
+            for(let j = 0; j < pendingItem[i].workflowExecutionids.length; j++) {
+              const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[j]}`
+              await appAxios.get(batchApi).then(res2 => pendingActions.value.push(res2.data))
+            }
+          }
         }
         if(store.state.account.company_type.toLowerCase() == "funder") {
           if(res.data.bidInvitations != null) {
-            let pendingBid = res.data.bidInvitations.open; 
+            let pendingBid = res.data.bidInvitations.open
             if(pendingBid.workflowExecutionids.length > 0) {
               for(let i = 0; i < pendingBid.workflowExecutionids.length; i ++) {
-                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[i]}`; 
+                const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[i]}`
                 await appAxios.get(batchApi).then(res2 => { 
-                  let batchData = res2.data; 
-                  pendingAction = batchData;
-                  pendingAction.action = "BIDDING_IN_PROGRESS"; 
-                  pendingActions.value.push(pendingAction); 
-                });  
+                  let batchData = res2.data
+                  pendingAction = batchData
+                  pendingAction.action = "BIDDING_IN_PROGRESS"
+                  pendingActions.value.push(pendingAction)
+                })
               }
             }
           }
         }
-
-        pendingActions.value = await getLastUpdatedBy(...pendingActions.value)
+        pendingActions.value = _.filter(pendingActions.value, {workflowVersion: 'v2'})
+        
+        pendingActions.value = await getLastUpdatedBy(pendingActions.value)
         initTabulator(pendingActions.value)
       }) 
     }
     
     const getLastUpdatedBy = async (invoices) => {
+      console.log("invoices = ", invoices)
       invoices = invoices ?? []
       const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
+      console.log("invoice ids = ", _.map(invoices, 'workflowExecutionReferenceId'))
       const lastWorkflowDatas = await appAxios.post(api, _.map(invoices, 'workflowExecutionReferenceId'))
       var withLastUpdatedBy = []
       await Promise.all(
@@ -320,11 +322,11 @@ export default {
     }
 
     const invoiceFromMe = () => { 
-      selectedTab.value = "My Invoice";
-      let updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc');
+      selectedTab.value = "My Invoice"
+      let updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc')
 
       if(store.state.account.company_type.toLowerCase() == "funder") {
-        updatedData = _.orderBy(_.filter(invoiceOverview.value, {funderCompanyId: store.state.account.company_uuid}),'createdTime','desc');
+        updatedData = _.orderBy(_.filter(invoiceOverview.value, {funderCompanyId: store.state.account.company_uuid}),'createdTime','desc')
       }
       
       tabulator.value.clearData()
@@ -334,9 +336,8 @@ export default {
     }
 
     const invoiceFromPendingAction = () => {
-      selectedTab.value = 'Pending Action';
-      const updatedData = _.orderBy(pendingActions.value, 'createdTime', 'desc');
-      console.log(updatedData);
+      selectedTab.value = 'Pending Action'
+      const updatedData = _.orderBy(pendingActions.value, 'createdTime', 'desc')
       tabulator.value.clearData()
       if(updatedData.length > 0 ){
         tabulator.value.addRow(updatedData)
@@ -345,14 +346,14 @@ export default {
 
     onMounted(async () => {
       
-      getInvoiceOverview();
-      getPendingAction();
+      getInvoiceOverview()
+      getPendingAction()
       if(store.state.account.company_type.toLowerCase() == "company"){
-        isCompany.value = true;
+        isCompany.value = true
       }
-      reInitOnResizeWindow();
+      reInitOnResizeWindow()
       loading.value = false
-    });
+    })
 
     return {
       dateFormat,
@@ -370,7 +371,7 @@ export default {
       invoiceFromPendingAction,
       ProvenanceLang,
       userRole: store.state.auth.user_role
-    };
+    }
   },
 }
 </script>

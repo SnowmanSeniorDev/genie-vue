@@ -132,7 +132,6 @@ export default defineComponent({
               const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}`; 
               appAxios.get(batchApi).then(res2 => {
                 let batchData = res2.data;
-
                 pendingAction = {};
                 pendingAction.action = pendingItem[i].action;
                 pendingAction.batchNumber = batchData.batchNumber;
