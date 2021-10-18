@@ -1,6 +1,6 @@
-const webpack = require("webpack");
-const path = require("path");
-const { styles } = require("@ckeditor/ckeditor5-dev-utils");
+const webpack = require("webpack")
+const path = require("path")
+const { styles } = require("@ckeditor/ckeditor5-dev-utils")
 
 module.exports = {
   parallel: false,
@@ -17,13 +17,13 @@ module.exports = {
   transpileDependencies: [/ckeditor5-[^/\\]+[/\\]src[/\\].+\.js$/],
 
   chainWebpack: config => {
-    const svgRule = config.module.rule("svg");
-    svgRule.exclude.add(path.join(__dirname, "node_modules", "@ckeditor"));
+    const svgRule = config.module.rule("svg")
+    svgRule.exclude.add(path.join(__dirname, "node_modules", "@ckeditor"))
     config.module
       .rule("cke-svg")
       .test(/ckeditor5-[^/\\]+[/\\]theme[/\\]icons[/\\][^/\\]+\.svg$/)
       .use("raw-loader")
-      .loader("raw-loader");
+      .loader("raw-loader")
 
     config.module
       .rule("cke-css")
@@ -38,8 +38,8 @@ module.exports = {
             },
             minify: true
           })
-        };
-      });
+        }
+      })
   },
 
   pluginOptions: {
@@ -53,4 +53,4 @@ module.exports = {
       fullInstall: true
     }
   }
-};
+}

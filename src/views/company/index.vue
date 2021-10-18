@@ -144,21 +144,21 @@
         </div>
       </div>
     </div>
-    <div id="success-notification-content" class="toastify-content hidden flex">
+    <div id="success-notification-content" class="toastify-content flex">
       <CheckCircleIcon class="text-theme-9" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Invite success!</div>
         <div class="text-gray-600 mt-1">Successfully invited the company</div>
       </div>
     </div>
-    <div id="success-email-notification-content" class="toastify-content hidden flex">
+    <div id="success-email-notification-content" class="toastify-content flex">
       <CheckCircleIcon class="text-theme-9" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Invite success!</div>
         <div class="text-gray-600 mt-1">Successfully invited the company</div>
       </div>
     </div>
-    <div id="failed-notification-content" class="toastify-content hidden flex">
+    <div id="failed-notification-content" class="toastify-content flex">
       <XCircleIcon class="text-theme-6" />
       <div class="ml-4 mr-4">
         <div class="font-medium">Upload failed!</div>

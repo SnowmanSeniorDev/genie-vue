@@ -86,10 +86,10 @@ export default {
     const password_check = () => {
       context.emit('update:modelValue', validate.value.message)
       validate.value.strength = passwordStrengthChecker(validate.value.message)
-      validate.value.has_number    = /\d/.test(validate.value.message);
-      validate.value.has_lowercase = /[a-z]/.test(validate.value.message);
-      validate.value.has_uppercase = /[A-Z]/.test(validate.value.message);
-      validate.value.has_special   = /[!@#\$%\^\&*\)\(+=._-]/.test(validate.value.message);
+      validate.value.has_number    = /\d/.test(validate.value.message)
+      validate.value.has_lowercase = /[a-z]/.test(validate.value.message)
+      validate.value.has_uppercase = /[A-Z]/.test(validate.value.message)
+      validate.value.has_special   = /[!@#\$%\^\&*\)\(+=._-]/.test(validate.value.message)
     }
 
     const passwordStrengthChecker = (str) => {

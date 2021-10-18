@@ -1,31 +1,30 @@
 <template>
-  <div class="dark:border-dark-5">
-    <div class="font-medium text-2xl">Currency Information</div>
+  <div class="">
 		<div class="grid grid-cols-12 gap-4 gap-y-5 mt-5">
 			<div class="intro-y col-span-12">
         <table class="table table--lg">
           <thead>
             <tr class="bg-theme-2">
-              <th class="dark:border-dark-5 whitespace-nowrap"> CURRENCY CODE </th>
-              <th class="dark:border-dark-5 whitespace-nowrap"> CURRENCY NAME </th>
-              <th class="dark:border-dark-5 whitespace-nowrap"> CURRENCY SYMBOL </th>
-              <th class="dark:border-dark-5 whitespace-nowrap"> SUPPORT </th>
-              <th class="dark:border-dark-5 whitespace-nowrap"> DEFAULT </th>
+              <th class="whitespace-nowrap"> CURRENCY CODE </th>
+              <th class="whitespace-nowrap"> CURRENCY NAME </th>
+              <th class="whitespace-nowrap"> CURRENCY SYMBOL </th>
+              <th class="whitespace-nowrap"> SUPPORT </th>
+              <th class="whitespace-nowrap"> DEFAULT </th>
             </tr>
           </thead>
           <tbody>
             <tr class="odd:bg-gray-200" v-for="(currency, index) in currencies" :key="index">
-              <td class="dark:border-dark-5">{{currency.currencyCode}}</td>
-              <td class="dark:border-dark-5">{{currency.currencyName}}</td>
-              <td class="dark:border-dark-5">{{currency.currencySymbol}}</td>
-              <td class="dark:border-dark-5">
+              <td class="">{{currency.currencyCode}}</td>
+              <td class="">{{currency.currencyName}}</td>
+              <td class="">{{currency.currencySymbol}}</td>
+              <td class="">
                 <input id="input-wizard-4-currency-eur"
                   v-model="support"
                   type="checkbox"
                   class="form-check-input"
                   :value="currency.currencyCode" />
               </td>
-              <td class="dark:border-dark-5">
+              <td class="">
                 <input id="input-wizard-4-currency-eur-default"
                   v-model="defaultCurrency"
                   type="radio"
@@ -38,7 +37,7 @@
         </table>
 			</div>
 			<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
-				<button class="btn btn-primary w-24" @click="gotoNext">Save</button>
+				<button class="btn btn-primary w-24" @click="save">Save</button>
 			</div>
 		</div>
     <div id="success-notification-content" class="toastify-content flex">
@@ -58,54 +57,54 @@
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
-import { ref, onMounted } from "vue";
-import _ from "lodash";
-import Toastify from "toastify-js";
-import { sysAxios, appAxios } from "@/plugins/axios";
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+import { ref, onMounted } from "vue"
+import _ from "lodash"
+import Toastify from "toastify-js"
+import { sysAxios, appAxios } from "@/plugins/axios"
 
 
 export default {
-	setup() {
-		const router = useRouter();
-    const store = useStore();
-    const currencyInfo = ref([]);
-    const support = ref([]);
-    const currencies = ref(null);
-    const defaultCurrency = ref(null);
-    const requestMethod = ref('post');
+  props: {
+    companyId: {
+      type: String,
+      required: true
+    }
+  },
+	setup(props) {
+    const currencyInfo = ref([])
+    const support = ref([])
+    const currencies = ref(null)
+    const defaultCurrency = ref(null)
+    const requestMethod = ref('post')
 
     onMounted(async () => {
-			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
-      const getCompanyCurrencies = `/company/v1/${store.state.account.company_uuid}/currencies`;
+			const companyProfileSystemConfig = 'configuration/v1/Company Profile'
+      const getCompanyCurrencies = `/company/v1/${props.companyId}/currencies`
       await sysAxios.get(companyProfileSystemConfig).then(res => {
 				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
 			})
       await appAxios.get(getCompanyCurrencies).then(res => {
         if(res.data.length) {
-          requestMethod.value = 'put';
+          requestMethod.value = 'put'
           res.data.forEach(item => {
-            if(item.isDefault) defaultCurrency.value = item.currencyCode;
-            support.value.push(item.currencyCode);
-          });
+            if(item.isDefault) defaultCurrency.value = item.currencyCode
+            support.value.push(item.currencyCode)
+          })
           currencies.value = {...res.data, ...currencies.value}
         }
         
       })
     })
-    const gotoBack = () => {
-      store.commit('account/SET_STEP', {step: "bank-information"});
-      router.go(-1)
-    }
-    const gotoNext = () => {
+    
+    const save = () => {
       currencyInfo.value = _.filter(currencies.value, (currency) => {
-        if(currency.currencyCode === defaultCurrency.value) currency.isDefault = true;
-        else currency.isDefault = false;
-        return support.value.includes(currency.currencyCode);
+        if(currency.currencyCode === defaultCurrency.value) currency.isDefault = true
+        else currency.isDefault = false
+        return support.value.includes(currency.currencyCode)
       })
-      console.log(currencyInfo.value)
-			const currencyRegister = `/company/v1/${store.state.account.company_uuid}/currencies`;
+			const currencyRegister = `/company/v1/${props.companyId}/currencies`
 			appAxios[requestMethod.value](currencyRegister, currencyInfo.value).then(res => {
         if(res.status === 201 || res.status === 200) {
 					Toastify({
@@ -116,8 +115,8 @@ export default {
 						gravity: "top",
 						position: "right",
 						stopOnFocus: true
-					}).showToast();
-          store.commit('account/SET_STEP', {step: "kyc"});
+					}).showToast()
+          store.commit('account/SET_STEP', {step: "kyc"})
           router.push({path: "/account/kyc"})
         } else {
           Toastify({
@@ -128,13 +127,12 @@ export default {
 						gravity: "top",
 						position: "right",
 						stopOnFocus: true
-					}).showToast();
+					}).showToast()
         }
       })
     }
     return {
-      gotoBack,
-      gotoNext,
+      save,
       currencies,
       support,
       defaultCurrency,
