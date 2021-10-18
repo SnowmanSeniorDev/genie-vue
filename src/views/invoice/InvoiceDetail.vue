@@ -1346,7 +1346,7 @@ export default {
             'Content-Type': 'multipart/form-data'
           }
       });
-      disbursementData.value.paymentAdviceUri = 'https://authorization.bsg-api.tk/api/uploads/v1/' + res.data
+      disbursementData.value.paymentAdviceUri = 'https://authorization.api-dev.xyz/api/uploads/v1/' + res.data
     }
 
     const removeFile = () => files.value = null
@@ -1383,7 +1383,7 @@ export default {
               'Content-Type': 'multipart/form-data'
             }
         }).then(res => {
-          signatureFileUrl.value = `https://authorization.bsg-api.tk/api/uploads/v1/${res.data}`
+          signatureFileUrl.value = `https://authorization.api-dev.xyz/api/uploads/v1/${res.data}`
           signatureLoading.value = false
         });
         return new Promise(resolve => {
