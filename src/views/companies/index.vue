@@ -1,7 +1,9 @@
 <template>
-  <div>
-    <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
-  </div>
+    <div class="intro-y box p-5 mt-5">
+      <h1 class="text-lg text-theme-1">Companies</h1> 
+      <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
+    </div>
+  
 </template>
 
 <script>
@@ -129,7 +131,8 @@ export default {
     })
 
     return {
-      companies
+      companies,
+      tableRef
     }
   },
 }
