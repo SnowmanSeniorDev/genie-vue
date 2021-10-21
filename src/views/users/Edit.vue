@@ -73,12 +73,6 @@
       </a>
     </div>
     
-    <div v-if="pageLoading" class="py-16">
-      <div class="w-full h-8 px-8">
-        <LoadingIcon icon="spinning-circles" color="gray" class="w-4 h-4 py-8" />
-      </div>
-    </div>
-
     <div id="user" class="tab-pane p-5" :class="`${panel === 'user' ? 'block' : 'hidden'}`">
       <div class="border border-gray-200 rounded-md p-5">
         <div id="form-validation" class="p-5">
@@ -231,22 +225,22 @@
     <div id="company-info" class="tab-pane p-5" :class="`${panel === 'company-info' ? 'block' : 'hidden'}`">
       <div class="border border-gray-200 rounded-md p-5">
         <div class="grid grid-cols-12 gap-4 gap-y-5 mt-5">
-          <userComapnyProfile v-if="companyProfileReady" :companyInfo="companyProfile" />
+          <userComapnyProfile v-if="user_company_uuid" :companyId="user_company_uuid" />
         </div>
       </div>
     </div>
     <div id="bank-info" class="tab-pane p-5" :class="`${panel === 'bank-info' ? 'block' : 'hidden'}`">
       <div class="border border-gray-200 rounded-md p-5">
-        <userBankInfo v-if="companyBankInforReady" :bankInfo="bankInfo" :companyId="user_company_uuid" />
+        <userBankInfo v-if="user_company_uuid" :companyId="user_company_uuid" />
       </div>
     </div>
     <div id="currency-settings" class="tab-pane p-5" :class="`${panel === 'currency-settings' ? 'block' : 'hidden'}`">
       <div class="border border-gray-200 rounded-md p-5">
-        <userCurrencySetting :companyId="user_company_uuid" />
+        <userCurrencySetting v-if="user_company_uuid" :companyId="user_company_uuid" />
       </div>
     </div>
     <div id="kyc-document" class="tab-pane p-5" :class="`${panel === 'kyc-document' ? 'block' : 'hidden'}`">
-      <userKycDocuments :companyId="user_company_uuid" />
+      <userKycDocuments v-if="user_company_uuid" :companyId="user_company_uuid" />
     </div>
   </div>
 </template>
@@ -258,10 +252,10 @@ import { sysAxios, appAxios } from '@/plugins/axios'
 import { required, minLength, email } from '@vuelidate/validators'
 import { useVuelidate } from '@vuelidate/core'
 import Toastify from 'toastify-js'
-import userComapnyProfile from './templates/UserCompanyProfile.vue'
-import userBankInfo from './templates/UserCompanyProfile.vue'
-import userCurrencySetting from './templates/UserCurrencySetting.vue'
-import userKycDocuments from './templates/UserKycDocuments.vue'
+import userComapnyProfile from '@/components/templates/CompanyProfile.vue'
+import userBankInfo from '@/components/templates/CompanyBankInfo.vue'
+import userCurrencySetting from '@/components/templates/CompanyCurrencySetting.vue'
+import userKycDocuments from '@/components/templates/CompanyKycDocument.vue'
 
 export default {
   components: {
@@ -280,63 +274,7 @@ export default {
       displayName: "",
     })
     const user_company_uuid = ref('')
-    const companyProfile = ref({
-			companyDisplayName: '',
-			companyLegalName: '',
-			descriptionAboutCompany: '',
-			registrationNo: '',
-			taxNumber: '',
-			addressLine1: '',
-			addressLine2: '',
-			addressLine3: '',
-			city: '',
-			state: '',
-			country: null,
-			phone: '',
-			primaryEmail: '',
-		})
-    const bankInfo = ref([
-			{
-				bankName: '',
-				branchName: '',
-				address: '',
-				accountNumber: '',
-				swiftCode: '',
-				currency: '',
-			},
-		])
-    const currencies = ref(null)
-    const defaultCurrency = ref(null)
-    const support = ref([])
-    const docList = ref([])
-    const companyProfileReady = ref(false)
-    const companyBankInforReady = ref(false)
-    const pageLoading = ref(true)
 
-
-    const getCompanyProfile = async company_uuid => {
-      const getCompanyInfo = `/company/v1/${company_uuid}`
-      const res = await appAxios.get(getCompanyInfo)
-      companyProfile.value = {...res.data}
-      companyProfileReady.value = true
-      return new Promise(resolve => {
-        resolve(res.data)
-      })
-    }
-
-    const getBankInfo = async company_uuid => {
-      const getBankInfo = `/company/v1/${company_uuid}/bankaccounts`
-      await appAxios.get(getBankInfo).then(res => {
-				if(res.data.length !== 0) {
-					bankInfo.value = [...res.data]
-				}
-			})
-      companyBankInforReady.value = true
-      return new Promise(resolve => {
-        resolve('backInfo')
-      })
-    }
-    
     const rules = {
       firstName: { required, minLength: minLength(2) },
       lastName: { required, minLength: minLength(2)},
@@ -411,12 +349,8 @@ export default {
         else return res.data
       })
       if(company_uuid !== '00000000-0000-0000-0000-000000000000') {
-        console.log(company_uuid)
         user_company_uuid.value = company_uuid
-        await getCompanyProfile(company_uuid)
-        await getBankInfo(company_uuid)
       }
-      pageLoading.value = false
     })
 
 
@@ -427,15 +361,6 @@ export default {
       selectedRoles,
       roles,
       user_company_uuid,
-      companyProfile,
-      pageLoading,
-      companyProfileReady,
-      companyBankInforReady,
-      bankInfo,
-      currencies,
-      defaultCurrency,
-      support,
-      docList,
       panel,
     }
   }

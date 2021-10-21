@@ -31,6 +31,17 @@ const menu = [{
       }
     ]
   },{
+    icon: "PackageIcon",
+    pageName: "GENIE_COMPANIES",
+    title: "Companies",
+    subMenu: [{
+        icon: "PackageIcon",
+        title: "Companies",
+        pageName: "GENIE_COMPANIES",
+        permission: "GENIE_COMPANIES"
+      }
+    ]
+  },{
     icon: "KeyIcon",
     pageName: "COMPANY_ONBOARD",
     title: "Company Onboarding",
