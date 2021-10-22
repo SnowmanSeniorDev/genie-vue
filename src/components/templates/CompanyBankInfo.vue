@@ -47,18 +47,22 @@
 		<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
 			<button class="btn btn-primary w-24 ml-2" @click="submitBanks">Save</button>
 		</div>
-		<div id="success-notification-content" class="toastify-content flex">
-			<CheckCircleIcon class="text-theme-9" />
-			<div class="ml-4 mr-4">
-				<div class="font-medium">Successfly Added Bank Info</div>
+		<div id="success-notification-content" class="toastify-content hidden">
+			<div class="flex">
+				<CheckCircleIcon class="text-theme-9" />
+				<div class="ml-4 mr-4">
+					<div class="font-medium">Successfly Added Bank Info</div>
+				</div>
 			</div>
 		</div>
-		<div id="failed-notification-content" class="toastify-content flex">
-      <XCircleIcon class="text-theme-6" />
-      <div class="ml-4 mr-4">
-        <div class="font-medium">Add Bank Info was failed!</div>
-        <div class="text-gray-600 mt-1">Please fillin correct value of the company profile.</div>
-      </div>
+		<div id="failed-notification-content" class="toastify-content hidden">
+			<div class="flex">
+				<XCircleIcon class="text-theme-6" />
+				<div class="ml-4 mr-4">
+					<div class="font-medium">Add Bank Info was failed!</div>
+					<div class="text-gray-600 mt-1">Please fillin correct value of the company profile.</div>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -68,26 +72,38 @@ import { ref, onMounted } from 'vue'
 import { sysAxios, appAxios } from '@/plugins/axios'
 import Toastify from 'toastify-js'
 import _ from 'lodash'
+
 export default {
-  props: {
-    bankInfo: {
-      type: Object,
-      required: true,
-    },
-    companyId: {
-      type: String,
-      required: true
-    }
-  },
+	name: "CompanyBankInfo",
+	props: {
+		companyId: {
+			type: String,
+			required: true
+		}
+	},
 	setup(props) {
+		console.log("company id = ", props.companyId)
 		const banks = ref([])
 		const currencies = ref([])
-		const bankInfos = ref([...props.bankInfo])
+		const bankInfos = ref([
+			{
+				bankName: '',
+				branchName: '',
+				address: '',
+				accountNumber: '',
+				swiftCode: '',
+				currency: '',
+			},
+		])
 		const deletedBank = ref([])
 		const originBankInfo = ref([])
-    const company_uuid = props.companyId
+    const company_uuid = props.companyId ? props.companyId : '00000000-0000-0000-0000-000000000000'
 
 		onMounted(async () => {
+			const getBankInfo = `/company/v1/${company_uuid}/bankaccounts`
+      await appAxios.get(getBankInfo).then(res => {
+				if(res.data.length !== 0) bankInfos.value = [...res.data]
+			})
 			const companyProfileSystemConfig = 'configuration/v1/Company Profile'
 			await sysAxios.get(companyProfileSystemConfig).then(res => {
 				banks.value = JSON.parse(_.find(res.data[0].configurations, {name: "banks"}).value)
@@ -187,7 +203,7 @@ export default {
 			
     }
 
-    return {
+		return {
 			bankInfos,
 			banks,
 			currencies,
