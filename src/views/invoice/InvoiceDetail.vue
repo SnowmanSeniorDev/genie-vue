@@ -72,38 +72,37 @@
               </div>
               </div>
               <div v-else class='flex items-center'>
-              <div
-                v-if='item.passed && item.verified'
-                :class="'alert show flex items-center h-5 p-3 text-sm justify-center ' + ((lastWorkStatus.statusName === item.statusName)? 'text-black-700 bg-yellow-200':'text-black-700 bg-green-200' )"
-                role='alert'
-              >
-                <SendIcon v-if='lastWorkStatus.statusName === item.statusName' class='w-3 h-3 mr-3' />
-                <ShieldIcon v-else class='w-3 h-3 mr-3'/>
-                
-                <span class='pr-3'>{{lastWorkStatus.statusName === item.statusName ? 'Pending' : 'Verified'}}</span>
-              </div> 
-              <div  v-else-if='item.passed && !item.verified'
-                class='alert show flex items-center h-5 p-3 text-sm justify-center text-black-700 bg-red-200'
-                role='alert'
-              >
-                <ShieldIcon class='w-3 h-3 mr-3'/>
-                <span class='pr-3'>Not Verified</span>
-              </div>
-              <div
-                v-else
-                :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${lastWorkStatus.statusName === item.statusName ? 'alert-warning-soft' : 'alert-secondary'}`"
-                role='alert' 
-              >
-                <SendIcon class='w-3 h-3 mr-3'/>
-                <span class='pr-3'>Not Started</span>
-              </div>
-              <div class='items-center'>
-                <span class='font-bold ml-3'>{{ProvenanceLang[item.statusName]}}</span> 
-                <div v-if='item.updateTime != undefined' class='text-gray-500 ml-3'>Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
-                <div  class="text-gray-500 ml-3' v-if='batchDetails.bidEndTime != undefined && item.statusName=='BIDDING_IN_PROGRESS'">
-                  Approval by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
+                <div
+                  v-if="item.state == 'Completed'"
+                  :class="'alert show flex items-center h-5 p-3 text-sm justify-center bg-green-200'"
+                  role='alert'
+                >
+                  <ShieldIcon v-if="item.verified && !item.loading" class="w-3 h-3 mr-3"/>
+                  <ShieldOffIcon v-else class="w-3 h-3 mr-3" />
+                  <span v-if="item.loading" class="pr-3">
+                    <span>Verifying</span>
+                  </span>
+                  <span v-else>
+                    <span v-if="item.verified">Verified</span>
+                    <span v-else>Not Verified</span>
+                  </span>
+                </div> 
+                <div
+                  v-else
+                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${item.firstPending ? 'bg-yellow-200' : 'bg-gray-200'}`"
+                  role='alert' 
+                >
+                  <SendIcon class='w-3 h-3 mr-3'/>
+                  <span v-if="item.firstPending" class='pr-3'>Pending</span>
+                  <span v-else class='pr-3'>Not Started</span>
                 </div>
-              </div>
+                <div class='items-center'>
+                  <span class='font-bold ml-3'>{{ProvenanceLang[item.statusName]}}</span> 
+                  <div v-if='item.updateTime != undefined' class='text-gray-500 ml-3'>Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
+                  <div  class="text-gray-500 ml-3' v-if='batchDetails.bidEndTime != undefined && item.statusName=='BIDDING_IN_PROGRESS'">
+                    Approval by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
+                  </div>
+                </div>
               </div>
               <hr class='mt-5' />
             </div>
@@ -845,98 +844,79 @@ export default {
     }
 
     const provenanceApi = async () => {
-      var workflowsApi = '/workflow/v2?visibility=true'
-      await appAxios.get(workflowsApi).then(res => { provenance.value = res.data })
-      var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids'
-      console.log('provenance value = ', provenance.value)
+      var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
         console.log('current workflow status = ', res.data)
         console.log('initworkflow id = ', initWorkflowId.value)
         if(res.data[0].rootWorkflowId === initWorkflowId.value.sellerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
         if(res.data[0].rootWorkflowId === initWorkflowId.value.buyerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
-        provenance.value = await getBranchLists(res.data[0].rootWorkflowId)
-        console.log('root workflow id = ', res.data[0].rootWorkflowId)
+
         paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
+        provenance.value = res.data[0].workflows
 
-        res.data[0].workflows.forEach(passedWorkflow => {
-          provenance.value = provenance.value.map(item => {
-            if(item.workflowId === passedWorkflow.workflowId){
-              item.workflowStatuses.map(workflowState => {
-                
-                if(_.find(passedWorkflow.statusTransitions, (passedWorkflowStatusTransitionEntity) => {
-                  if(passedWorkflowStatusTransitionEntity.statusName === workflowState.statusName) {
-                    return true
-                  }
-                })){
-                  workflowState.passed = true
-                }
-              })
-            }
-            return item
-          })
-        })
-        provenance.value = _.map(_.map(provenance.value, 'workflowStatuses').flat(), function(item) {
-          return _.merge(item, _.find(_.map(res.data[0].workflows, 'statusTransitions').flat(), { 'statusName' : item.statusName }))
-        })
+        provenance.value = _.map(provenance.value, 'statusTransitions').flat()
+        console.log('provenance value = ', provenance.value)
+        console.log('last workflow status = ', lastWorkStatus.value)
+        for(var i=0; i<provenance.value.length; i++) {
+          if(provenance.value[i].statusName === lastWorkStatus.value.statusName ) provenance.value[i + 1]['firstPending'] = true
+        }
       })
+      
       const paymentAdviceData = await appAxios.get(`/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`).then(res => {
         return res.data
       })
       await Promise.all(
         provenance.value.map(async status => {
           var paymentAdvice = null
-
-          if(paymentAdviceWorksStatus.value.includes(status.statusName) && paymentAdviceData.length) {
-            
-            let paymentAdviceEntity = paymentAdviceData.filter((workflow) => {
-              return workflow.extraData.workflowStatusName === status.statusName
-            })
-            if(paymentAdviceEntity.length){
-              await sysAxios.get(`${paymentAdviceEntity[0].paymentAdviceUri}/info`).then(res => {
-                paymentAdvice = {paymentAdviceFileName: res.data.fileName, dataHash: {...res.data.dataHash}}
+          if(status.state === 'Completed') {
+            if(paymentAdviceWorksStatus.value.includes(status.statusName) && paymentAdviceData.length) {
+              let paymentAdviceEntity = paymentAdviceData.filter((workflow) => {
+                return workflow.extraData.workflowStatusName === status.statusName
               })
+              if(paymentAdviceEntity.length){
+                await sysAxios.get(`${paymentAdviceEntity[0].paymentAdviceUri}/info`).then(res => {
+                  paymentAdvice = {paymentAdviceFileName: res.data.fileName, dataHash: {...res.data.dataHash}}
+                })
+                verifyRequestBody.value.TransactionWorkflowStatuses.push({
+                  'status': status.statusName,
+                  'datetimeutc': moment(status.updateTime).valueOf(),
+                  'identity': status.updateBy,
+                  'paymentAdvice': {...paymentAdvice},
+                })
+              }
+            } else {
               verifyRequestBody.value.TransactionWorkflowStatuses.push({
                 'status': status.statusName,
                 'datetimeutc': moment(status.updateTime).valueOf(),
                 'identity': status.updateBy,
-                'paymentAdvice': {...paymentAdvice},
+                'paymentAdvice': null,
               })
             }
-          } else {
-            verifyRequestBody.value.TransactionWorkflowStatuses.push({
-              'status': status.statusName,
-              'datetimeutc': moment(status.updateTime).valueOf(),
-              'identity': status.updateBy,
-              'paymentAdvice': null,
-            })
           }
         })
-      ) 
-      let workStatusList = [] 
+      )
+      let workStatusList = []
+      console.log("verifyRequestBody = ", verifyRequestBody.value)
       verifyRequestBody.value.TransactionWorkflowStatuses.forEach(async (workStatus, index) => {
         workStatusList = []
         loading.value.provenance = true
         provenance.value[index].loading= true
         Object.keys(workStatus).forEach(async k => (workStatus[k] == null || typeof workStatus[k] == 'undefined') && delete workStatus[k])
-        if(provenance.value[index].passed) {
-          workStatusList.push(workStatus)
-          await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
-            provenance.value[index].verified = res.data[0].verificationStatus
-            provenance.value[index].loading= false
-            if(!res.data[0].verificationStatus) {
-              errorStepsMsg.value ='Data Verification failed, the Database data has been compromise. Please contact Genie Support for further action.'
-              return
-            }
-          })
-        }
-        else {
-          provenance.value[index].verified = false
+
+        workStatusList.push(workStatus)
+        await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
+          provenance.value[index].verified = res.data[0].verificationStatus
           provenance.value[index].loading= false
-        }
+          if(!res.data[0].verificationStatus) {
+            errorStepsMsg.value ='Data Verification failed, the Database data has been compromise. Please contact Genie Support for further action.'
+            return
+          }
+        })
       })
       loading.value.provenance = false
+      console.log('provenance value = ', provenance.value)
       return new Promise(resolve => resolve('provenance api function done'))
     }
 
@@ -959,22 +939,6 @@ export default {
         })
       }
       return new Promise(resolve => resolve(lockDays.value))
-    }
-
-    const getBranchLists = async (rootWorkflowId) => {
-      return new Promise((resolve, reject) => {
-        var workflowQueue = [_.find(provenance.value, {workflowId: rootWorkflowId})]
-        if(!workflowQueue.length) reject('no rootWorkflow')
-        if(!rootWorkflowId) reject('no rootWorkflowId')
-        var wholeHistory = []
-        while (workflowQueue.length) {
-          var parent = workflowQueue.shift()
-          var child = _.filter(provenance.value, {parentWorkflowId: parent.workflowId})
-          wholeHistory.push(parent)
-          workflowQueue.push(...child)
-        }
-        resolve(wholeHistory)
-      })
     }
 
     const getEstimateCalc = async()=>{
@@ -1017,7 +981,6 @@ export default {
     const getLastWorkflowStatus = async() => {
       const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
       await appAxios.post(api, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
-        console.log('last work status = ', res.data)
         lastWorkStatus.value = res.data[0].workflow.lastStatusTransition
       })
 
@@ -1061,8 +1024,14 @@ export default {
         }
         else {
           var api = ''
-          if(currentCompanyRole.value === 'Seller Admin' && batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
-          if(currentCompanyRole.value === 'Buyer Admin' && batchDetails.value.workflowLed === 'Buyer Led')  api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+          if(batchDetails.value.workflowLed === 'Seller Led') {
+            if(currentCompanyRole.value === 'Seller Admin') api = ''
+            else api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+          } else {
+            if(currentCompanyRole.value === 'Buyer Admin') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+            else api = ''
+          }
+
           await appAxios.post(api, {
             externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
             remark: remark.value,
@@ -1512,9 +1481,9 @@ export default {
         else currentCompanyRole.value = 'Buyer Admin'
       }
 
- 
+      console.log("last work status  = ", lastWorkStatus.value)
       //determine what action button should be showed in Batch Detail page
-      if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && lastWorkStatus.value['state'] === 'Completed' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleApproveButton = true
+      if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && lastWorkStatus.value['state'] === 'Completed' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
 
 
       else if(lastWorkStatus.value['statusName'] === 'AWAITING_BUYER_ACKNOWLEDGEMENT' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
