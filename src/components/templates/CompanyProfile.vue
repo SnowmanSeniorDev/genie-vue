@@ -178,27 +178,48 @@
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { appAxios } from "@/plugins/axios";
 export default {
   props: {
-    companyInfo: {
-      type: Object,
+    companyId: {
+      type: String,
       required: true,
     },
   },
   setup(props) {
     const companyProfile = ref({
-      ...props.companyInfo,
-    });
+			companyDisplayName: '',
+			companyLegalName: '',
+			descriptionAboutCompany: '',
+			registrationNo: '',
+			taxNumber: '',
+			addressLine1: '',
+			addressLine2: '',
+			addressLine3: '',
+			city: '',
+			state: '',
+			country: null,
+			phone: '',
+			primaryEmail: '',
+		})
 
     const save = () => {
       const api = `company/v1/${companyProfile.value.companyId}`
-      console.log(companyProfile.value)
       appAxios.put(api, companyProfile.value).then(res => {
         console.log("res = ", res.data)
       })
     }
+
+    const init = async () => {
+      const getCompanyInfo = `/company/v1/${props.companyId}`
+      const res = await appAxios.get(getCompanyInfo)
+      companyProfile.value = {...res.data}
+    }
+
+    onMounted(() => {
+      init()
+    })
 
     return {
       companyProfile,

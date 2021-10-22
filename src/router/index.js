@@ -16,7 +16,11 @@ import Permission from "../views/permissions/index.vue";
 import PermissionList from "../views/permissions/PermissionList.vue";
 import CreatePermission from "../views/permissions/Add.vue";
 import EditPermission from "../views/permissions/Edit.vue";
-import Companies from "../views/companies/index.vue";
+
+import Company from "../views/companies/index.vue";
+import CompanyDetail from "../views/companies/CompanyDetail.vue";
+import Companies from "../views/companies/Companies.vue";
+
 import RolesIndex from "../views/roles/index.vue";
 import GrantAccess from "../views/roles/GrantAccess.vue";
 import SettingsIndex from "../views/settings/index.vue";
@@ -107,7 +111,16 @@ const routes = [
         }
       }, {
         path: "companies",
-        component: Companies,
+        component: Company,
+        children: [{
+          path: "",
+          name: "GENIE_COMPANIES",
+          component: Companies
+        }, {
+          path: ":companyId",
+          component: CompanyDetail,
+          name: 'company-detail'
+        }],
         meta: {
           permission: "GENIE_ADMIN_COMPANIES"
         }

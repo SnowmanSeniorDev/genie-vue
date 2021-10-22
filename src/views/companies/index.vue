@@ -1,22 +1,12 @@
-<template>
-    <div class="intro-y box p-5 mt-5">
-      <h1 class="text-lg text-theme-1">Companies</h1> 
-      <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
-    </div>
-  
+<template> 
+  <router-view /> 
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
-import { sysAxios, appAxios } from '@/plugins/axios'
-import Tabulator from "tabulator-tables";
 
 export default {
-  setup() {
-    const companies = ref([])
-    const tableRef = ref()
-    const tabulator = ref()
-
+  setup () {
+ 
     const initTabulator = (data) => { 
       tabulator.value = new Tabulator(tableRef.value, {
         data: data,
@@ -134,6 +124,6 @@ export default {
       companies,
       tableRef
     }
-  },
+  }, 
 }
 </script>
