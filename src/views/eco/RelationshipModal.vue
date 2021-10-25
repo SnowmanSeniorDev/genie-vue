@@ -10,8 +10,7 @@
           <div class="grid grid-cols-3 gap-4 mt-4">
       <div>
         <label>Name: </label>
-        <input type="text" v-model="ecoSystemBody.ecosystemId" class="form-control" />
-        <input type="text" v-model="ecoSystemBody.name" class="form-control" />
+        <input type="text" :readonly=ecoSystemBody.editMode v-model="ecoSystemBody.name" class="form-control" />
         <template v-if="$v.name.$error">
           <div v-for="(error, index) in $v.name.$errors" :key="index" class="text-theme-6 mt-2">
             {{ error.$message }}
@@ -20,7 +19,7 @@
       </div>
       <div>
         <label>Buyer Company: </label>
-        <select v-model="ecoSystemBody.buyerCompanyId" class="form-select">
+        <select :disabled=ecoSystemBody.editMode v-model="ecoSystemBody.buyerCompanyId" class="form-select">
           <option v-for="company in systemCompanies" :value="company.companyId" :key="company.companyId">{{company.companyDisplayName}}</option>
         </select>
         <template v-if="$v.buyerCompanyId.$error">
@@ -31,7 +30,7 @@
       </div>
       <div>
         <label>Seller Company: </label>
-        <select class="form-select" v-model="ecoSystemBody.sellerCompanyId">
+        <select :disabled=ecoSystemBody.editMode class="form-select" v-model="ecoSystemBody.sellerCompanyId">
           <option v-for="company in systemCompanies" :value="company.companyId" :key="company.companyId">
             {{company.companyDisplayName}}
           </option>
@@ -44,7 +43,7 @@
       </div>
       <div>
         <label>Funder Company: </label>
-        <select class="form-select" v-model="ecoSystemBody.funderCompanyId">
+        <select :disabled=ecoSystemBody.editMode class="form-select" v-model="ecoSystemBody.funderCompanyId">
           <option v-for="company in funderCompanies" :value="company.companyId" :key="company.companyId">
             {{company.companyDisplayName}}
           </option>
@@ -75,7 +74,7 @@
       </div>
       <div>
         <label>Base Currency Code: </label>
-        <select class="form-select" v-model="ecoSystemBody.baseCurrencyCode">
+        <select :disabled=ecoSystemBody.editMode class="form-select" v-model="ecoSystemBody.baseCurrencyCode">
           <option v-for="currency in currencies" :key="currency.currencyCode" :value="currency.currencyCode">
             {{currency.currencyCode}}
           </option>
@@ -109,21 +108,17 @@
         </template>  
       </div>
       <div>
-        <label>Expired Date: </label>
-        <Litepicker
-          v-model="ecoSystemBody.expiredDate"
-          :options="{
-            autoApply: false,
-            showWeekNumbers: true,
-            dropdowns: {
-              minYear: 1990,
-              maxYear: null,
-              months: true,
-              years: true
-            },
-          }"
-          class="form-control"
-        /> 
+        <label>Expired Date: (Status: {{(ecoSystemBody.status)??'-'}})</label>
+        <DatePicker v-model="ecoSystemBody.expiredDate" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
+          <template v-slot="{ inputValue, inputEvents }">
+            <input
+              id="expired-date"
+              class="form-control"
+              :value="inputValue"
+              v-on="inputEvents"
+            />
+          </template>
+        </DatePicker>  
         <template v-if="$v.expiredDate.$error">
           <div v-for="(error, index) in $v.expiredDate.$errors" :key="index" class="text-theme-6 mt-2">
             {{ error.$message }}
@@ -132,7 +127,7 @@
       </div>
       <div>
         <label>Buyer Led Workflow</label>
-        <select v-model="ecoSystemBody.buyerLedWorkflowId" class="form-select">
+        <select :disabled=ecoSystemBody.editMode v-model="ecoSystemBody.buyerLedWorkflowId" class="form-select">
           <option v-for="workflow in workflowLists" :value="workflow.workflowId" :key="workflow.workflowId">
               {{workflow.name}}
           </option>
@@ -145,7 +140,7 @@
       </div>
       <div>
         <label>Seller Led Workflow</label>
-        <select v-model="ecoSystemBody.sellerLedWorkflowId" class="form-select">
+        <select :disabled=ecoSystemBody.editMode v-model="ecoSystemBody.sellerLedWorkflowId" class="form-select">
           <option v-for="workflow in workflowLists" :value="workflow.workflowId" :key="workflow.workflowId">
               {{workflow.name}}
           </option>
@@ -160,6 +155,10 @@
     </div>
     <hr class="my-8"/>
     <div class="flex justify-end">
+      <button class="w-32 btn" @click="deleteEcoSystem" :disabled='loading'>
+        Delete
+        <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+      </button> 
       <button class="w-32 btn btn-primary" @click="saveEcoSystem" :disabled='loading'>
         Submit
         <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
@@ -217,22 +216,39 @@ export default {
     const interestRateDuration = ref([])
     
     const $v = useVuelidate(rules.value, ecoSystemBody);
-    
+    const deleteEcoSystem = async() => {
+      ecoSystemBody.value.status ='Deleted';
+      await appAxios.put('/company/v1/ecosystems',ecoSystemBody.value).then(res => { 
+            cash("#relationship-modal").modal("hide");
+            props.callback()
+          })
+    }
     const saveEcoSystem = async() => { 
  
       loading.value = true; 
       $v.value.$touch(); 
       if(!$v.value.$invalid)
       { 
-        ecoSystemBody.value.buyerCompanyName = systemCompanies.value.filter(c => c.companyId == ecoSystemBody.value.buyerCompanyId)[0].companyDisplayName;
-        ecoSystemBody.value.sellerCompanyName = systemCompanies.value.filter(c => c.companyId == ecoSystemBody.value.sellerCompanyId)[0].companyDisplayName;
-        ecoSystemBody.value.funderCompanyName = funderCompanies.value.filter(f => f.companyId == ecoSystemBody.value.funderCompanyId)[0].companyDisplayName;
-        ecoSystemBody.value.expiredDate = moment.utc(ecoSystemBody.value.expiredDate).format();
-              
-        await appAxios.post('/company/v1/ecosystems ',ecoSystemBody.value).then(res => { 
-          cash("#relationship-modal").modal("hide");
-          props.callback()
-        })
+        if(!ecoSystemBody.value.editMode)
+        {
+          ecoSystemBody.value.buyerCompanyName = systemCompanies.value.filter(c => c.companyId == ecoSystemBody.value.buyerCompanyId)[0].companyDisplayName;
+          ecoSystemBody.value.sellerCompanyName = systemCompanies.value.filter(c => c.companyId == ecoSystemBody.value.sellerCompanyId)[0].companyDisplayName;
+          ecoSystemBody.value.funderCompanyName = funderCompanies.value.filter(f => f.companyId == ecoSystemBody.value.funderCompanyId)[0].companyDisplayName;
+          ecoSystemBody.value.expiredDate = moment.utc(ecoSystemBody.value.expiredDate).format();
+            
+          await appAxios.post('/company/v1/ecosystems',ecoSystemBody.value).then(res => { 
+            cash("#relationship-modal").modal("hide");
+            props.callback()
+          })
+        }
+        else
+        {
+          await appAxios.put('/api/genie/company/v1/ecosystems',ecoSystemBody.value).then(res => { 
+            cash("#relationship-modal").modal("hide");
+            props.callback()
+          })
+        }
+        
       }
       loading.value = false;
     };
@@ -275,6 +291,7 @@ export default {
       $v,
       rules,
       saveEcoSystem,
+      deleteEcoSystem,
       workflowLists,
       loading,
       dateFormat, 

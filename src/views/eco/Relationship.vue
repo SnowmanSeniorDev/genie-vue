@@ -1,12 +1,15 @@
 <template>
   
   <div class="intro-y box p-5 mt-5">
-    <div class="flex mt-5 sm:mt-0" >
-          <a href="javascript:;" data-toggle="modal" data-target="#relationship-modal" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2">
+   
+    <h1 class="text-lg text-theme-1">Eco Systems
+ <div class="flex mt-5 sm:mt-0" >
+          <a href="javascript:;" @click="createEcoSystem" class="btn btn-outline-primary w-1/2 sm:w-auto mr-2">
             <UploadIcon class="w-4 h-4 mr-2" /> Create Eco System
           </a>
         </div>
-    <h1 class="text-lg text-theme-1">Eco Systems</h1>
+
+    </h1>
     <div id="tabulator" ref="tableRef" class="mt-5 table-report table-report--tabulator"></div>
     <RelationshipModal :callback="init" :editObject="ecoSystemBody"  />
   </div>
@@ -46,14 +49,22 @@ export default {
       baseCurrencyCode: "",
       expiredDate: new Date(),
       buyerLedWorkflowId: "",
-      sellerLedWorkflowId: ""
+      sellerLedWorkflowId: "",
+      editMode: false
     });
+    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT); 
     const ecoSystems = ref([])
     const ecoSystemLine = ref([])
     const workflowLists = ref({}) 
     const tableRef = ref();
     const tabulator = ref();
-
+    const createEcoSystem = () => {
+      ecoSystemBody.value = {};
+      ecoSystemBody.value.editMode = false;
+      cash("#relationship-modal").modal("show");
+                 
+                
+    }
     const initTabulator = (data) => { 
       tabulator.value = new Tabulator(tableRef.value, {
         data: data,
@@ -89,12 +100,22 @@ export default {
             hozAlign: "center",
             resizable: true,
           }, {
+            title: "Expired Date",
+            field: "expiredDate",
+            headerHozAlign: 'center',
+            hozAlign: "center",
+            resizable: true,
+            formatter(cell) { 
+              return moment(cell.getData().expiredDate).format(dateTimeFormat.value)
+            }
+          }, {
             title: "Status",
             field: "status",
             headerHozAlign: 'center',
             hozAlign: "center",
             resizable: true,
           },
+          
           {
             title: "ACTIONS",
             maxWidth: 130,
@@ -112,6 +133,7 @@ export default {
                 cash("#relationship-modal").modal("show");
                 console.log(cell.getData(),"cell.getData()");
                 ecoSystemBody.value = cell.getData(); 
+                ecoSystemBody.value.editMode = true;
                 
               })
               return a[0];
@@ -163,6 +185,8 @@ export default {
       dateFormat,
       tableRef, 
       ecoSystemBody,
+      dateTimeFormat,
+      createEcoSystem,
       init
     }
   },
