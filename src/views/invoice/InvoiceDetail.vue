@@ -74,7 +74,7 @@
               <div v-else class='flex items-center'>
                 <div
                   v-if="item.state == 'Completed'"
-                  :class="'alert show flex items-center h-5 p-3 text-sm justify-center bg-green-200'"
+                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${item.verified? 'bg-green-200' : 'bg-red-300' }`"
                   role='alert'
                 >
                   <ShieldIcon v-if="item.verified && !item.loading" class="w-3 h-3 mr-3"/>
@@ -220,8 +220,10 @@
           </div>
         </div> 
         <div v-else>
-          <br />
-          <div class='text-red-500 ml-3'>{{errorStepsMsg}}</div>
+          <div class='text-red-500 pt-4'>{{errorStepsMsg}}</div>
+        </div>
+        <div v-if="batchMessage.length" class="bg-gray-300 mt-6 text-center">
+          <p class='text-gray-700 px-2 py-4 text-left'>Note: {{batchMessage}}</p>
         </div>
       </div>
     </div>
@@ -683,6 +685,7 @@ import Documents from './Documents'
 import { useDropzone } from 'vue3-dropzone'
 import ProvenanceLang from '@/utils/provenanceLanguage'
 import Toastify from 'toastify-js'
+import { copySource } from '../../global-components/highlight'
 
 export default {
   props: {
@@ -702,8 +705,9 @@ export default {
     const journalBatchEntry = ref()
     const adminCompany = ref()
     const initWorkflowId = ref([])
-    const provenance = ref()
+    const provenance = ref([])
     const provenancePendingStatusIndex = ref(0)
+    const batchMessage = ref('')
     const visibleWorkflowActions = ref({
       visibleApproveButton: false,
       visibleSubmitProposal: false,
@@ -846,19 +850,25 @@ export default {
     const provenanceApi = async () => {
       var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
-        console.log('current workflow status = ', res.data)
-        console.log('initworkflow id = ', initWorkflowId.value)
         if(res.data[0].rootWorkflowId === initWorkflowId.value.sellerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
         if(res.data[0].rootWorkflowId === initWorkflowId.value.buyerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
 
         paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
-        provenance.value = res.data[0].workflows
+        console.log('provenance api response\n', res.data)
+        _.map(res.data[0].workflows, (item) => {
+          let subProvenance = item.statusTransitions
+          subProvenance = subProvenance.sort((a, b) => {
+            if(a.order === b.order) return 0
+            else if(a.order > b.order) return 1
+            else return -1
+          })
+          provenance.value.push(...subProvenance)
+        })
 
-        provenance.value = _.map(provenance.value, 'statusTransitions').flat()
-        console.log('provenance value = ', provenance.value)
-        console.log('last workflow status = ', lastWorkStatus.value)
+        console.log('provenance flated\n', provenance.value)
+
         for(var i=0; i<provenance.value.length; i++) {
           if(provenance.value[i].statusName === lastWorkStatus.value.statusName ) provenance.value[i + 1]['firstPending'] = true
         }
@@ -898,7 +908,6 @@ export default {
         })
       )
       let workStatusList = []
-      console.log("verifyRequestBody = ", verifyRequestBody.value)
       verifyRequestBody.value.TransactionWorkflowStatuses.forEach(async (workStatus, index) => {
         workStatusList = []
         loading.value.provenance = true
@@ -916,7 +925,6 @@ export default {
         })
       })
       loading.value.provenance = false
-      console.log('provenance value = ', provenance.value)
       return new Promise(resolve => resolve('provenance api function done'))
     }
 
@@ -1103,14 +1111,14 @@ export default {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId('DisbursableAmount')
         api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10'
       }
-      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_FUNDER_FIRST_DISBURSEMENT') {
+      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId('FirstDisbursableAmount')
-        api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-identified-after-bidding-branch/10'
+        api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-identified-after-bidding-branch/20'
       } else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_FUNDER_FINAL_DISBURSEMENT') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId('FinalDisbursableAmount')
         api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/20'
       }
-      const request = {
+      const requestBody = {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         paymentInstructionId: disbursementData.value.paymentInstructionId,
         paymentAdviceNumber: disbursementData.value.paymentAdviceNumber,
@@ -1121,7 +1129,7 @@ export default {
         paymentAdviceDate: moment.utc(disbursementData.value.paymentAdviceDate).format()
       }
 
-      appAxios.post(api, request).then(res => {
+      appAxios.post(api, requestBody).then(res => {
         modalLoading.value = false
         if(res.status == '200') {
           cash('#submit-disbursment-modal').modal('hide')
@@ -1460,7 +1468,6 @@ export default {
         initWorkflowId.value = {...initWorkflowId.value, buyerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id V2'}).value}
         initWorkflowId.value = {...initWorkflowId.value, sellerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id V2'}).value}
         paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow V2 Status With Payment Advice'}).value)
-        console.log('payment advice work status = ', paymentAdviceWorksStatus.value)
       })
 
       //getting invoice detail data from journalbatch api endpoint
@@ -1474,28 +1481,43 @@ export default {
       
       //determine current company is seller role or buyer role in this invoice
       if(batchDetails.value.workflowLed == 'Buyer Led') {
-        if(batchDetails.value.initiatedByCompanyId == store.state.account.company_uuid) currentCompanyRole.value = 'Buyer Admin'
+        if(batchDetails.value.initiatedByCompanyId === store.state.account.company_uuid) currentCompanyRole.value = 'Buyer Admin'
         else currentCompanyRole.value = 'Seller Admin'
       } else {
-        if(batchDetails.value.initiatedByCompanyId == store.state.account.company_uuid) currentCompanyRole.value = 'Seller Admin'
+        if(batchDetails.value.initiatedByCompanyId === store.state.account.company_uuid) currentCompanyRole.value = 'Seller Admin'
         else currentCompanyRole.value = 'Buyer Admin'
       }
 
-      console.log("last work status  = ", lastWorkStatus.value)
+      console.log("last work status  = ", lastWorkStatus.value['statusName'])
+      console.log("current user role = ", user.user_role)
+
       //determine what action button should be showed in Batch Detail page
-      if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && lastWorkStatus.value['state'] === 'Completed' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
+      if(batchDetails.value.workflowLed === 'Buyer Led') {
+
+      } else {
+        if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
+        else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS' && user.user_role === 'Funder Admin') {
+          const api = `bidding/v1/${batchDetails.value.workflowExecutionReferenceId}`
+          appAxios.get(api).then(res => {
+            if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
+            else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished.'
+          })
+        }
+        else if(lastWorkStatus.value['statusName'] === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') {
+          visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
+        }
 
 
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_BUYER_ACKNOWLEDGEMENT' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
-      else if(lastWorkStatus.value['statusName'] === 'BIDDING_IN_PROGRESS' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitProposal = true
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_FIRST_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_FINAL_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_DISBURSEMENT' && currentCompanyRole.value=== 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_BUYER_REPAYMENT_ON_DUE_DATE' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
-      else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
+
+        else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_FIRST_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_FINAL_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_DISBURSEMENT' && currentCompanyRole.value=== 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
+        else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
+        else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
+        else if(lastWorkStatus.value['statusName'] === 'AWAITING_BUYER_REPAYMENT_ON_DUE_DATE' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledge
+      }
 
       console.log('visibleWorkflowActions = ', visibleWorkflowActions.value)
       //getting currency code by using action modal currency select box
@@ -1504,7 +1526,6 @@ export default {
       await getLockDays()
       const company_uuid = store.state.account.company_uuid
       const dashboardApi = `/company/v1/${company_uuid}/dashboarddata`
-      visibleWorkflowActions.value.visibleSubmitProposal = false
       await appAxios.get(dashboardApi).then(res => {
         let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction
         let pendingAction = {} 
@@ -1551,6 +1572,7 @@ export default {
       lastWorkStatus,
       provenancePendingStatusIndex,
       batchDetails,
+      batchMessage,
       visibleWorkflowActions,
       currencies,
       user,
