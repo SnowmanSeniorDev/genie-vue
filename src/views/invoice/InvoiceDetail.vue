@@ -99,7 +99,7 @@
                 <div class='items-center'>
                   <span class='font-bold ml-3'>{{ProvenanceLang[item.statusName]}}</span> 
                   <div v-if='item.updateTime != undefined' class='text-gray-500 ml-3'>Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
-                  <div  class="text-gray-500 ml-3' v-if='batchDetails.bidEndTime != undefined && item.statusName=='BIDDING_IN_PROGRESS'">
+                  <div class='text-gray-500 ml-3' v-if="batchDetails.bidEndTime != undefined && item.statusName=='INVITATION_SEND_TO_FUNDERS'">
                     Approval by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
                   </div>
                 </div>
@@ -869,8 +869,8 @@ export default {
 
         console.log('provenance flated\n', provenance.value)
 
-        for(var i=0; i<provenance.value.length; i++) {
-          if(provenance.value[i].statusName === lastWorkStatus.value.statusName ) provenance.value[i + 1]['firstPending'] = true
+        for(var i=0; i<provenance.value.length - 1; i++) {
+          if( provenance.value[i].statusName === lastWorkStatus.value.statusName ) provenance.value[i + 1]['firstPending'] = true
         }
       })
       
@@ -1114,7 +1114,7 @@ export default {
       else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId('FirstDisbursableAmount')
         api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-identified-after-bidding-branch/20'
-      } else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_FUNDER_FINAL_DISBURSEMENT') {
+      } else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FINAL_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId('FinalDisbursableAmount')
         api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/20'
       }
@@ -1142,8 +1142,8 @@ export default {
     const openSellerAcknowledgeOfReceiveDisbursementModel = async () => {
       var paymentInstructionId
       if(batchDetails.value.workflowLed === 'Buyer Led') paymentInstructionId = await getpaymentInstructionId('DisbursableAmount')
-      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') paymentInstructionId = await getpaymentInstructionId('FirstDisbursableAmount')
-      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') paymentInstructionId = await getpaymentInstructionId('FinalDisbursableAmount')
+      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') paymentInstructionId = await getpaymentInstructionId('FirstDisbursableAmount')
+      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FINAL_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') paymentInstructionId = await getpaymentInstructionId('FinalDisbursableAmount')
 
       const api = `/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
       const conformableDisbursementData = await appAxios.get(api)
@@ -1178,8 +1178,8 @@ export default {
         else {
         var api = ''
         if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
-        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
-        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
+        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
+        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FINAL_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
         
         const request = {
           externalReferenceId: props.workflowExecutionReferenceId,
@@ -1484,12 +1484,15 @@ export default {
         if(batchDetails.value.initiatedByCompanyId === store.state.account.company_uuid) currentCompanyRole.value = 'Buyer Admin'
         else currentCompanyRole.value = 'Seller Admin'
       } else {
+        console.log('batchDetails.value.initiatedByCompanyId\n', batchDetails.value.initiatedByCompanyId)
+        console.log('store.state.account.company_uuid\n', store.state.account.company_uuid)
         if(batchDetails.value.initiatedByCompanyId === store.state.account.company_uuid) currentCompanyRole.value = 'Seller Admin'
         else currentCompanyRole.value = 'Buyer Admin'
       }
 
       console.log("last work status  = ", lastWorkStatus.value['statusName'])
       console.log("current user role = ", user.user_role)
+      console.log("current company role = ", currentCompanyRole.value)
 
       //determine what action button should be showed in Batch Detail page
       if(batchDetails.value.workflowLed === 'Buyer Led') {
@@ -1503,20 +1506,12 @@ export default {
             else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished.'
           })
         }
-        else if(lastWorkStatus.value['statusName'] === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') {
-          visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
-        }
-
-
-
-        else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
-        else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_FIRST_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
-        else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_FINAL_DISBURSEMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
-        else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_DISBURSEMENT' && currentCompanyRole.value=== 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
-        else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FIRST_DISBURSEMENT' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
-        else if(lastWorkStatus.value['statusName'] === 'AWAITING_SELLER_ACKNOWLEDGE_RECEIVE_OF_FINAL_DISBURSEMENT' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
-        else if(lastWorkStatus.value['statusName'] === 'AWAITING_BUYER_REPAYMENT_ON_DUE_DATE' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
-        else if(lastWorkStatus.value['statusName'] === 'AWAITING_FUNDER_ACKNOWLEDGE_REPAYMENT' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledge
+        else if(lastWorkStatus.value['statusName'] === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
+        else if(lastWorkStatus.value['statusName'] === 'REPAYMENT_INSTRUCTION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'REPAID_BY_BUYER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'FINAL_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'FINAL_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
       }
 
       console.log('visibleWorkflowActions = ', visibleWorkflowActions.value)

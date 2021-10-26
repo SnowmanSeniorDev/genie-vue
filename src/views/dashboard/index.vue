@@ -44,9 +44,9 @@
               </div>  
             </div>
           </div>
-          <div class='intro-y bg-theme-2'>
-            <div class='p-5'>
-              <img alt='' class='intro-x w-full h-36' src='/Calendar-bro.svg' />
+          <div class='intro-y'>
+            <div class="bg-theme-2">
+              <img alt='' class='intro-x w-full h-36 p-5' src='/Calendar-bro.svg' />
             </div>
             <div class='box p-8'>
               <h4 class='text-lg font-bold'>Upcoming Holiday Calendar</h4>
