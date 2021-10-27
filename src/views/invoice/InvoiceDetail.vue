@@ -67,9 +67,9 @@
                   class='alert show flex items-center h-5 p-3 text-sm justify-center alert-secondary'
                   role='alert'
                 >
-                <ShieldOffIcon class='w-3 h-3 mr-3' />
-                <span class='pr-3'>Verifying</span> 
-              </div>
+                  <LoadingIcon icon="puff" color="gray" class="w-3 h-3 mr-2" />
+                  <span class='pr-3'>Verifying</span> 
+                </div>
               </div>
               <div v-else class='flex items-center'>
                 <div
@@ -162,8 +162,7 @@
             </tr>
           </table>
         </div>
-        
-        <div class='mt-5' v-if="_.find(provenance, {statusName: 'AWAITING_FUNDER_FIRST_DISBURSEMENT'})?.passed || _.find(provenance, {statusName: 'AWAITING_FUNDER_DISBURSEMENT'})?.passed">
+        <div class='mt-5' v-if="_.find(provenance, {statusName: 'TRANSACTION_APPROVED_BY_FUNDER'})?.state === 'Completed'">
           <span>Formular</span>
           <table class='table mt-2'>
             <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
@@ -1033,11 +1032,9 @@ export default {
         else {
           var api = ''
           if(batchDetails.value.workflowLed === 'Seller Led') {
-            if(currentCompanyRole.value === 'Seller Admin') api = ''
-            else api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+            api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
           } else {
-            if(currentCompanyRole.value === 'Buyer Admin') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
-            else api = ''
+            api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
           }
 
           await appAxios.post(api, {
@@ -1109,7 +1106,7 @@ export default {
       var api = ''
       if(batchDetails.value.workflowLed === 'Buyer Led') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId('DisbursableAmount')
-        api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/10'
+        api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/20'
       }
       else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER') {
         disbursementData.value.paymentInstructionId = await getpaymentInstructionId('FirstDisbursableAmount')
@@ -1484,8 +1481,6 @@ export default {
         if(batchDetails.value.initiatedByCompanyId === store.state.account.company_uuid) currentCompanyRole.value = 'Buyer Admin'
         else currentCompanyRole.value = 'Seller Admin'
       } else {
-        console.log('batchDetails.value.initiatedByCompanyId\n', batchDetails.value.initiatedByCompanyId)
-        console.log('store.state.account.company_uuid\n', store.state.account.company_uuid)
         if(batchDetails.value.initiatedByCompanyId === store.state.account.company_uuid) currentCompanyRole.value = 'Seller Admin'
         else currentCompanyRole.value = 'Buyer Admin'
       }
@@ -1496,6 +1491,18 @@ export default {
 
       //determine what action button should be showed in Batch Detail page
       if(batchDetails.value.workflowLed === 'Buyer Led') {
+        if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleApproveButton = true
+        else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS' && user.user_role === 'Funder Admin') {
+          const api = `bidding/v1/${batchDetails.value.workflowExecutionReferenceId}`
+          appAxios.get(api).then(res => {
+            if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
+            else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished.'
+          })
+        }
+        else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
+        else if(lastWorkStatus.value['statusName'] === 'REPAYMENT_INSTRUCTION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
+        else if(lastWorkStatus.value['statusName'] === 'REPAID_BY_BUYER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
 
       } else {
         if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true

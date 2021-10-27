@@ -42,7 +42,13 @@ const lang = {
   RECEIPT_OF_FIRST_FUNDS_DECLINED_BY_SELLER: 'Receipt of first funds declined by seller',
   REPAID_BY_BUYER: 'Repaid by buyer',
   RECEIPT_OF_REPAYMENT_DECLINED_BY_FUNDER: 'Receipt of repayment declined by funder',
-  RECEIPT_OF_FINAL_FUNDS_DECLINED_BY_SELLER: 'receipt of final funds declined by seller'
+  RECEIPT_OF_FINAL_FUNDS_DECLINED_BY_SELLER: 'Receipt of final funds declined by seller',
+  NOTIFICATION_SENT_TO_SELLER: 'Notification send to seller',
+  TRANSACTION_ACKNOWLEDGED_BY_SELLER: 'Transaction acknowledged by seller',
+  FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER: 'Fund disbursement instruction send to funder',
+  FUND_DISBURSED_BY_FUNDER: 'Fund disbursed by funder',
+  FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER: 'Fund disbursement notification send to seller',
+  RECEIPT_OF_FUND_ACKNOWLEDGED_BY_SELLER: 'Receipt of fund acknowledge by seller'
 }
 
 export default lang
