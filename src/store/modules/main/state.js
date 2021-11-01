@@ -2,7 +2,8 @@ const state = () => {
   return {
     darkMode: false,
     menu: [],
-    permissions: []
+    permissions: [],
+    ecoSystem: 'public'
   };
 };
 

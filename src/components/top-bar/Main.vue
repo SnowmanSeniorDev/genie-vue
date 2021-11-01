@@ -8,6 +8,21 @@
       <a href="" class="breadcrumb--active">Dashboard</a>
     </div>
     <!-- END: Breadcrumb -->
+    <!-- START: Eco system select -->
+    <div class="flex justify-center mr-4">
+      <div class="dropdown">
+        <button class="dropdown-toggle btn btn-primary" aria-expanded="false">
+          Public Eco System
+        </button>
+        <div class="dropdown-menu w-40">
+          <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
+            <a href="javascript:;" class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md">Public Eco System</a>
+            <a href="javascript:;" class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md">Private 1 Eco System</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: Eco system select -->
     <!-- BEGIN: Notifications -->
     <div class="intro-x dropdown mr-auto sm:mr-6">
       <div :class="`dropdown-toggle notification cursor-pointer ${unreadAlerts ? 'notification--bullet': ''}`" role="button" aria-expanded="false">
@@ -83,15 +98,15 @@
             </div>
           </div>
           <div class="p-2">
-            <a href="/account" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md">
+            <a href="/account" class="items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md">
               <UserIcon class="w-4 h-4 mr-2" /> Profile
             </a>
-            <a href="javascript:;" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md" @click="gotoUpdatePassword" >
+            <a href="javascript:;" class="items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md" @click="gotoUpdatePassword" >
               <LockIcon class="w-4 h-4 mr-2" /> Update Password
             </a>
           </div>
           <div class="p-2 border-t border-theme-27 dark:border-dark-3">
-            <a href="javascript:;" class="flex items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md" @click="logout">
+            <a href="javascript:;" class="items-center block p-2 transition duration-300 ease-in-out hover:bg-theme-1 dark:hover:bg-dark-3 rounded-md" @click="logout">
               <ToggleRightIcon class="w-4 h-4 mr-2" /> Logout
             </a>
           </div>
