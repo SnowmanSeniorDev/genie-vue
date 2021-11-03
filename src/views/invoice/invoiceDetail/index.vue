@@ -120,19 +120,19 @@
               <td class='border w-1/2'>Interest Rate (Annual Rate %)</td>
               <td class='border'>{{batchDetails.formula.interestRate}}%</td>
             </tr>
-            <tr class="hover:bg-gray-200' v-if='user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+            <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
               <td class='border'>Interest Earn</td>
               <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
             </tr> 
-            <tr class="hover:bg-gray-200' v-if='user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+            <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
               <td class='border'>Platform Fee Amount</td>
               <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
             </tr> 
-            <tr class="hover:bg-gray-200' v-if='user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+            <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
               <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
               <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
             </tr>  
-            <tr class="hover:bg-gray-200' v-if='user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+            <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
               <td class='border'>Balance Settlement Amount to Seller</td>
               <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
             </tr>  
@@ -746,53 +746,66 @@ export default {
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
     const invoiceDetailApi = async() => {
-      const bankApi = `/company/v1/${store.state.account.company_uuid}/bankaccounts`
-      await appAxios.get(bankApi).then(res => {
-        batchDetails.value.bankDetails.bank = _.find(res.data, {currency: batchDetails.value.currencyCode})
-      })
 
-      const batchBuyerApi = `/company/v1/${batchDetails.value.buyerCompanyId}`
-      await appAxios.get(batchBuyerApi).then(res => {
-        batchDetails.value.batchInformation.buyerCompany = res.data.companyDisplayName
-      })
+      return Promise.all([
+        new Promise((resolve) => {
+          const batchBuyerApi = `/company/v1/${batchDetails.value.buyerCompanyId}`
+          appAxios.get(batchBuyerApi).then(res => {
+            batchDetails.value.batchInformation.buyerCompany = res.data.companyDisplayName
+            resolve({buyerCompany: batchDetails.value.batchInformation.buyerCompany})
+          })
+        }),
+        new Promise((resolve) => {
+          const batchSellerApi = `/company/v1/${batchDetails.value.sellerCompanyId}`
+          appAxios.get(batchSellerApi).then(res => {
+            batchDetails.value.batchInformation.sellerCompany = res.data.companyDisplayName
+            resolve({sellerCompany: batchDetails.value.batchInformation.sellerCompany})
+          })
+        }),
+        new Promise((resolve) => {
+          const batchFunderApi = `/company/v1/${batchDetails.value.funderCompanyId}`
+          appAxios.get(batchFunderApi).then(res => {
+            batchDetails.value.batchInformation.funderCompany = res.data.companyDisplayName
+            resolve({funderCompany: batchDetails.value.batchInformation.funderCompany})
+          })
+        }),
+        new Promise((resolve) => {
+          const processingFeeApi = `/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`
+          appAxios.get(processingFeeApi).then(res => {
+            //calculate interest amount
+            let dueDt = moment(batchDetails.value.paymentDueDate)
+            let valueDt = moment(batchDetails.value.valueDate) 
+            let noOfDays = dueDt.diff(valueDt,'days')
+            batchDetails.value.numberOfDays = noOfDays
+            batchDetails.value.formula.interestAmount = (batchDetails.value.formula.interestRate * batchDetails.value.formula.repaymentAmountToFunder / 365 * noOfDays).toFixed(2)
 
-      if(batchDetails.value.sellerCompanyId !== '00000000-0000-0000-0000-000000000000'){
-        const batchSellerApi = `/company/v1/${batchDetails.value.sellerCompanyId}`
-        await appAxios.get(batchSellerApi).then(res => {
-          batchDetails.value.batchInformation.sellerCompany = res.data.companyDisplayName
+            var tax1 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId,label:'FirstDisbursableAmount'})
+            batchDetails.value.formula.disbursableAmount1 = tax1?.amountBeforeTax.toFixed(2)
+            batchDetails.value.formula.disburableAmount1DueDate = moment.utc(tax1?.dueDate).format(dateFormat)
+
+            var tax2 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId,label:'FinalDisbursableAmount'})
+            batchDetails.value.formula.disbursableAmount2 = tax2?.amountBeforeTax.toFixed(2)
+            batchDetails.value.formula.disburableAmount2DueDate = moment.utc(tax2?.dueDate).format(dateFormat)
+
+            var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
+            batchDetails.value.formula.platformFeeAmount = platformFee?.amountBeforeTax
+            batchDetails.value.formula.platformFeeDate = platformFee?.dueDate
+
+            resolve({
+              numberOfDays: noOfDays,
+              interestAmount: batchDetails.value.formula.interestAmount,
+              disbursableAmount1: batchDetails.value.formula.disbursableAmount1,
+              disburableAmount1DueDate: batchDetails.value.formula.disburableAmount1DueDate,
+              disbursableAmount2: batchDetails.value.formula.disbursableAmount2,
+              disburableAmount2DueDate: batchDetails.value.formula.disburableAmount2DueDate,
+              platformFeeAmount: batchDetails.value.formula.platformFeeAmount,
+              platformFeeDate: batchDetails.value.formula.platformFeeDate
+            })
+          })
         })
-      }
-      
-      if(batchDetails.value.funderCompanyId !== '00000000-0000-0000-0000-000000000000'){
-        const batchFunderApi = `/company/v1/${batchDetails.value.funderCompanyId}`
-        await appAxios.get(batchFunderApi).then(res => {
-          batchDetails.value.batchInformation.funderCompany = res.data.companyDisplayName
-        })
-      }
-
-      const processingFeeApi = `/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`
-      await appAxios.get(processingFeeApi).then(res => {
-          //calculate interest amount
-        let dueDt = moment(batchDetails.value.paymentDueDate)
-        let valueDt = moment(batchDetails.value.valueDate) 
-        let noOfDays = dueDt.diff(valueDt,'days')
-        batchDetails.value.numberOfDays = noOfDays
-        batchDetails.value.formula.interestAmount = (batchDetails.value.formula.interestRate * batchDetails.value.formula.repaymentAmountToFunder / 365 * noOfDays).toFixed(2)
-
-        var tax1 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId,label:'FirstDisbursableAmount'})
-        batchDetails.value.formula.disbursableAmount1 = tax1?.amountBeforeTax.toFixed(2)
-        batchDetails.value.formula.disburableAmount1DueDate = moment.utc(tax1?.dueDate).format(dateFormat)
-
-        var tax2 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId,label:'FinalDisbursableAmount'})
-        batchDetails.value.formula.disbursableAmount2 = tax2?.amountBeforeTax.toFixed(2)
-        batchDetails.value.formula.disburableAmount2DueDate = moment.utc(tax2?.dueDate).format(dateFormat)
-
-        var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
-        batchDetails.value.formula.platformFeeAmount = platformFee?.amountBeforeTax
-        batchDetails.value.formula.platformFeeDate = platformFee?.dueDate
+      ]).then(values => {
+        return values
       })
-
-      return new Promise(resolve => resolve('invoice Detail Api Done'))
     }
 
     const getLockDays = async () => {
@@ -855,7 +868,7 @@ export default {
 
     const getLastWorkflowStatus = async() => {
       const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
-      await appAxios.post(api, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
+      await appAxios.post(api, [props.workflowExecutionReferenceId]).then(res => {
         lastWorkStatus.value = res.data[0].workflow.lastStatusTransition
       })
 
@@ -1299,20 +1312,26 @@ export default {
         sellerLedWorkflowId = _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id V2'}).value
         paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow V2 Status With Payment Advice'}).value)
       })
-      
-      //getting invoice is seller led or buyer led
-      var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
-      appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
-        if(res.data[0].rootWorkflowId === buyerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
-        if(res.data[0].rootWorkflowId === sellerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
+
+      await Promise.all([
+        getLastWorkflowStatus(),
+        getCurrencyCode(),
+        getLockDays(),
+        invoiceDetailApi(),
+        function() {
+          var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
+          return appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
+            if(res.data[0].rootWorkflowId === buyerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
+            if(res.data[0].rootWorkflowId === sellerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
+            return batchDetails.value.workflowLed
+          })
+        }()
+      ]).then(values => {
+        console.log("promise all return value = ", values)
       })
-
-      //getting invoice detail data from journalbatch api endpoint
-      await invoiceDetailApi()
-
-      //get the last workflow status to use as compare value
-      await getLastWorkflowStatus()
+      
       loading.value.provenance = false
+      loading.value.batchDetail = false
       
       //determine current company is seller role or buyer role in this invoice
       if(batchDetails.value.workflowLed == 'Buyer Led') {
@@ -1341,7 +1360,7 @@ export default {
         else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
         else if(lastWorkStatus.value['statusName'] === 'REPAYMENT_INSTRUCTION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
         else if(lastWorkStatus.value['statusName'] === 'REPAID_BY_BUYER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
-
+      
       } else {
         if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
         else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS' && user.user_role === 'Funder Admin') {
@@ -1360,24 +1379,6 @@ export default {
       }
 
       console.log('visibleWorkflowActions = ', visibleWorkflowActions.value)
-      //getting currency code by using action modal currency select box
-      await getCurrencyCode()
-      //lock days consists of company holidays and it will be disabled in datepicker
-      await getLockDays()
-      const company_uuid = store.state.account.company_uuid
-      const dashboardApi = `/company/v1/${company_uuid}/dashboarddata`
-      await appAxios.get(dashboardApi).then(res => {
-        if(res.data.bidInvitations != null) {
-          let pendingBid = res.data.bidInvitations.open
-          if(pendingBid.workflowExecutionids.length > 0) {
-            for(let i=0;i<pendingBid.workflowExecutionids.length;i++){ 
-              if(pendingBid.workflowExecutionids[i] == props.workflowExecutionReferenceId){
-                visibleWorkflowActions.value.visibleSubmitProposal = true 
-              }
-            }
-          }
-        }
-      })
     }
     
     const updateProvenanceApi = () => {
