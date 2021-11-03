@@ -57,6 +57,20 @@
       >
         <PaperclipIcon class="w-4 h-4 mr-2" /> KYC Documents
       </a>
+      <a
+        id="user-list-tab"
+        data-toggle="tab"
+        data-target="#user-list"
+        href="javascript:;"
+        class="w-full sm:w-40 py-4 text-center flex justify-center items-center"
+        aria-selected="false"
+        @click="(e) => {
+          e.preventDefault()
+          panel = 'user-list'
+        }"
+      >
+        <UserIcon class="w-4 h-4 mr-2" /> User Lists
+      </a>
     </div>
     
     <div id="company-info" class="tab-pane p-5" :class="`${panel === 'company-info' ? 'block' : 'hidden'}`">
@@ -78,7 +92,10 @@
     </div>
     <div id="kyc-document" class="tab-pane p-5" :class="`${panel === 'kyc-document' ? 'block' : 'hidden'}`">
       <CompanyKycDocuments v-if="company_uuid" :companyId="company_uuid" />
-    </div>
+    </div> 
+    <div id="user-list" class="tab-pane p-5" :class="`${panel === 'user-list' ? 'block' : 'hidden'}`">
+      <CompanyUsers v-if="company_uuid" :companyId="company_uuid" />
+    </div> 
   </div>
 </template>
 
@@ -89,13 +106,15 @@ import CompanyProfile from '@/components/templates/CompanyProfile.vue'
 import CompanyBankInfo from '@/components/templates/CompanyBankInfo.vue'
 import CompanyCurrencySetting from '@/components/templates/CompanyCurrencySetting.vue'
 import CompanyKycDocuments from '@/components/templates/CompanyKycDocument.vue'
+import CompanyUsers from '@/components/templates/CompanyUsers.vue'
 
 export default {
   components: {
     CompanyProfile,
     CompanyBankInfo,
     CompanyCurrencySetting,
-    CompanyKycDocuments
+    CompanyKycDocuments,
+    CompanyUsers
   },
   setup() {
     const route = useRoute()
