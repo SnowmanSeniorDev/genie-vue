@@ -54,13 +54,13 @@
         </div>
         <img alt='' class='intro-x w-full h-48' :src='require(`@/assets/images/security-cuate.svg`)'/>
         <ProvenanceHisotry
-          v-if='!loading.provenance'
+          v-if="initComponent"
           :batchDetails='batchDetails'
           :paymentAdviceWorksStatus='paymentAdviceWorksStatus'
         />
       </div>
       <BatchDetails
-        v-if='!loading.provenance'
+        v-if="initComponent"
         :batchDetail='batchDetails'
         :workflowExecutionReferenceId='props.workflowExecutionReferenceId'
         :adminCompany='adminCompany'
@@ -129,11 +129,6 @@ export default {
     const valueDate = ref()
     const bidValue = ref(null)
     const paymentAdviceWorksStatus = ref([])
-    const loading = ref({
-      invoiceDetail: true,
-      provenance: true,
-      batchDetail: true
-    })
     const supportingDocumentAccordionIndex = ref([])
     const initComponent = ref(false)
 
@@ -197,8 +192,6 @@ export default {
         return batchDetails.value.workflowLed
       })
 
-      loading.value.provenance = false
-      loading.value.batchDetail = false
     }
 
     onMounted(async () => {
@@ -216,7 +209,6 @@ export default {
       dateTimeFormat,
       initComponent,
       journalBatchEntry,
-      loading,
       moment,
       paymentAdviceWorksStatus,
       supportingDocumentAccordionIndex,
