@@ -53,61 +53,12 @@
           <LockIcon class='w-6 h-6 mr-3' /><span class='text-lg'>Provenance</span>
         </div>
         <img alt='' class='intro-x w-full h-48' :src='require(`@/assets/images/security-cuate.svg`)'/>
-        <div v-if='loading.provenance' class='py-16'>
-          <div class='w-full h-8 px-8'>
-            <LoadingIcon icon='spinning-circles' color='gray' class='w-4 h-4 py-8' />
-          </div>
-        </div>
-        <div v-else class='report-timeline mt-5 relative'>
-          <div v-for='(item, index) in provenance' class='intro-x relative flex items-start pb-5' :key='index'>
-            <div class='w-6 h-6 shadow-lg flex-none image-fit rounded-full overflow-hidden bg-gray-500 ml-2'></div>
-            <div class='px-5 ml-4 flex-1'> 
-              <div v-if='item.loading' class='flex items-center'>
-                <div
-                  class='alert show flex items-center h-5 p-3 text-sm justify-center alert-secondary'
-                  role='alert'
-                >
-                  <LoadingIcon icon="puff" color="gray" class="w-3 h-3 mr-2" />
-                  <span class='pr-3'>Verifying</span> 
-                </div>
-              </div>
-              <div v-else class='flex items-center'>
-                <div
-                  v-if="item.state == 'Completed'"
-                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${item.verified? 'bg-green-200' : 'bg-red-300' }`"
-                  role='alert'
-                >
-                  <ShieldIcon v-if="item.verified && !item.loading" class="w-3 h-3 mr-3"/>
-                  <ShieldOffIcon v-else class="w-3 h-3 mr-3" />
-                  <span v-if="item.loading" class="pr-3">
-                    <span>Verifying</span>
-                  </span>
-                  <span v-else>
-                    <span v-if="item.verified">Verified</span>
-                    <span v-else>Not Verified</span>
-                  </span>
-                </div> 
-                <div
-                  v-else
-                  :class="`alert show flex items-center h-5 p-3 text-sm justify-center ${item.firstPending ? 'bg-yellow-200' : 'bg-gray-200'}`"
-                  role='alert' 
-                >
-                  <SendIcon class='w-3 h-3 mr-3'/>
-                  <span v-if="item.firstPending" class='pr-3'>Pending</span>
-                  <span v-else class='pr-3'>Not Started</span>
-                </div>
-                <div class='items-center'>
-                  <span class='font-bold ml-3'>{{ProvenanceLang[item.statusName]}}</span> 
-                  <div v-if='item.updateTime != undefined' class='text-gray-500 ml-3'>Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
-                  <div class='text-gray-500 ml-3' v-if="batchDetails.bidEndTime != undefined && item.statusName=='INVITATION_SEND_TO_FUNDERS'">
-                    Approval by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
-                  </div>
-                </div>
-              </div>
-              <hr class='mt-5' />
-            </div>
-          </div>
-        </div>
+        <ProvenanceHisotry
+          v-if='!loading.provenance'
+          :batchDetails='batchDetails'
+          :paymentAdviceWorksStatus='paymentAdviceWorksStatus'
+          :lastWorkStatus='lastWorkStatus'
+        />
       </div>
       <div class='intro-y box p-5 mt-5'>
         <div class='flex items-center'>
@@ -679,11 +630,13 @@ import { useStore } from 'vuex'
 import SignaturePad from 'vue3-signature-pad'
 import moment from 'moment'
 import _ from 'lodash'
-import { sysAxios, appAxios } from '@/plugins/axios'
-import Documents from './Documents'
 import { useDropzone } from 'vue3-dropzone'
-import ProvenanceLang from '@/utils/provenanceLanguage'
 import Toastify from 'toastify-js'
+
+import { sysAxios, appAxios } from '@/plugins/axios'
+import ProvenanceLang from '@/utils/provenanceLanguage'
+import Documents from './Documents'
+import ProvenanceHisotry from './Provenance'
 
 export default {
   props: {
@@ -694,6 +647,7 @@ export default {
   },
   components: {
     Documents,
+    ProvenanceHisotry,
     SignaturePad
   },
   setup(props) {
@@ -702,9 +656,7 @@ export default {
     const transactionType = ref()
     const journalBatchEntry = ref()
     const adminCompany = ref()
-    const initWorkflowId = ref([])
-    const provenance = ref([])
-    const provenancePendingStatusIndex = ref(0)
+    
     const batchMessage = ref('')
     const visibleWorkflowActions = ref({
       visibleApproveButton: false,
@@ -713,7 +665,6 @@ export default {
       visibleSellerAcknowledgeOfReceiveDisbursement: false,
       visibleBuyerUploadRepaymentAdvice: false,
       visibleFunderAcknowledgeRepaymentAdvice: false,
-
     })
     const dateFormat = process.env.VUE_APP_DATE_FORMAT
     const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
@@ -760,7 +711,6 @@ export default {
     const valueDate = ref()
     const bidValue = ref(null)
     const files = ref()
-    const verifyRequestBody = ref({})
     const signatureLoading = ref(false)
     const modalLoading = ref(false)
     const disbursementData = ref({
@@ -843,87 +793,6 @@ export default {
       })
 
       return new Promise(resolve => resolve('invoice Detail Api Done'))
-    }
-
-    const provenanceApi = async () => {
-      var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
-      await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
-        if(res.data[0].rootWorkflowId === initWorkflowId.value.sellerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
-        if(res.data[0].rootWorkflowId === initWorkflowId.value.buyerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
-
-        paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
-
-        provenancePendingStatusIndex.value = res.data[0].workflows.length
-        console.log('provenance api response\n', res.data)
-        _.map(res.data[0].workflows, (item) => {
-          let subProvenance = item.statusTransitions
-          subProvenance = subProvenance.sort((a, b) => {
-            if(a.order === b.order) return 0
-            else if(a.order > b.order) return 1
-            else return -1
-          })
-          provenance.value.push(...subProvenance)
-        })
-
-        console.log('provenance flated\n', provenance.value)
-
-        for(var i=0; i<provenance.value.length - 1; i++) {
-          if( provenance.value[i].statusName === lastWorkStatus.value.statusName ) provenance.value[i + 1]['firstPending'] = true
-        }
-      })
-      
-      const paymentAdviceData = await appAxios.get(`/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`).then(res => {
-        return res.data
-      })
-      await Promise.all(
-        provenance.value.map(async status => {
-          var paymentAdvice = null
-          if(status.state === 'Completed') {
-            if(paymentAdviceWorksStatus.value.includes(status.statusName) && paymentAdviceData.length) {
-              let paymentAdviceEntity = paymentAdviceData.filter((workflow) => {
-                return workflow.extraData.workflowStatusName === status.statusName
-              })
-              if(paymentAdviceEntity.length){
-                await sysAxios.get(`${paymentAdviceEntity[0].paymentAdviceUri}/info`).then(res => {
-                  paymentAdvice = {paymentAdviceFileName: res.data.fileName, dataHash: {...res.data.dataHash}}
-                })
-                verifyRequestBody.value.TransactionWorkflowStatuses.push({
-                  'status': status.statusName,
-                  'datetimeutc': moment(status.updateTime).valueOf(),
-                  'identity': status.updateBy,
-                  'paymentAdvice': {...paymentAdvice},
-                })
-              }
-            } else {
-              verifyRequestBody.value.TransactionWorkflowStatuses.push({
-                'status': status.statusName,
-                'datetimeutc': moment(status.updateTime).valueOf(),
-                'identity': status.updateBy,
-                'paymentAdvice': null,
-              })
-            }
-          }
-        })
-      )
-      let workStatusList = []
-      verifyRequestBody.value.TransactionWorkflowStatuses.forEach(async (workStatus, index) => {
-        workStatusList = []
-        loading.value.provenance = true
-        provenance.value[index].loading= true
-        Object.keys(workStatus).forEach(async k => (workStatus[k] == null || typeof workStatus[k] == 'undefined') && delete workStatus[k])
-
-        workStatusList.push(workStatus)
-        await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`,workStatusList ).then(res => {
-          provenance.value[index].verified = res.data[0].verificationStatus
-          provenance.value[index].loading= false
-          if(!res.data[0].verificationStatus) {
-            errorStepsMsg.value ='Data Verification failed, the Database data has been compromise. Please contact Genie Support for further action.'
-            return
-          }
-        })
-      })
-      loading.value.provenance = false
-      return new Promise(resolve => resolve('provenance api function done'))
     }
 
     const getLockDays = async () => {
@@ -1045,7 +914,6 @@ export default {
             if(res.status === 200) {
               cash('#approve-invoice-modal').modal('hide')
               visibleWorkflowActions.value.visibleApproveButton = false
-              provenancePendingStatusIndex.value ++
             }
             loading.value.provenance = true
             updateProvenanceApi()
@@ -1055,20 +923,19 @@ export default {
     }
 
     const declineAcknowledge = async () => { 
-        if(currentCompanyRole.value === 'System Admin') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
-        if(currentCompanyRole.value === 'System Admin') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
-        appAxios.post(api, {
-          externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
-          remark: remark.value,
-          signatureUri: signatureFileUrl.value
-        }).then(res => {
-          if(res.status === 200) {
-            visibleWorkflowActions.value.visibleApproveButton.value = false
-            provenancePendingStatusIndex.value ++
-            loading.value.provenance = true
-            updateProvenanceApi()
-          }
-        }) 
+      if(currentCompanyRole.value === 'System Admin') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
+      if(currentCompanyRole.value === 'System Admin') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
+      appAxios.post(api, {
+        externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
+        remark: remark.value,
+        signatureUri: signatureFileUrl.value
+      }).then(res => {
+        if(res.status === 200) {
+          visibleWorkflowActions.value.visibleApproveButton.value = false
+          loading.value.provenance = true
+          updateProvenanceApi()
+        }
+      }) 
     }
 
     const submitProposal = async () => {
@@ -1418,52 +1285,26 @@ export default {
         batchDetails.value.numberOfDays = noOfDays
         batchDetails.value = {...batchDetails.value, ...batch}
       })
+
+      //getting documents of invoice
+      journalBatchEntry.value = await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => res.data)
       
-      verifyRequestBody.value = {
-        batchId: batchDetails.value.batchNumber,
-        batchTotal: batchDetails.value.batchInformation.totalAmount,
-        batchCurrency: batchDetails.value.currencyCode,
-        batchEntriesBreakup: [{
-          entryType: 'INV',
-          entryQuantity: batchDetails.value.numberOfBatchEntries
-        }],
-        batchEntries: [],
-        TransactionWorkflowStatuses: []
-      }
-
-      await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => {
-        journalBatchEntry.value = res.data
-        res.data.forEach(async entry => {
-          const api = `/journalbatch/v1/header/${entry.journalBatchHeaderId }/entry/${entry.journalBatchEntryId }/supportingdocuments`
-          let supportingDocument = []
-          await appAxios.get(api).then(res => {
-            res.data.forEach(async document => {
-              const fileData = await appAxios.get(document.documentURI + '/info').then(res => {
-                return res.data
-              })
-              supportingDocument.push({
-                'supportingdocumentname': document.documentName,
-                'supportingdocumentcategory': 'Supporting Document',
-                'identity': fileData.uploadByUserId,
-                'datetimeutc': moment.utc(document.uploadTime).format('X'),
-                'dataHash': fileData.dataHash,
-              })
-            })
-          })
-          verifyRequestBody.value.batchEntries.push({
-            entryId: entry.documentNumber,
-            entryType: entry.documentType,
-            supportingDocument: supportingDocument
-          })
-        })
-      })
-
+      //getting global values to use invoice detail page
       const genieGlobalSetting = `configuration/v1/Genie Global Settings`
+      let buyerLedWorkflowId = ''
+      let sellerLedWorkflowId = ''
       await sysAxios.get(genieGlobalSetting).then(res => {
         adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
-        initWorkflowId.value = {...initWorkflowId.value, buyerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id V2'}).value}
-        initWorkflowId.value = {...initWorkflowId.value, sellerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id V2'}).value}
+        buyerLedWorkflowId = _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id V2'}).value
+        sellerLedWorkflowId = _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id V2'}).value
         paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow V2 Status With Payment Advice'}).value)
+      })
+      
+      //getting invoice is seller led or buyer led
+      var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
+      appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
+        if(res.data[0].rootWorkflowId === buyerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
+        if(res.data[0].rootWorkflowId === sellerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
       })
 
       //getting invoice detail data from journalbatch api endpoint
@@ -1471,9 +1312,7 @@ export default {
 
       //get the last workflow status to use as compare value
       await getLastWorkflowStatus()
-
-      //getting current batch workflow status and getting verify the current workflow from verify endpoint
-      await provenanceApi()
+      loading.value.provenance = false
       
       //determine current company is seller role or buyer role in this invoice
       if(batchDetails.value.workflowLed == 'Buyer Led') {
@@ -1528,9 +1367,6 @@ export default {
       const company_uuid = store.state.account.company_uuid
       const dashboardApi = `/company/v1/${company_uuid}/dashboarddata`
       await appAxios.get(dashboardApi).then(res => {
-        let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction
-        let pendingAction = {} 
-        
         if(res.data.bidInvitations != null) {
           let pendingBid = res.data.bidInvitations.open
           if(pendingBid.workflowExecutionids.length > 0) {
@@ -1544,15 +1380,8 @@ export default {
       })
     }
     
-    const updateProvenanceApi = async () => {
-      const genieGlobalSetting = `configuration/v1/Genie Global Settings`
-      await sysAxios.get(genieGlobalSetting).then(res => {
-        adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
-        initWorkflowId.value = {...initWorkflowId.value, buyerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id'}).value}
-        initWorkflowId.value = {...initWorkflowId.value, sellerLedWorkflowId: _.find(res.data[0].configurations, {name: 'Seller Led Workflow Id'}).value}
-        paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow Status With Payment Advice'}).value)
-      })
-      await provenanceApi()
+    const updateProvenanceApi = () => {
+      console.log("need to reload provenance API")
     }
 
     onMounted(async () => {
@@ -1561,62 +1390,60 @@ export default {
     })
     
     return { 
-      currentLoginCompanyId,
-      errorStepsMsg, 
-      dateFormat,
-      dateTimeFormat,
-      transactionType,
-      loading,
-      journalBatchEntry,
-      moment,
-      provenance,
-      lastWorkStatus,
-      provenancePendingStatusIndex,
+      _,
+      accordion,
+      approveAcknowledge,
       batchDetails,
       batchMessage,
-      visibleWorkflowActions,
-      currencies,
-      user,
       bidValue,
-      valueDate,
-      remark,
-      disbursementData,
-      confirmAbleDisbursementData,
-      confirmFunderAcknowledgeReceiveOfRepaymentData,
-      approveAcknowledge,
-      declineAcknowledge,
-      submitProposal,
-      submitDisbursmentAdvice,
-      setDisbursmentCurrencyCode,
       BuyerUploadRepaymentAdvice,
-      FunderUploadRepaymentAdvice,
-      openSellerAcknowledgeOfReceiveDisbursementModel,
-      openFunderAcknowledgeUploadRepaymentAdviceModel,
-      sellerAcknowledgeOfReceiveDisbursement,
+      clearSignature,
+      confirmFunderAcknowledgeReceiveOfRepaymentData,
+      confirmAbleDisbursementData,
+      currencies,
+      currentLoginCompanyId,
+      dateFormat,
+      disbursementData,
+      dateTimeFormat,
+      declineAcknowledge,
+      errorStepsMsg, 
+      files,
       funderAcknowledgeOfRepaymentComfirm,
       funderAcknowledgeOfRepaymentDecline,
-      getRootProps,
+      FunderUploadRepaymentAdvice,
       getInputProps,
-      files,
+      getEstimateCalc,
+      getRootProps,
+      initComponent,
+      journalBatchEntry,
+      lastWorkStatus,
+      loading,
+      lockDays,
+      moment,
+      modalLoading,
+      openSellerAcknowledgeOfReceiveDisbursementModel,
+      openFunderAcknowledgeUploadRepaymentAdviceModel,
+      onInput,
+      paymentAdviceWorksStatus,
+      ProvenanceLang,
+      remark,
       removeFile,
+      saveSignature,
+      sellerAcknowledgeOfReceiveDisbursement,
+      setDisbursmentCurrencyCode,
       signaturePad,
       signatureDataURL,
       signatureFile,
-      clearSignature,
-      undoSignature,
-      saveSignature,
-      onInput,
       signatureLoading,
-      modalLoading,
+      submitProposal,
+      submitDisbursmentAdvice,
       supportingDocumentAccordionIndex,
-      accordion,
-      _,
-      ProvenanceLang,
-      initComponent,
-      lockDays,
-      getEstimateCalc,
-      uploadErrorMessage
-
+      transactionType,
+      undoSignature,
+      uploadErrorMessage,
+      user,
+      visibleWorkflowActions,
+      valueDate,
     }
   },
 }
