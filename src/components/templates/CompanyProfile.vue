@@ -174,12 +174,14 @@
       </div>
     </div>
     <button class="btn btn-primary mt-8 px-8" @click="save">Save</button>
+    <button class="btn btn-danger mt-8 px-8" @click="deleteCompany">Delete Company</button>
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from "vue";
 import { appAxios } from "@/plugins/axios";
+import { useRouter } from 'vue-router';
 export default {
   props: {
     companyId: {
@@ -188,6 +190,8 @@ export default {
     },
   },
   setup(props) {
+    
+    const router = useRouter()
     const companyProfile = ref({
 			companyDisplayName: '',
 			companyLegalName: '',
@@ -203,6 +207,16 @@ export default {
 			phone: '',
 			primaryEmail: '',
 		})
+
+    const deleteCompany = () => {
+      const api = `company/v1/${companyProfile.value.companyId}`
+      appAxios.delete(api).then(res => {
+        if(res)
+        {
+          router.push({path: `/companies`})
+        }
+      })
+    }
 
     const save = () => {
       const api = `company/v1/${companyProfile.value.companyId}`
@@ -223,7 +237,8 @@ export default {
 
     return {
       companyProfile,
-      save
+      save,
+      deleteCompany
     };
   },
 };
