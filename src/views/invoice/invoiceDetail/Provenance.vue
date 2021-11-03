@@ -73,10 +73,6 @@ export default {
       type: Object,
       required: true
     },
-    lastWorkStatus: {
-      type: Object,
-      required: true
-    }
   },
   setup(props) {
     const loading = ref(true)
@@ -96,13 +92,23 @@ export default {
       batchEntries: [],
       TransactionWorkflowStatuses: []
     })
+    const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
+
+    const getLastWorkflowStatus = async() => {
+      const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
+      await appAxios.post(api, [batchDetails.value.workflowExecutionReferenceId]).then(res => {
+        lastWorkStatus.value = res.data[0].workflow.lastStatusTransition
+      })
+
+      return new Promise(resolve => resolve('get last workflow status done'))
+    }
 
     const provenanceApi = async() => {
+      await getLastWorkflowStatus()
       var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
         paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
         provenancePendingStatusIndex.value = res.data[0].workflows.length
-        console.log('provenance api response\n', res.data)
         _.map(res.data[0].workflows, (item) => {
           let subProvenance = item.statusTransitions
           subProvenance = subProvenance.sort((a, b) => {
@@ -112,8 +118,6 @@ export default {
           })
           provenance.value.push(...subProvenance)
         })
-
-        console.log('provenance flated\n', provenance.value)
 
         for(var i=0; i<provenance.value.length - 1; i++) {
           if( provenance.value[i].statusName === lastWorkStatus.value.statusName ) provenance.value[i + 1]['firstPending'] = true
@@ -183,7 +187,8 @@ export default {
       loading,
       provenance,
       ProvenanceLang,
-      moment
+      moment,
+      dateTimeFormat
     }
   },
 }
