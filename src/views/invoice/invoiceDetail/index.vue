@@ -684,7 +684,6 @@ import Documents from './Documents'
 import { useDropzone } from 'vue3-dropzone'
 import ProvenanceLang from '@/utils/provenanceLanguage'
 import Toastify from 'toastify-js'
-import { copySource } from '../../global-components/highlight'
 
 export default {
   props: {
