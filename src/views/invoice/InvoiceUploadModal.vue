@@ -31,7 +31,7 @@
                   </div>
                 </div>
               </div>
-              <div class="flex items-center md:mt-0">
+              <div class="flex items-center md:mt-0" v-if="defaultEcosystemId === '00000000-0000-0000-0000-000000000000'">
                 <label for="bid-end-time" class="md:pl-4 pr-4">Bid End Time</label>
                 <DatePicker v-model="bidEndTime" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
                   <template v-slot="{ inputValue, inputEvents }">
@@ -349,22 +349,29 @@ export default {
     }
     
     // to getting the upload invoice url and private ecosystem detail
-    // current it's not clear because there is multiple workflowStatuses.
-    // for now getting first index of workflowstatuses's statusUpdateHandlerAPIEndpoint field.
-    // also it doesn't correct for the private ecosystem
     const getPrivateEcosystemDetail = () => {
       return new Promise( async resolve => {
-        const ecosystem = await appAxios.get('/company/v1/ecosystems').then(res => {
-          return _.find(res.data, {ecosystemId: store.state.main.defaultEcosystem.ecosystemId})
-        })
-        const rlt = await appAxios.get('/workflow/v2').then(res => {
-          return {
-            ecosystem: ecosystem,
-            buyerLedUploadUrl: _.find(res.data, {workflowId: ecosystem.buyerLedWorkflowId}).workflowStatuses[0].statusUpdateHandlerAPIEndpoint.replace('/api/genie', ''),
-            sellerLedUploadUrl: _.find(res.data, {workflowId: ecosystem.sellerLedWorkflowId}).workflowStatuses[0].statusUpdateHandlerAPIEndpoint.replace('/api/genie', ''),
-          }
-        })
+        const ecosystem = await appAxios.get(`/company/v1/ecosystems/${store.state.main.defaultEcosystem.ecosystemId}`).then(res => res.data)
+        var buyerLedWorkflowAPIEndpoint = ''
+        var sellerLedWorkflowAPIEndpoint = ''
+        
+        if(ecosystem.buyerLedWorkflowId !== '00000000-0000-0000-0000-000000000000') {
+          buyerLedWorkflowAPIEndpoint = await appAxios.get(`/workflow/v2/${ecosystem.buyerLedWorkflowId}`).then(res => {
+            return res.data.workflowStatuses[0].statusUpdateHandlerAPIEndpoint
+          })
+        } 
+        
+        if(ecosystem.sellerLedWorkflowId !== '00000000-0000-0000-0000-000000000000') {
+          sellerLedWorkflowAPIEndpoint = await appAxios.get(`/workflow/v2/${ecosystem.sellerLedWorkflowId}`).then(res => {
+            return res.data.workflowStatuses[0].statusUpdateHandlerAPIEndpoint
+          })
+        }
 
+        const rlt = {
+          ecosystem: ecosystem,
+          buyerLedUploadUrl: buyerLedWorkflowAPIEndpoint,
+          sellerLedUploadUrl: sellerLedWorkflowAPIEndpoint
+        }
         resolve(rlt)
       })
       
@@ -377,6 +384,7 @@ export default {
       var requestBodys = [];
 
       if(store.state.main.defaultEcosystem.ecosystemId === '00000000-0000-0000-0000-000000000000') {
+        //This is public ecosystem
         //preparing invoice upload request body
         if(workflowLed.value === 'Buyer Led') {
           api = "/workflow/v2/buyer-led-invoice-financing-workflow-0/0"
@@ -441,8 +449,11 @@ export default {
           return;
         }
       } else {
+        //This is private Ecosystem
         const PrivateEcosystem = await getPrivateEcosystemDetail()
-        api = "/workflow/v2/buyer-led-v2-eco-0/0"
+        if(workflowLed.value === 'Buyer Led') api = PrivateEcosystem.buyerLedUploadUrl
+        else api = PrivateEcosystem.sellerLedUploadUrl
+
         invoicesBatch.value.map(async batch => {
           var journalBatchEntries = []
           batch.invoices.map( async invoice => {
@@ -504,7 +515,6 @@ export default {
     const fileChoosen = async (event) => {
       const fileUploadApi = 'uploads/v1/invoice_batch';
       let formData = new FormData();
-      // if(!event.target.files.length) return;
       if(event.target.files.length) {
         formData.append('file', event.target.files[0])
         uploadedFileId.value = await sysAxios.post(fileUploadApi, formData, {
@@ -516,29 +526,15 @@ export default {
 
     const init = async () => {
       await getCompanyBankAccounts()
-      if(store.state.main.defaultEcosystem.ecosystemId !== '00000000-0000-0000-0000-000000000000') {
-        documentFormats.value = [
-          {
-            dataSourceSystemId: "772fd3b3-11fa-4389-1f68-08d98d2c0b89",
-            dataSourceSystemName: "Eco0 Aged Payables",
-            fileType: ".pdf",
-          }
-        ]
-      } else {
-        documentFormats.value = await appAxios.get(`/company/v1/${store.state.account.company_uuid}/datasourcesystem`).then(res => res.data)
-      }
+      const datasourceAPI = `/company/v1/${store.state.main.defaultEcosystem.ecosystemId}/${store.state.account.company_uuid}/datasourcesystem`
+      documentFormats.value = await appAxios.get(datasourceAPI).then(res => res.data)
       loading.value = false
     }
 
     watchEffect(() => {
-      if(store.state.main.defaultEcosystem.ecosystemId !== '00000000-0000-0000-0000-000000000000') {
-        documentFormats.value = [
-          {
-            dataSourceSystemId: "772fd3b3-11fa-4389-1f68-08d98d2c0b89",
-            dataSourceSystemName: "Eco0 Aged Payables",
-            fileType: ".pdf",
-          }
-        ]
+      if(store.state.main.defaultEcosystem.ecosystemId !== defaultEcosystemId.value) {
+        defaultEcosystemId.value = store.state.main.defaultEcosystem.ecosystemId
+        init()
       }
     })
 
@@ -554,6 +550,7 @@ export default {
       documentFormat,
       companyTypeHeader,
       workflowLed,
+      defaultEcosystemId,
       documentFormats,
       bankAccount,
       setDocumentFromat,

@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watchEffect, watch } from 'vue'
+import { ref, onMounted, watchEffect } from 'vue'
 import { useStore } from 'vuex'
 import { appAxios } from '@/plugins/axios'
 
