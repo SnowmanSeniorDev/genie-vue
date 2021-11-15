@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, ref } from 'vue'
+import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import { useStore } from 'vuex'
 import moment from 'moment'
 import _ from 'lodash'
@@ -100,13 +100,17 @@ export default defineComponent({
   setup() {
     const dateFormat = process.env.VUE_APP_DATE_FORMAT
     const store = useStore()
+    const defaultEcosystemId = ref(store.state.main.defaultEcosystem.ecosystemId)
+    const company_uuid = store.state.account.company_uuid
     const holidays = ref([])
     const pendingActions = ref([])
 
-    onMounted(async () => {
-      const company_uuid = store.state.account.company_uuid
+    const init = async () => {
+      pendingActions.value = []
+      let dashboardApi = ''
+      if(defaultEcosystemId.value === '00000000-0000-0000-0000-000000000000') dashboardApi = `/company/v1/${company_uuid}/dashboarddata`
+      else dashboardApi = `/company/v1/ecosystem/${defaultEcosystemId.value}/${company_uuid}/dashboarddata`
 
-      const dashboardApi = `/company/v1/${company_uuid}/dashboarddata`
       if(company_uuid !== '00000000-0000-0000-0000-000000000000') {
         await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
           holidays.value = _.filter(res.data, (holiday) => {return new Date(holiday.date) > new Date()})
@@ -152,6 +156,17 @@ export default defineComponent({
           }
         })
       }
+    }
+
+    watchEffect(() => {
+      if(store.state.main.defaultEcosystem.ecosystemId !== defaultEcosystemId.value) {
+        defaultEcosystemId.value = store.state.main.defaultEcosystem.ecosystemId
+        init()
+      }
+    })
+
+    onMounted(async () => {
+      init()
     })
 
     return {

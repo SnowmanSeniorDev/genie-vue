@@ -177,6 +177,7 @@ export default {
       const genieGlobalSetting = `configuration/v1/Genie Global Settings`
       let buyerLedWorkflowId = ''
       let sellerLedWorkflowId = ''
+
       await sysAxios.get(genieGlobalSetting).then(res => {
         adminCompany.value = _.find(res.data[0].configurations, {name: 'Admin Company Id'}).value
         buyerLedWorkflowId = _.find(res.data[0].configurations, {name: 'Buyer Led Workflow Id V2'}).value
@@ -184,7 +185,13 @@ export default {
         paymentAdviceWorksStatus.value = JSON.parse(_.find(res.data[0].configurations, {name: 'Workflow V2 Status With Payment Advice'}).value)
       })
 
-      
+      //getting buyer and seller workflow id from ecosystem endpoint instead of global config in case the batch is on the private ecosystem
+      if(batchDetails.value.ecosystemId !== '00000000-0000-0000-0000-000000000000') {
+        const ecosystem = await appAxios.get(`/company/v1/ecosystems/${batchDetails.value.ecosystemId}`).then(res => res.data)
+        buyerLedWorkflowId = ecosystem.buyerLedWorkflowId
+        sellerLedWorkflowId = ecosystem.buyerLedWorkflowId
+      }
+
       var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
         if(res.data[0].rootWorkflowId === buyerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'

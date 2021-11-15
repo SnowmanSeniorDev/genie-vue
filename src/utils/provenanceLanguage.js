@@ -48,7 +48,8 @@ const lang = {
   FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER: 'Fund disbursement instruction send to funder',
   FUND_DISBURSED_BY_FUNDER: 'Fund disbursed by funder',
   FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER: 'Fund disbursement notification send to seller',
-  RECEIPT_OF_FUND_ACKNOWLEDGED_BY_SELLER: 'Receipt of fund acknowledge by seller'
+  RECEIPT_OF_FUND_ACKNOWLEDGED_BY_SELLER: 'Receipt of fund acknowledge by seller',
+  NOTIFICATION_SENT_TO_FUNDER: 'Notification send to funder'
 }
 
 export default lang

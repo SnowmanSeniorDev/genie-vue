@@ -107,7 +107,8 @@ export default {
       await getLastWorkflowStatus()
       var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
-        paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames 
+        paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames
+        console.log(res.data)
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         _.map(res.data[0].workflows, (item) => {
           let subProvenance = item.statusTransitions

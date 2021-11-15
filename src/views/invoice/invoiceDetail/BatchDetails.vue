@@ -448,7 +448,6 @@
             </div>
           </div>
           <div class='grid grid-cols-2 grid-flow-row gap-4'>
-            
             <div class='self-center'>Payment Advice Number</div>
             <div class='self-center'>
               <input type='text' v-model='disbursementData.paymentAdviceNumber' class='form-control'/>
@@ -462,7 +461,6 @@
               <button class='dropdown-toggle btn btn-primary mr-1' aria-expanded='false'> {{disbursementData.currencyCode}} </button>
               <div class='dropdown-menu' id='currencyCodeDropDown' style='z-index: 10001;'>
                 <div class='dropdown-menu__content box dark:bg-dark-1 p-2'>
-                  
                   <a v-for='(currency, index) in currencies' :key='index'
                     href='javascript:;'
                     class='block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md'
@@ -663,6 +661,7 @@ export default {
     const getLastWorkflowStatus = async() => {
       const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
       await appAxios.post(api, [props.workflowExecutionReferenceId]).then(res => {
+        console.log('limittolaststatustransition = ', res.data)
         lastWorkStatus.value = res.data[0].workflow.lastStatusTransition
       })
 
@@ -861,8 +860,14 @@ export default {
       })
     }
 
+    const getStatusUpdateHandlerAPIEndpoint = async () => {
+      console.log('lastwork status = ', lastWorkStatus.value)
+    }
+
     const approveAcknowledge = async () => { 
       modalLoading.value = true
+      getStatusUpdateHandlerAPIEndpoint()
+      return
       await saveSignature().then( async() => {  
         if(signatureFileUrl.value == null) {
           uploadErrorMessage.value = 'Your signature is required!'
@@ -1170,6 +1175,7 @@ export default {
       console.log("last work status  = ", lastWorkStatus.value['statusName'])
       console.log("current user role = ", user.user_role)
       console.log("current company role = ", currentCompanyRole.value)
+      console.log("batchdetails workflow led = ", batchDetails.value.workflowLed)
 
       //determine what action button should be showed in Batch Detail page
       if(batchDetails.value.workflowLed === 'Buyer Led') {
@@ -1185,6 +1191,8 @@ export default {
         else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
         else if(lastWorkStatus.value['statusName'] === 'REPAYMENT_INSTRUCTION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
         else if(lastWorkStatus.value['statusName'] === 'REPAID_BY_BUYER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
+
+        //for the private ecosystem action case check
       
       } else {
         if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
