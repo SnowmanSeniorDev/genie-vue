@@ -59,8 +59,14 @@
           :paymentAdviceWorksStatus='paymentAdviceWorksStatus'
         />
       </div>
-      <BatchDetails
-        v-if="initComponent"
+      <PublicBatchDetails
+        v-if="initComponent && batchDetails.ecosystemId === '00000000-0000-0000-0000-000000000000'"
+        :batchDetail='batchDetails'
+        :workflowExecutionReferenceId='props.workflowExecutionReferenceId'
+        :adminCompany='adminCompany'
+      />
+      <Eco0BatchDetails
+        v-if="initComponent && batchDetails.ecosystemId !== '00000000-0000-0000-0000-000000000000'"
         :batchDetail='batchDetails'
         :workflowExecutionReferenceId='props.workflowExecutionReferenceId'
         :adminCompany='adminCompany'
@@ -77,7 +83,8 @@ import _ from 'lodash'
 import { sysAxios, appAxios } from '@/plugins/axios'
 import Documents from './Documents'
 import ProvenanceHisotry from './Provenance'
-import BatchDetails from './BatchDetails.vue'
+import PublicBatchDetails from './batchDetails/Public.vue'
+import Eco0BatchDetails from './batchDetails/Eco0.vue'
 
 export default {
   props: {
@@ -89,7 +96,8 @@ export default {
   components: {
     Documents,
     ProvenanceHisotry,
-    BatchDetails,
+    PublicBatchDetails,
+    Eco0BatchDetails
   },
   setup(props) {
     
