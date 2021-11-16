@@ -129,6 +129,14 @@
               <div class='self-center'>{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
+              <div class='self-center'>Select Disbursement Bank Account</div>
+              <div class='self-center'>
+                <select v-model="disbursableBankAccount" class="form-select">
+                  <option v-for="bank in bankAccounts" :key="bank.bankAccountId" :value="bank.bankAccountId">
+                    {{bank.accountNumber}} ({{bank.bankName}})
+                  </option>
+                </select>
+              </div>
               <div class='self-center'>Remark</div>
               <div class='self-center'>
                 <textarea v-model='remark' class='border-2 w-full' rows='3' />
@@ -137,7 +145,7 @@
             <SignaturePad v-model="signature"/>
           </div>
           <div class='modal-footer text-right'>
-            <button type='button' class='btn btn-primary w-24 mr-1' @click='funderApproveAcknowledge' :disabled='modalLoading'>
+            <button type='button' class='btn btn-primary w-24 mr-1' @click='approveAcknowledge' :disabled='modalLoading'>
               Approve
               <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
             </button>
@@ -171,7 +179,7 @@
             </div>
           </div>
           <div class='modal-footer text-right'>
-            <button type='button' class='btn btn-primary w-20 mr-1' @click='funderDeclineAcknowledge'> Decline </button>
+            <button type='button' class='btn btn-primary w-20 mr-1' @click='declineAcknowledge'> Decline </button>
             <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
           </div> <!-- END: Modal Footer -->
         </div>
@@ -601,7 +609,8 @@ export default {
     })
     const adminCompany = ref(props.adminCompany)
     const signature = ref(null)
-
+    const bankAccounts = ref([])
+    const disbursableBankAccount = ref('')
     const initComponent = ref(false)
     const modalLoading = ref(false)
     const signatureFileUrl = ref(null)
@@ -645,6 +654,16 @@ export default {
         })
 
         return {provenance: provenance.value}
+      })
+    }
+
+    const getCompanyBankAccounts = async () => {
+      bankAccounts.value = await appAxios.get(`company/v1/${store.state.account.company_uuid}/bankaccounts`).then(res => {
+        return res.data
+      })
+
+      return new Promise((resolve) => {
+        resolve(bankAccounts.value)
       })
     }
 
@@ -1096,6 +1115,7 @@ export default {
     const init = async () => {
       
       await Promise.all([
+        getCompanyBankAccounts(),
         getProvenanceHistory(),
         getLastWorkflowStatus(),
         getCurrencyCode(),
@@ -1155,6 +1175,8 @@ export default {
       getInputProps,
       uploadFile,
       removeFile,
+      bankAccounts,
+      disbursableBankAccount,
       disbursementData,
       files,
       approveAcknowledge,

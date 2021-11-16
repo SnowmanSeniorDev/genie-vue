@@ -451,7 +451,7 @@ export default {
       } else {
         //This is private Ecosystem
         const PrivateEcosystem = await getPrivateEcosystemDetail()
-        if(workflowLed.value === 'Buyer Led') api = PrivateEcosystem.buyerLedUploadUrl
+        if(workflowLed.value === 'Buyer Led') api = PrivateEcosystem.buyerLedUploadUrl.replace('/api/genie', '')
         else api = PrivateEcosystem.sellerLedUploadUrl
 
         invoicesBatch.value.map(async batch => {
