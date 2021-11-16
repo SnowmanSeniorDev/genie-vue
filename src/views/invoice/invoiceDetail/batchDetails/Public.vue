@@ -866,8 +866,6 @@ export default {
 
     const approveAcknowledge = async () => { 
       modalLoading.value = true
-      getStatusUpdateHandlerAPIEndpoint()
-      return
       await saveSignature().then( async() => {  
         if(signatureFileUrl.value == null) {
           uploadErrorMessage.value = 'Your signature is required!'

@@ -91,8 +91,9 @@
         <a href='javascript:;' data-toggle='modal' data-target='#decline-invoice-modal' class='btn btn-secondary w-48 sm:w-auto mr-2' >Decline</a>
         <a href='javascript:;' data-toggle='modal' data-target='#approve-invoice-modal' class='btn btn-primary w-48 sm:w-auto mr-2' >Approve</a>
       </div>
-      <div v-if='visibleWorkflowActions.visibleSubmitProposal' class='pt-8 flex justify-center'>
-        <a href='javascript:;' data-toggle='modal' data-target='#submit-proposal-modal' class='btn btn-primary w-48 sm:w-auto mr-2' >Approve Transaction</a>
+      <div v-if='visibleWorkflowActions.visibleFunderApproveButton' class='pt-8 flex justify-center'>
+        <a href='javascript:;' data-toggle='modal' data-target='#funder-decline-invoice-modal' class='btn btn-secondary w-48 sm:w-auto mr-2' >Decline</a>
+        <a href='javascript:;' data-toggle='modal' data-target='#funder-approve-invoice-modal' class='btn btn-primary w-48 sm:w-auto mr-2' >Approve</a>
       </div>
       <div v-if='visibleWorkflowActions.visibleSubmitDisbursmentAdvice' class='pt-8 flex justify-center'>
         <a href='javascript:;' data-toggle='modal' data-target='#submit-disbursment-modal' class='btn btn-primary w-48 sm:w-auto mr-2' >Submit Disbursment</a>
@@ -109,412 +110,442 @@
     </div> 
   </div>
   <!-- Start: action modal -->
-  <div id='approve-invoice-modal' class='modal' tabindex='-1' aria-hidden='true'>
-    <div class='modal-dialog modal-lg'>
-      <div class='modal-content'>
-        <!-- BEGIN: Modal Header -->
-        <div class='modal-header'>
-          <h2 class='font-medium text-base mr-auto'> Approve Invoice </h2>
-        </div>
-        <!-- END: Modal Header -->
-        <div class='modal-body mx-8'>
-          <div class='grid grid-cols-2 grid-flow-row gap-4'>
-            <div class='self-center'>Batch Number</div>
-            <div class='self-center'>{{batchDetails.batchNumber}}</div>
-            <div class='self-center'>Invoice Uploaded Date</div>
-            <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
-            <div class='self-center'>Invoice Amount</div>
-            <div class='self-center'>{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
-            <div class='self-center'>Payment Due Date</div>
-            <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
-            <div class='self-center'>Remark</div>
-            <div class='self-center'>
-              <textarea v-model='remark' class='border-2 w-full' rows='3' />
-            </div>
+  <div v-if='initComponent'>
+    <div id='approve-invoice-modal' class='modal' tabindex='-1' aria-hidden='true'>
+      <div class='modal-dialog modal-lg'>
+        <div class='modal-content'>
+          <!-- BEGIN: Modal Header -->
+          <div class='modal-header'>
+            <h2 class='font-medium text-base mr-auto'> Approve Invoice </h2>
           </div>
-          <SignaturePad v-model="signature"/>
+          <!-- END: Modal Header -->
+          <div class='modal-body mx-8'>
+            <div class='grid grid-cols-2 grid-flow-row gap-4'>
+              <div class='self-center'>Batch Number</div>
+              <div class='self-center'>{{batchDetails.batchNumber}}</div>
+              <div class='self-center'>Invoice Uploaded Date</div>
+              <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
+              <div class='self-center'>Invoice Amount</div>
+              <div class='self-center'>{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>Payment Due Date</div>
+              <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
+              <div class='self-center'>Remark</div>
+              <div class='self-center'>
+                <textarea v-model='remark' class='border-2 w-full' rows='3' />
+              </div>
+            </div>
+            <SignaturePad v-model="signature"/>
+          </div>
+          <div class='modal-footer text-right'>
+            <button type='button' class='btn btn-primary w-24 mr-1' @click='funderApproveAcknowledge' :disabled='modalLoading'>
+              Approve
+              <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
+            </button>
+            <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
+          </div> <!-- END: Modal Footer -->
         </div>
-        <div class='modal-footer text-right'>
-          <button type='button' class='btn btn-primary w-24 mr-1' @click='approveAcknowledge' :disabled='modalLoading'>
-            Approve
-            <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
-          </button>
-          <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
-        </div> <!-- END: Modal Footer -->
       </div>
     </div>
-  </div>
-  <div id='decline-invoice-modal' class='modal' tabindex='-1' aria-hidden='true'>
-    <div class='modal-dialog modal-lg'>
-      <div class='modal-content'>
-        <!-- BEGIN: Modal Header -->
-        <div class='modal-header'>
-          <h2 class='font-medium text-base mr-auto'> Decline Invoice </h2>
-        </div>
-        <!-- END: Modal Header -->
-        <div class='modal-body mx-8'>
-          <div class='grid grid-cols-2 grid-flow-row gap-4'>
-            <div class='self-center'>Batch Number</div>
-            <div class='self-center'>{{batchDetails.batchNumber}}</div>
-            <div class='self-center'>Invoice Uploaded Date</div>
-            <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
-            <div class='self-center'>Invoice Amount</div>
-            <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
-            <div class='self-center'>Payment Due Date</div>
-            <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
-            <div class='self-center'>Remark</div>
-            <div class='self-center'>
-              <textarea v-model='remark' class='border-2 w-full' rows='3' />
+    <div id='decline-invoice-modal' class='modal' tabindex='-1' aria-hidden='true'>
+      <div class='modal-dialog modal-lg'>
+        <div class='modal-content'>
+          <!-- BEGIN: Modal Header -->
+          <div class='modal-header'>
+            <h2 class='font-medium text-base mr-auto'> Decline Invoice </h2>
+          </div>
+          <!-- END: Modal Header -->
+          <div class='modal-body mx-8'>
+            <div class='grid grid-cols-2 grid-flow-row gap-4'>
+              <div class='self-center'>Batch Number</div>
+              <div class='self-center'>{{batchDetails.batchNumber}}</div>
+              <div class='self-center'>Invoice Uploaded Date</div>
+              <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
+              <div class='self-center'>Invoice Amount</div>
+              <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>Payment Due Date</div>
+              <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
+              <div class='self-center'>Remark</div>
+              <div class='self-center'>
+                <textarea v-model='remark' class='border-2 w-full' rows='3' />
+              </div>
             </div>
           </div>
+          <div class='modal-footer text-right'>
+            <button type='button' class='btn btn-primary w-20 mr-1' @click='funderDeclineAcknowledge'> Decline </button>
+            <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
+          </div> <!-- END: Modal Footer -->
         </div>
-        <div class='modal-footer text-right'>
-          <button type='button' class='btn btn-primary w-20 mr-1' @click='declineAcknowledge'> Decline </button>
-          <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
-        </div> <!-- END: Modal Footer -->
       </div>
     </div>
-  </div>
-  <div id='submit-proposal-modal' class='modal' tabindex='-1' aria-hidden='true'>
-    <div class='modal-dialog modal-lg'>
-      <div class='modal-content'>
-        <!-- BEGIN: Modal Header -->
-        <div class='modal-header'>
-          <h2 class='font-medium text-base mr-auto'> Approve Transaction </h2>
-        </div>
-        <!-- END: Modal Header -->
-        <div class='modal-body mx-8'>
-          <div class='mt-5'>
-            <span>Formular</span>
-            <table class='table mt-2'> 
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Batch Number</td>
-                <td class='border'>{{batchDetails.batchNumber}}</td>
-              </tr>
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Total Invoice Amount</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.totalAmount}}</td>
-              </tr> 
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Value Date</td>
-                <td class='border'>
-                  <Litepicker
-                    v-model='valueDate'
-                    :options='{
-                      autoApply: false,
-                      showWeekNumbers: true,
-                      zIndex: 10001,
-                      minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
-                      dropdowns: {
-                        minYear: 1990,
-                        maxYear: null,
-                        months: true,
-                        years: true
-                      },
-                      callback:getEstimateCalc(),
-                      lockDays: lockDays
-                    }'
-                    class='form-control'
-                  />
-                </td>
-              </tr>
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Invoice Due Date</td>
-                <td class='border'>{{moment(batchDetails.paymentDueDate).format(dateFormat)}}</td>
-              </tr>
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Payment Due Date</td>
-                <td class='border'>{{moment(batchDetails.paymentDueDate).format(dateFormat)}}</td>
-              </tr> 
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Numbers of Days</td>
-                <td class='border'>{{batchDetails.numberOfDays}}</td>
-              </tr>  
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Interest Rate(Annual Rate %)</td>
-                <td class='border'>
-                  <input type='text' v-model='bidValue' @change='getEstimateCalc' class='form-control'/>
-                </td>
-              </tr>  
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Interest Earn</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
-              </tr> 
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Platform Fee Amount</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount}}</td>
-              </tr> 
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1}}</td>
-              </tr>  
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Balance Settlement Amount to Seller</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2}}</td>
-              </tr>  
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Repayment Amount To Funder</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.repaymentAmountToFunder}}</td>
-              </tr> 
-            </table>
-          </div> 
-        </div>
-        <div class='modal-footer text-right'>
-          <button type='button' class='btn btn-primary w-24 mr-1' @click='submitProposal' :disabled='modalLoading'> 
-            Approve
-            <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
-          </button>
-          <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
-        </div> <!-- END: Modal Footer -->
-      </div>
-    </div>
-  </div>
-  <div id='submit-disbursment-modal' class='modal' tabindex='-1' aria-hidden='true'>
-    <div class='modal-dialog modal-lg'>
-      <div class='modal-content'>
-        <!-- BEGIN: Modal Header -->
-        <div class='modal-header'>
-          <h2 class='font-medium text-base mr-auto'> Upload fund disbursment payment advice </h2>
-        </div>
-        <!-- END: Modal Header -->
-        <div class='modal-body mx-8'>
-          <div>Payment Advice File Upload</div>
-          <div v-bind='getRootProps()' class='flex mb-3 justify-center border-red-400 border-dashed border-2 rounded-lg cursor-pointer'>
-            <div class='text-center py-5'>
-              <template v-if='!files'>
-                <input v-bind='getInputProps()' >
-                <UploadCloudIcon class='w-24 h-20 text-red-400' />
-                <div class='text-lg font-medium text-gray-600'> 
-                  Drag and drop here<br>or
-                </div>
-                <div class='text-red-400'>browse</div>
-              </template>
-              <template v-else>
-                <div class='relative'>
-                  <div class='absolute top-0 right-1'>
-                    <XCircleIcon @click='removeFile' class='w-6 h-6' />
-                  </div>
-                  <FileTextIcon class='w-24 h-24'/>
-                </div>
-                {{files[0].name}}
-              </template>
-            </div>
+    <div id='funder-approve-invoice-modal' class='modal' tabindex='-1' aria-hidden='true'>
+      <div class='modal-dialog modal-lg'>
+        <div class='modal-content'>
+          <!-- BEGIN: Modal Header -->
+          <div class='modal-header'>
+            <h2 class='font-medium text-base mr-auto'> Approve Transaction </h2>
           </div>
-          <div class='grid grid-cols-2 grid-flow-row gap-4'>
-            <div class='self-center'>Payment Advice Number</div>
-            <div class='self-center'>
-              <input type='text' v-model='disbursementData.paymentAdviceNumber' class='form-control'/>
-            </div>
-            <div class='self-center'>Payment Advice Amount</div>
-            <div class='self-center'>
-              <input type='text' v-model='disbursementData.paymentAdviceAmount' class='form-control'/>
-            </div>
-            <div class='self-center'>Currency Code</div>
-            <div class='dropdown inline-block' data-placement='bottom'>
-              <button class='dropdown-toggle btn btn-primary mr-1' aria-expanded='false'> {{disbursementData.currencyCode}} </button>
-              <div class='dropdown-menu' id='currencyCodeDropDown' style='z-index: 10001;'>
-                <div class='dropdown-menu__content box dark:bg-dark-1 p-2'>
-                  
-                  <a v-for='(currency, index) in currencies' :key='index'
-                    href='javascript:;'
-                    class='block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md'
-                    @click='setDisbursmentCurrencyCode(currency.currencyCode)'
-                  >
-                    {{currency.currencyCode}}
-                  </a>
+          <!-- END: Modal Header -->
+          <div class='modal-body mx-8'>
+            <div class='mt-5'>
+              <span>Formular</span>
+              <table class='table mt-2'> 
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Batch Number</td>
+                  <td class='border'>{{batchDetails.batchNumber}}</td>
+                </tr>
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Total Invoice Amount</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.totalAmount}}</td>
+                </tr> 
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Value Date</td>
+                  <td class='border'>
+                    <Litepicker
+                      v-model='valueDate'
+                      :options='{
+                        autoApply: false,
+                        showWeekNumbers: true,
+                        zIndex: 10001,
+                        minDate: Date(),
+                        dropdowns: {
+                          minYear: 1990,
+                          maxYear: null,
+                          months: true,
+                          years: true
+                        },
+                        callback: getEstimateCalc(),
+                        lockDays: lockDays
+                      }'
+                      class='form-control'
+                    />
+                  </td>
+                </tr>
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Invoice Due Date</td>
+                  <td class='border'>{{moment(batchDetails.paymentDueDate).format(dateFormat)}}</td>
+                </tr>
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Payment Due Date</td>
+                  <td class='border'>{{moment(batchDetails.paymentDueDate).format(dateFormat)}}</td>
+                </tr> 
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Numbers of Days</td>
+                  <td class='border'>{{batchDetails.numberOfDays}}</td>
+                </tr>  
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Interest Earn</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
+                </tr> 
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Platform Fee Amount</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount}}</td>
+                </tr> 
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount - batchDetails.formula.interestAmount}}</td>
+                </tr>  
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Repayment Amount To Funder</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.repaymentAmountToFunder}}</td>
+                </tr> 
+              </table>
+              <div class='grid grid-cols-2 grid-flow-row gap-4 mt-4'>
+                <div class='self-center'>Remark</div>
+                <div class='self-center'>
+                  <textarea v-model='remark' class='border-2 w-full' rows='3' />
                 </div>
               </div>
-            </div>  
-            <div class='self-center'>Payment Advice Date</div>
-            <div class='self-center'>
-              <Litepicker
-                v-model='disbursementData.paymentAdviceDate'
-                :options='{
-                  autoApply: false,
-                  showWeekNumbers: true,
-                  zIndex: 10001,
-                  minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
-                  dropdowns: {
-                    minYear: 1990,
-                    maxYear: null,
-                    months: true,
-                    years: true
-                  }
-                }'
-                class='form-control'
-              />
+              <SignaturePad v-model="signature"/>
             </div>
           </div>
+          <div class='modal-footer text-right'>
+            <button type='button' class='btn btn-primary w-24 mr-1' @click='funderApproveAcknowledge' :disabled='modalLoading'> 
+              Approve
+              <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
+            </button>
+            <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
+          </div> <!-- END: Modal Footer -->
         </div>
-        <div class='modal-footer text-right'>
-          <button type='button' class='btn btn-primary w-24 mr-1' @click='submitDisbursmentAdvice' :disabled='modalLoading'>
-            Submit
-            <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
-          </button>
-          <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-24'> Cancel </button>
-        </div> <!-- END: Modal Footer -->
       </div>
     </div>
-  </div>
-  <div id='seller-acknowledge-of-receive-disbursement' class='modal' tabindex='-1' aria-hidden='true'>
-    <div class='modal-dialog modal-lg' v-if='confirmAbleDisbursementData'>
-      <div class='modal-content'>
-        <!-- BEGIN: Modal Header -->
-        <div class='modal-header'>
-          <h2 class='font-medium text-base mr-auto'> Acknowledge receive of disbursement </h2>
-        </div>
-        <!-- END: Modal Header -->
-        <div class='modal-body mx-8'>
-          <div class='grid grid-cols-2 grid-flow-row gap-4'>
-            <div class='self-center'>Payment Advice Number</div>
-            <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceNumber}}</div>
-            <div class='self-center'>Payment Advice File</div>
-            <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceNumber}}</div>
-            <div class='self-center'>Payment Advice Amount</div>
-            <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceAmount + ' ' + confirmAbleDisbursementData.currencyCode}}</div>
-            <div class='self-center'>Payment Advice Date</div>
-            <div class='self-center'>{{moment(confirmAbleDisbursementData.paymentAdviceDate).format(dateFormat)}}</div>
-            <div class='self-center'>Remark</div>
-            <div class='self-center'>
-              <textarea v-model='remark' class='border-2 border w-full' rows='3' />
-            </div>
+    <div id='funder-decline-invoice-modal' class='modal' tabindex='-1' aria-hidden='true'>
+      <div class='modal-dialog modal-lg'>
+        <div class='modal-content'>
+          <!-- BEGIN: Modal Header -->
+          <div class='modal-header'>
+            <h2 class='font-medium text-base mr-auto'> Decline Invoice </h2>
           </div>
-          <SignaturePad v-modal='signature'/>
-        </div>
-        <div class='modal-footer text-right'>
-          <button type='button' class='btn btn-primary w-24 mr-1' @click='sellerAcknowledgeOfReceiveDisbursement' :disabled='modalLoading'>
-            Confirm
-            <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
-          </button>
-          <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
-        </div> <!-- END: Modal Footer -->
-      </div>
-    </div>
-  </div>
-  <div id='buyer-upload-repayment-advice' class='modal' tabindex='-1' aria-hidden='true'>
-    <div class='modal-dialog modal-lg'>
-      <div class='modal-content'>
-        <!-- BEGIN: Modal Header -->
-        <div class='modal-header'>
-          <h2 class='font-medium text-base mr-auto'> Upload Repayment Advice </h2>
-        </div>
-        <!-- END: Modal Header -->
-        <div class='modal-body mx-8'>
-          <div>Payment Advice File Upload</div>
-          <div v-bind='getRootProps()' class='flex mb-3 justify-center border-red-400 border-dashed border-2 rounded-lg cursor-pointer'>
-            <div class='text-center py-5'>
-              <template v-if='!files'>
-                <input v-bind='getInputProps()' >
-                <UploadCloudIcon class='w-24 h-20 text-red-400' />
-                <div class='text-lg font-medium text-gray-600'> 
-                  Drag and drop here<br>or
-                </div>
-                <div class='text-red-400'>browse</div>
-              </template>
-              <template v-else>
-                <div class='relative'>
-                  <div class='absolute top-0 right-1'>
-                    <XCircleIcon @click='removeFile' class='w-6 h-6' />
-                  </div>
-                  <FileTextIcon class='w-24 h-24'/>
-                </div>
-                {{files[0].name}}
-              </template>
-            </div>
-          </div>
-          <div class='grid grid-cols-2 grid-flow-row gap-4'>
-            <div class='self-center'>Payment Advice Number</div>
-            <div class='self-center'>
-              <input type='text' v-model='disbursementData.paymentAdviceNumber' class='form-control'/>
-            </div>
-            <div class='self-center'>Payment Advice Amount</div>
-            <div class='self-center'>
-              <input type='text' v-model='disbursementData.paymentAdviceAmount' class='form-control'/>
-            </div>
-            <div class='self-center'>Currency Code</div>
-            <div class='dropdown inline-block' data-placement='bottom'>
-              <button class='dropdown-toggle btn btn-primary mr-1' aria-expanded='false'> {{disbursementData.currencyCode}} </button>
-              <div class='dropdown-menu' id='currencyCodeDropDown' style='z-index: 10001;'>
-                <div class='dropdown-menu__content box dark:bg-dark-1 p-2'>
-                  <a v-for='(currency, index) in currencies' :key='index'
-                    href='javascript:;'
-                    class='block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md'
-                    @click='setDisbursmentCurrencyCode(currency.currencyCode)'
-                  >
-                    {{currency.currencyCode}}
-                  </a>
-                </div>
+          <!-- END: Modal Header -->
+          <div class='modal-body mx-8'>
+            <div class='grid grid-cols-2 grid-flow-row gap-4'>
+              <div class='self-center'>Batch Number</div>
+              <div class='self-center'>{{batchDetails.batchNumber}}</div>
+              <div class='self-center'>Invoice Uploaded Date</div>
+              <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
+              <div class='self-center'>Invoice Amount</div>
+              <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>Payment Due Date</div>
+              <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
+              <div class='self-center'>Remark</div>
+              <div class='self-center'>
+                <textarea v-model='remark' class='border-2 w-full' rows='3' />
               </div>
-            </div>  
-            <div class='self-center'>Payment Advice Date</div>
-            <div class='self-center'>
-              <Litepicker
-                v-model='disbursementData.paymentAdviceDate'
-                :options='{
-                  autoApply: false,
-                  showWeekNumbers: true,
-                  zIndex: 10001,
-                  minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
-                  dropdowns: {
-                    minYear: 1990,
-                    maxYear: null,
-                    months: true,
-                    years: true
-                  }
-                }'
-                class='form-control'
-              />
             </div>
           </div>
+          <div class='modal-footer text-right'>
+            <button type='button' class='btn btn-primary w-20 mr-1' @click='FunderDeclineAcknowledge'> Decline </button>
+            <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
+          </div> <!-- END: Modal Footer -->
         </div>
-        <div class='modal-footer text-right'>
-          <button type='button' class='btn btn-primary w-24 mr-1' @click='BuyerUploadRepaymentAdvice' :disabled='modalLoading'>
-            Submit
-            <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
-          </button>
-          <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-24'> Cancel </button>
-        </div> <!-- END: Modal Footer -->
       </div>
     </div>
-  </div>
-  <div id='funder-acknowledge-upload-repayment-advice' class='modal' tabindex='-1' aria-hidden='true'>
-    <div class='modal-dialog modal-lg' v-if='confirmFunderAcknowledgeReceiveOfRepaymentData'>
-      <div class='modal-content'>
-        <!-- BEGIN: Modal Header -->
-        <div class='modal-header'>
-          <h2 class='font-medium text-base mr-auto'> Acknowledge Receive of Repayment </h2>
-        </div>
-        <!-- END: Modal Header -->
-        <div class='modal-body mx-8'>
-          <div class='grid grid-cols-2 grid-flow-row gap-4'>
-            <div class='self-center'>Payment Advice Number</div>
-            <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceNumber}}</div>
-            <div class='self-center'>Payment Advice File</div>
-            <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceNumber}}</div>
-            <div class='self-center'>Payment Advice Amount</div>
-            <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceAmount + ' ' + confirmFunderAcknowledgeReceiveOfRepaymentData.currencyCode}}</div>
-            <div class='self-center'>Payment Advice Date</div>
-            <div class='self-center'>{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format(dateFormat)}}</div>
-            <div class='self-center'>Remark</div>
-            <div class='self-center'>
-              <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+    <div id='submit-disbursment-modal' class='modal' tabindex='-1' aria-hidden='true'>
+      <div class='modal-dialog modal-lg'>
+        <div class='modal-content'>
+          <!-- BEGIN: Modal Header -->
+          <div class='modal-header'>
+            <h2 class='font-medium text-base mr-auto'> Upload fund disbursment payment advice </h2>
+          </div>
+          <!-- END: Modal Header -->
+          <div class='modal-body mx-8'>
+            <div>Payment Advice File Upload</div>
+            <div v-bind='getRootProps()' class='flex mb-3 justify-center border-red-400 border-dashed border-2 rounded-lg cursor-pointer'>
+              <div class='text-center py-5'>
+                <template v-if='!files'>
+                  <input v-bind='getInputProps()' >
+                  <UploadCloudIcon class='w-24 h-20 text-red-400' />
+                  <div class='text-lg font-medium text-gray-600'> 
+                    Drag and drop here<br>or
+                  </div>
+                  <div class='text-red-400'>browse</div>
+                </template>
+                <template v-else>
+                  <div class='relative'>
+                    <div class='absolute top-0 right-1'>
+                      <XCircleIcon @click='removeFile' class='w-6 h-6' />
+                    </div>
+                    <FileTextIcon class='w-24 h-24'/>
+                  </div>
+                  {{files[0].name}}
+                </template>
+              </div>
+            </div>
+            <div class='grid grid-cols-2 grid-flow-row gap-4'>
+              <div class='self-center'>Payment Advice Number</div>
+              <div class='self-center'>
+                <input type='text' v-model='disbursementData.paymentAdviceNumber' class='form-control'/>
+              </div>
+              <div class='self-center'>Payment Advice Amount</div>
+              <div class='self-center'>
+                <input type='text' v-model='disbursementData.paymentAdviceAmount' class='form-control'/>
+              </div>
+              <div class='self-center'>Currency Code</div>
+              <div class='dropdown inline-block' data-placement='bottom'>
+                <button class='dropdown-toggle btn btn-primary mr-1' aria-expanded='false'> {{disbursementData.currencyCode}} </button>
+                <div class='dropdown-menu' id='currencyCodeDropDown' style='z-index: 10001;'>
+                  <div class='dropdown-menu__content box dark:bg-dark-1 p-2'>
+                    
+                    <a v-for='(currency, index) in currencies' :key='index'
+                      href='javascript:;'
+                      class='block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md'
+                      @click='setDisbursmentCurrencyCode(currency.currencyCode)'
+                    >
+                      {{currency.currencyCode}}
+                    </a>
+                  </div>
+                </div>
+              </div>  
+              <div class='self-center'>Payment Advice Date</div>
+              <div class='self-center'>
+                <Litepicker
+                  v-model='disbursementData.paymentAdviceDate'
+                  :options='{
+                    autoApply: false,
+                    showWeekNumbers: true,
+                    zIndex: 10001,
+                    minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
+                    dropdowns: {
+                      minYear: 1990,
+                      maxYear: null,
+                      months: true,
+                      years: true
+                    }
+                  }'
+                  class='form-control'
+                />
+              </div>
             </div>
           </div>
-          <SignaturePad v-model='signature'/>
+          <div class='modal-footer text-right'>
+            <button type='button' class='btn btn-primary w-24 mr-1' @click='submitDisbursmentAdvice' :disabled='modalLoading'>
+              Submit
+              <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
+            </button>
+            <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-24'> Cancel </button>
+          </div> <!-- END: Modal Footer -->
         </div>
-        <div class='modal-footer text-right'>
-          <button type='button' class='btn btn-primary w-24 mr-1' @click='funderAcknowledgeOfRepaymentComfirm' :disabled='modalLoading'> Confirm </button>
-          <button type='button' class='btn btn-danger w-24 mr-1' @click='funderAcknowledgeOfRepaymentDecline'> Decline </button>
-          <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
-        </div> <!-- END: Modal Footer -->
       </div>
     </div>
-  </div>
-  <div id='failed-notification-content' class='toastify-content hidden flex'>
-    <XCircleIcon class='text-theme-6' />
-    <div class='ml-4 mr-4'>
-      <div class='font-medium'>Upload failed!</div>
-      <div class='text-gray-600 mt-1' id='error-content'>Your signature is required!</div>
+    <div id='seller-acknowledge-of-receive-disbursement' class='modal' tabindex='-1' aria-hidden='true'>
+      <div class='modal-dialog modal-lg' v-if='confirmAbleDisbursementData'>
+        <div class='modal-content'>
+          <!-- BEGIN: Modal Header -->
+          <div class='modal-header'>
+            <h2 class='font-medium text-base mr-auto'> Acknowledge receive of disbursement </h2>
+          </div>
+          <!-- END: Modal Header -->
+          <div class='modal-body mx-8'>
+            <div class='grid grid-cols-2 grid-flow-row gap-4'>
+              <div class='self-center'>Payment Advice Number</div>
+              <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceNumber}}</div>
+              <div class='self-center'>Payment Advice File</div>
+              <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceNumber}}</div>
+              <div class='self-center'>Payment Advice Amount</div>
+              <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceAmount + ' ' + confirmAbleDisbursementData.currencyCode}}</div>
+              <div class='self-center'>Payment Advice Date</div>
+              <div class='self-center'>{{moment(confirmAbleDisbursementData.paymentAdviceDate).format(dateFormat)}}</div>
+              <div class='self-center'>Remark</div>
+              <div class='self-center'>
+                <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+              </div>
+            </div>
+            <SignaturePad v-modal='signature'/>
+          </div>
+          <div class='modal-footer text-right'>
+            <button type='button' class='btn btn-primary w-24 mr-1' @click='sellerAcknowledgeOfReceiveDisbursement' :disabled='modalLoading'>
+              Confirm
+              <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
+            </button>
+            <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
+          </div> <!-- END: Modal Footer -->
+        </div>
+      </div>
+    </div>
+    <div id='buyer-upload-repayment-advice' class='modal' tabindex='-1' aria-hidden='true'>
+      <div class='modal-dialog modal-lg'>
+        <div class='modal-content'>
+          <!-- BEGIN: Modal Header -->
+          <div class='modal-header'>
+            <h2 class='font-medium text-base mr-auto'> Upload Repayment Advice </h2>
+          </div>
+          <!-- END: Modal Header -->
+          <div class='modal-body mx-8'>
+            <div>Payment Advice File Upload</div>
+            <div v-bind='getRootProps()' class='flex mb-3 justify-center border-red-400 border-dashed border-2 rounded-lg cursor-pointer'>
+              <div class='text-center py-5'>
+                <template v-if='!files'>
+                  <input v-bind='getInputProps()' >
+                  <UploadCloudIcon class='w-24 h-20 text-red-400' />
+                  <div class='text-lg font-medium text-gray-600'> 
+                    Drag and drop here<br>or
+                  </div>
+                  <div class='text-red-400'>browse</div>
+                </template>
+                <template v-else>
+                  <div class='relative'>
+                    <div class='absolute top-0 right-1'>
+                      <XCircleIcon @click='removeFile' class='w-6 h-6' />
+                    </div>
+                    <FileTextIcon class='w-24 h-24'/>
+                  </div>
+                  {{files[0].name}}
+                </template>
+              </div>
+            </div>
+            <div class='grid grid-cols-2 grid-flow-row gap-4'>
+              <div class='self-center'>Payment Advice Number</div>
+              <div class='self-center'>
+                <input type='text' v-model='disbursementData.paymentAdviceNumber' class='form-control'/>
+              </div>
+              <div class='self-center'>Payment Advice Amount</div>
+              <div class='self-center'>
+                <input type='text' v-model='disbursementData.paymentAdviceAmount' class='form-control'/>
+              </div>
+              <div class='self-center'>Currency Code</div>
+              <div class='dropdown inline-block' data-placement='bottom'>
+                <button class='dropdown-toggle btn btn-primary mr-1' aria-expanded='false'> {{disbursementData.currencyCode}} </button>
+                <div class='dropdown-menu' id='currencyCodeDropDown' style='z-index: 10001;'>
+                  <div class='dropdown-menu__content box dark:bg-dark-1 p-2'>
+                    <a v-for='(currency, index) in currencies' :key='index'
+                      href='javascript:;'
+                      class='block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md'
+                      @click='setDisbursmentCurrencyCode(currency.currencyCode)'
+                    >
+                      {{currency.currencyCode}}
+                    </a>
+                  </div>
+                </div>
+              </div>  
+              <div class='self-center'>Payment Advice Date</div>
+              <div class='self-center'>
+                <Litepicker
+                  v-model='disbursementData.paymentAdviceDate'
+                  :options='{
+                    autoApply: false,
+                    showWeekNumbers: true,
+                    zIndex: 10001,
+                    minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
+                    dropdowns: {
+                      minYear: 1990,
+                      maxYear: null,
+                      months: true,
+                      years: true
+                    }
+                  }'
+                  class='form-control'
+                />
+              </div>
+            </div>
+          </div>
+          <div class='modal-footer text-right'>
+            <button type='button' class='btn btn-primary w-24 mr-1' @click='BuyerUploadRepaymentAdvice' :disabled='modalLoading'>
+              Submit
+              <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
+            </button>
+            <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-24'> Cancel </button>
+          </div> <!-- END: Modal Footer -->
+        </div>
+      </div>
+    </div>
+    <div id='funder-acknowledge-upload-repayment-advice' class='modal' tabindex='-1' aria-hidden='true'>
+      <div class='modal-dialog modal-lg' v-if='confirmFunderAcknowledgeReceiveOfRepaymentData'>
+        <div class='modal-content'>
+          <!-- BEGIN: Modal Header -->
+          <div class='modal-header'>
+            <h2 class='font-medium text-base mr-auto'> Acknowledge Receive of Repayment </h2>
+          </div>
+          <!-- END: Modal Header -->
+          <div class='modal-body mx-8'>
+            <div class='grid grid-cols-2 grid-flow-row gap-4'>
+              <div class='self-center'>Payment Advice Number</div>
+              <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceNumber}}</div>
+              <div class='self-center'>Payment Advice File</div>
+              <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceNumber}}</div>
+              <div class='self-center'>Payment Advice Amount</div>
+              <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceAmount + ' ' + confirmFunderAcknowledgeReceiveOfRepaymentData.currencyCode}}</div>
+              <div class='self-center'>Payment Advice Date</div>
+              <div class='self-center'>{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format(dateFormat)}}</div>
+              <div class='self-center'>Remark</div>
+              <div class='self-center'>
+                <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+              </div>
+            </div>
+            <SignaturePad v-model='signature'/>
+          </div>
+          <div class='modal-footer text-right'>
+            <button type='button' class='btn btn-primary w-24 mr-1' @click='funderAcknowledgeOfRepaymentComfirm' :disabled='modalLoading'> Confirm </button>
+            <button type='button' class='btn btn-danger w-24 mr-1' @click='funderAcknowledgeOfRepaymentDecline'> Decline </button>
+            <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
+          </div> <!-- END: Modal Footer -->
+        </div>
+      </div>
+    </div>
+    <div id='failed-notification-content' class='toastify-content hidden flex'>
+      <XCircleIcon class='text-theme-6' />
+      <div class='ml-4 mr-4'>
+        <div class='font-medium'>Upload failed!</div>
+        <div class='text-gray-600 mt-1' id='error-content'>Your signature is required!</div>
+      </div>
     </div>
   </div>
   <!-- End: action modal -->
@@ -562,7 +593,7 @@ export default {
     const currentCompanyRole = ref('')
     const visibleWorkflowActions = ref({
       visibleApproveButton: false,
-      visibleSubmitProposal: false,
+      visibleFunderApproveButton: false,
       visibleSubmitDisbursmentAdvice: false,
       visibleSellerAcknowledgeOfReceiveDisbursement: false,
       visibleBuyerUploadRepaymentAdvice: false,
@@ -654,7 +685,7 @@ export default {
           })
         })
       }
-      
+
       return new Promise(resolve => resolve(lockDays.value))
     }
 
@@ -794,7 +825,7 @@ export default {
         let api = '/workflow/v2/buyer-led-v2-eco-0/seller-acknowledge-the-transaction-branch/0'
         await appAxios.post(api, {
           externalReferenceId: props.workflowExecutionReferenceId,
-          remark: remark.value,
+          remarks: remark.value,
           signatureUri: signatureUrl
         }).then(res => {
           modalLoading.value = false
@@ -832,6 +863,52 @@ export default {
       }) 
     }
 
+    const funderApproveAcknowledge = async () => { 
+      modalLoading.value = true
+      const signatureUrl = await saveSignature()
+      if(signatureUrl) {
+        let api = '/workflow/v2/buyer-led-v2-eco-0/funder-approved-the-transaction-branch/0'
+        await appAxios.post(api, {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          remarks: remark.value,
+          signatureUri: signatureUrl,
+          valueDate: moment.utc(valueDate.value).format(),
+        }).then(res => {
+          modalLoading.value = false
+          if(res.status === 200) {
+            cash('#funder-approve-invoice-modal').modal('hide')
+            visibleWorkflowActions.value.visibleFunderApproveButton = false
+          }
+          updateProvenanceApi()
+        })
+      }
+      else {
+        Toastify({
+          node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
+          duration: 3000,
+          newWindow: true,
+          close: true,
+          gravity: 'top',
+          position: 'right',
+          stopOnFocus: true,
+        }).showToast()
+        modalLoading.value = false
+      }
+    }
+
+    const funderDeclineAcknowledge = async () => { 
+      let api = '/workflow/v2/buyer-led-v2-eco-0/funder-not-approved-the-transaction-branch/0'
+      appAxios.post(api, {
+        externalReferenceId: props.workflowExecutionReferenceId,
+        remark: remark.value,
+      }).then(res => {
+        if(res.status === 200) {
+          visibleWorkflowActions.value.visibleFunderApproveButton = false
+          updateProvenanceApi()
+        }
+      }) 
+    }
+
     const getEstimateCalc = async()=>{
       if(valueDate.value != '' && valueDate.value != null && valueDate.value != undefined){
         batchDetails.value.valueDate = valueDate.value 
@@ -839,27 +916,11 @@ export default {
         let valueDt = moment(batchDetails.value.valueDate) 
         let noOfDays = dueDt.diff(valueDt,'days')
         batchDetails.value.numberOfDays = noOfDays
-      }
-      if(bidValue.value != ''
-        && bidValue.value != null && bidValue.value != undefined
-        && valueDate.value != ''
-        && valueDate.value != null && valueDate.value != undefined
-      ) {
-        let apiUrl = ''
-        if(batchDetails.value.initiatedByCompanyId == batchDetails.value.buyerCompanyId){
-          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`
-          //started by buyer
-        }
-        else{
-          apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`
-          //started by seller
-        }
+        let apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?refId=${props.workflowExecutionReferenceId}&valueDate=${valueDate.value}`
         await appAxios.get(apiUrl).then(res => {
           let data = res.data
           batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat)
-          batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat)
-          batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1.toFixed(2)
-          batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2.toFixed(2)
+          batchDetails.value.formula.disbursableAmount = data.disbursableAmount.toFixed(2)
           batchDetails.value.formula.interestAmount = data.interestAmount.toFixed(2)
           batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount.toFixed(2)
           batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat)
@@ -1055,6 +1116,10 @@ export default {
 
       //determine what action button should be showed in Batch Detail page
       if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleApproveButton = true
+      else if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderApproveButton = true
+
+
+
       else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
       else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
       else if(lastWorkStatus.value['statusName'] === 'REPAYMENT_INSTRUCTION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
@@ -1082,8 +1147,6 @@ export default {
       lockDays,
       signature,
       visibleWorkflowActions,
-      approveAcknowledge,
-      declineAcknowledge,
       remark,
       valueDate,
       getEstimateCalc,
@@ -1094,6 +1157,10 @@ export default {
       removeFile,
       disbursementData,
       files,
+      approveAcknowledge,
+      declineAcknowledge,
+      funderApproveAcknowledge,
+      funderDeclineAcknowledge,
       submitDisbursmentAdvice,
       confirmAbleDisbursementData,
       confirmFunderAcknowledgeReceiveOfRepaymentData,
