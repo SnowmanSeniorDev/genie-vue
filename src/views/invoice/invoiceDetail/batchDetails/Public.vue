@@ -135,18 +135,7 @@
               <textarea v-model='remark' class='border-2 w-full' rows='3' />
             </div>
           </div>
-          <signature-pad
-            :modelValue='signatureFile'
-            @input='onInput'
-            :height='150'
-            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
-            saveType='image/png'
-            saveOutput='file'
-            ref='signaturePad' />
-          <div class='grid grid-cols-3 grid-flow-row gap-4 mt-2'>
-            <button @click='undoSignature' class='btn btn-warning'>Undo signature</button>
-            <button @click='clearSignature' class='btn btn-danger'>Clear signature</button>
-          </div>
+          <SignaturePad v-model="signature"/>
         </div>
         <div class='modal-footer text-right'>
           <button type='button' class='btn btn-primary w-24 mr-1' @click='approveAcknowledge' :disabled='modalLoading'>
@@ -393,18 +382,7 @@
               <textarea v-model='remark' class='border-2 border w-full' rows='3' />
             </div>
           </div>
-          <signature-pad
-            :modelValue='signatureFile'
-            @input='onInput'
-            :height='150'
-            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
-            saveType='image/png'
-            saveOutput='file'
-            ref='signaturePad' />
-          <div class='grid grid-cols-2 grid-flow-row gap-4 mt-2'>
-            <button @click='undoSignature' class='btn btn-warning'>Undo signature</button>
-            <button @click='clearSignature' class='btn btn-danger'>Clear signature</button>
-          </div>
+          <SignaturePad v-model="signature"/>
         </div>
         <div class='modal-footer text-right'>
           <button type='button' class='btn btn-primary w-24 mr-1' @click='sellerAcknowledgeOfReceiveDisbursement' :disabled='modalLoading'>
@@ -525,18 +503,7 @@
               <textarea v-model='remark' class='border-2 border w-full' rows='3' />
             </div>
           </div>
-          <signature-pad
-            :modelValue='signatureFile'
-            @input='onInput'
-            :height='150'
-            :customStyle="{ border: 'gray 1px solid', borderRadius: '25px', width: '100%' }"
-            saveType='image/png'
-            saveOutput='file'
-            ref='signaturePad' />
-          <div class='grid grid-cols-2 grid-flow-row gap-4 mt-2'>
-            <button @click='undoSignature' class='btn btn-warning'>Undo signature</button>
-            <button @click='clearSignature' class='btn btn-danger'>Clear signature</button>
-          </div>
+          <SignaturePad v-model="signature"/>
         </div>
         <div class='modal-footer text-right'>
           <button type='button' class='btn btn-primary w-24 mr-1' @click='funderAcknowledgeOfRepaymentComfirm' :disabled='modalLoading'> Confirm </button>
@@ -559,11 +526,11 @@
 <script>
 import { ref, onMounted, reactive } from 'vue'
 import { useStore } from 'vuex'
-import SignaturePad from 'vue3-signature-pad'
 import Toastify from 'toastify-js'
 import { useDropzone } from 'vue3-dropzone'
 import _ from 'lodash'
 import moment from 'moment'
+import SignaturePad from './SignaturePad.vue'
 
 import { sysAxios, appAxios } from '@/plugins/axios'
 
@@ -606,14 +573,12 @@ export default {
     })
     const batchMessage = ref('')
     const adminCompany = ref(props.adminCompany)
+    const signature = ref(null)
 
     const initComponent = ref(false)
     const modalLoading = ref(false)
     const signatureLoading = ref(false)
     const signatureFileUrl = ref(null)
-    const signatureDataURL = ref(null)
-    const signatureFile = ref(null)
-    const signaturePad = ref(null)
     const uploadErrorMessage = ref()
     const remark = ref(null)
     const valueDate = ref()
@@ -774,46 +739,25 @@ export default {
       }
     }
 
-    const getSignaturePad = () => {
-      if (!signaturePad.value) {
-        throw new Error('No signature pad ref could be found')
-      }
-      return signaturePad.value
-    }
-
-    const undoSignature = () => {
-      getSignaturePad().undoSignature()
-    }
-
-    const clearSignature = () => {
-      getSignaturePad().clearSignature()
-    }
-
     const saveSignature = async () => {
-      signatureLoading.value = true
-      const signature = getSignaturePad().saveSignature()
       const fileUploadApi = 'uploads/v1/acknowledgement_signature'
-      let formData = new FormData()
-      if(signature.isEmpty) {
-        return new Promise(resolve => {
-          resolve('Error!')
-        })
-      }
-      else {
-        formData.append('file', signature.file)
-        await sysAxios.post(fileUploadApi, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }).then(res => {
-          signatureFileUrl.value = `https://authorization.api-dev.xyz/api/uploads/v1/${res.data}`
-          signatureLoading.value = false
-        })
-        return new Promise(resolve => {
-          resolve(signatureFileUrl.value)
-        })
-      }
-      
+      return new Promise(resolve => {
+        let formData = new FormData()
+        console.log(signature.value)
+        if(signature.value === null) resolve(null)
+        else {
+          formData.append('file', signature.value.file)
+          sysAxios.post(fileUploadApi, formData, {
+            headers: { 'Content-Type': 'multipart/form-data'}
+          }).then(res => {
+            resolve(`https://authorization.api-dev.xyz/api/uploads/v1/${res.data}`)
+          })
+        }
+      })
+    }
+
+    const setDisbursmentCurrencyCode = (currencyCode) => {
+      disbursementData.value.currencyCode = currencyCode
     }
 
     const uploadFile = async () => {
@@ -866,42 +810,53 @@ export default {
 
     const approveAcknowledge = async () => { 
       modalLoading.value = true
-      await saveSignature().then( async() => {  
-        if(signatureFileUrl.value == null) {
-          uploadErrorMessage.value = 'Your signature is required!'
-          Toastify({
-            node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
-            duration: 3000,
-            newWindow: true,
-            close: true,
-            gravity: 'top',
-            position: 'right',
-            stopOnFocus: true,
-          }).showToast()
-          modalLoading.value = false
-        }
-        else {
-          var api = ''
-          if(batchDetails.value.workflowLed === 'Seller Led') {
-            api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
-          } else {
-            api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+      const signatureUrl = await saveSignature()
+      if(signatureUrl) {
+        let api = ''
+        let requestBody = {}
+        if(batchDetails.value.workflowLed === 'Seller Led') {
+          api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
+          requestBody = {
+            externalReferenceId: props.workflowExecutionReferenceId,
+            remark: remark.value,
+            signatureUri: signatureFileUrl.value,
+            disbursableBankAccount: {}
           }
-
-          await appAxios.post(api, {
+        } else {
+          api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
+          requestBody = {
             externalReferenceId: props.workflowExecutionReferenceId,
             remark: remark.value,
             signatureUri: signatureFileUrl.value
-          }).then(res => {
-            modalLoading.value = false
-            if(res.status === 200) {
-              cash('#approve-invoice-modal').modal('hide')
-              visibleWorkflowActions.value.visibleApproveButton = false
-            }
-            updateProvenanceApi()
-          })
-        } 
-      }) 
+          }
+        }
+
+        await appAxios.post(api, {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          remark: remark.value,
+          signatureUri: signatureFileUrl.value
+        }).then(res => {
+          modalLoading.value = false
+          if(res.status === 200) {
+            cash('#approve-invoice-modal').modal('hide')
+            visibleWorkflowActions.value.visibleApproveButton = false
+          }
+          updateProvenanceApi()
+        })
+      }
+      else {
+        uploadErrorMessage.value = 'Your signature is required!'
+        Toastify({
+          node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
+          duration: 3000,
+          newWindow: true,
+          close: true,
+          gravity: 'top',
+          position: 'right',
+          stopOnFocus: true,
+        }).showToast()
+        modalLoading.value = false
+      } 
     }
 
     const declineAcknowledge = async () => { 
@@ -1229,6 +1184,7 @@ export default {
       lastWorkStatus,
       currencies,
       lockDays,
+      signature,
       visibleWorkflowActions,
       batchMessage,
       signatureFile,
@@ -1247,6 +1203,7 @@ export default {
       uploadFile,
       removeFile,
       disbursementData,
+      setDisbursmentCurrencyCode,
       files,
       uploadErrorMessage,
       submitDisbursmentAdvice,

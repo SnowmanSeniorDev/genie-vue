@@ -835,6 +835,10 @@ export default {
       })
     }
 
+    const setDisbursmentCurrencyCode = (currencyCode) => {
+      disbursementData.value.currencyCode = currencyCode
+    }
+
     const approveAcknowledge = async () => { 
       modalLoading.value = true
       const signatureUrl = await saveSignature()
@@ -845,7 +849,8 @@ export default {
         await appAxios.post(api, {
           externalReferenceId: props.workflowExecutionReferenceId,
           remarks: remark.value,
-          signatureUri: signatureUrl
+          signatureUri: signatureUrl,
+          disbursableBankAccount: _.find(bankAccounts.value, {bankAccountId: disbursableBankAccount.value})
         }).then(res => {
           modalLoading.value = false
           if(res.status === 200) {
@@ -952,18 +957,8 @@ export default {
     const submitDisbursmentAdvice = async () => {
       modalLoading.value = true
       await uploadFile()
-      var api = ''
-      if(batchDetails.value.workflowLed === 'Buyer Led') {
-        disbursementData.value.paymentInstructionId = await getpaymentInstructionId('DisbursableAmount')
-        api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-identified-after-bidding-branch/20'
-      }
-      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER') {
-        disbursementData.value.paymentInstructionId = await getpaymentInstructionId('FirstDisbursableAmount')
-        api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-identified-after-bidding-branch/20'
-      } else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FINAL_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER') {
-        disbursementData.value.paymentInstructionId = await getpaymentInstructionId('FinalDisbursableAmount')
-        api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/20'
-      }
+      var api = '/workflow/v2/buyer-led-v2-eco-0/funder-approved-the-transaction-branch/20'
+      disbursementData.value.paymentInstructionId = await getpaymentInstructionId('DisbursableAmount')
       const requestBody = {
         externalReferenceId: batchDetails.value.workflowExecutionReferenceId,
         paymentInstructionId: disbursementData.value.paymentInstructionId,
@@ -974,6 +969,9 @@ export default {
         currencyCode: disbursementData.value.currencyCode,
         paymentAdviceDate: moment.utc(disbursementData.value.paymentAdviceDate).format()
       }
+      
+      console.log(requestBody)
+      return
 
       appAxios.post(api, requestBody).then(res => {
         modalLoading.value = false
@@ -1178,6 +1176,7 @@ export default {
       bankAccounts,
       disbursableBankAccount,
       disbursementData,
+      setDisbursmentCurrencyCode,
       files,
       approveAcknowledge,
       declineAcknowledge,
