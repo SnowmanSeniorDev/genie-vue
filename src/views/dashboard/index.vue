@@ -12,9 +12,11 @@
           </div> 
         </div>
         <!-- END: General Report -->
+
         <!-- START: Cards Data -->
         <Cards />
         <!-- END: Cards Data -->
+        
         <!-- STAER: Active Report-->
         <div class='col-span-12 grid grid-cols-3 gap-6 mt-5'>
           <div class='intro-y box p-5'>
@@ -71,17 +73,6 @@
           <ActiveBorrowers v-if="userRole == 'Funder Admin'"/>
         </div>
         <!-- END: Active Report -->
-        <!-- STAER: Stock Chart-->
-        <!-- div class='col-span-12'>
-          <div class='intro-y box w-full'>
-            <div id='stacked-bar-chart' class='p-5'>
-              <div class='preview'>
-                <StackedBarChart :height='200' />
-              </div>
-            </div>
-          </div>
-        </!-->
-        <!-- END: Stock Chart -->
       </div>
     </div>
     <InvoiceUploadModal />
@@ -89,8 +80,7 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, ref } from 'vue'
-import StackedBarChart from '@/components/stacked-bar-chart/Main.vue'
+import { defineComponent, onMounted, ref, watchEffect } from 'vue'
 import { useStore } from 'vuex'
 import moment from 'moment'
 import _ from 'lodash'
@@ -102,7 +92,6 @@ import ProvenanceLang from '@/utils/provenanceLanguage'
 
 export default defineComponent({
   components: {
-    //StackedBarChart,
     InvoiceUploadModal,
     Cards,
     ActiveBorrowers
@@ -111,14 +100,17 @@ export default defineComponent({
   setup() {
     const dateFormat = process.env.VUE_APP_DATE_FORMAT
     const store = useStore()
+    const defaultEcosystemId = ref(store.state.main.defaultEcosystem.ecosystemId)
+    const company_uuid = store.state.account.company_uuid
     const holidays = ref([])
     const pendingActions = ref([])
 
-    onMounted(async () => {
-      const company_uuid = store.state.account.company_uuid
+    const init = async () => {
+      pendingActions.value = []
+      let dashboardApi = ''
+      if(defaultEcosystemId.value === '00000000-0000-0000-0000-000000000000') dashboardApi = `/company/v1/${company_uuid}/dashboarddata`
+      else dashboardApi = `/company/v1/ecosystem/${defaultEcosystemId.value}/${company_uuid}/dashboarddata`
 
-      const dashboardApi = `/company/v1/${company_uuid}/dashboarddata`
-      const api = `/communications/v1/notification/${company_uuid}`
       if(company_uuid !== '00000000-0000-0000-0000-000000000000') {
         await appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
           holidays.value = _.filter(res.data, (holiday) => {return new Date(holiday.date) > new Date()})
@@ -164,6 +156,17 @@ export default defineComponent({
           }
         })
       }
+    }
+
+    watchEffect(() => {
+      if(store.state.main.defaultEcosystem.ecosystemId !== defaultEcosystemId.value) {
+        defaultEcosystemId.value = store.state.main.defaultEcosystem.ecosystemId
+        init()
+      }
+    })
+
+    onMounted(async () => {
+      init()
     })
 
     return {

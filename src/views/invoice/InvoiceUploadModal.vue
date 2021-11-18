@@ -31,7 +31,7 @@
                   </div>
                 </div>
               </div>
-              <div class="flex items-center md:mt-0">
+              <div class="flex items-center md:mt-0" v-if="defaultEcosystemId === '00000000-0000-0000-0000-000000000000'">
                 <label for="bid-end-time" class="md:pl-4 pr-4">Bid End Time</label>
                 <DatePicker v-model="bidEndTime" mode="datetime" :masks="{inputDateTime: dateTimeFormat}">
                   <template v-slot="{ inputValue, inputEvents }">
@@ -180,7 +180,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watchEffect } from "vue";
 import { useStore } from 'vuex';
 import moment from "moment";
 import _ from "lodash";
@@ -202,6 +202,7 @@ export default {
     const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT);
     const store = useStore();
     const company_uuid = store.state.account.company_uuid;
+    const defaultEcosystemId = ref(store.state.main.defaultEcosystem.ecosystemId)
     const bankAccount = ref([]);
     const jsonData = ref([]);
     const fileUpload = ref(null);
@@ -253,7 +254,6 @@ export default {
           }
         }
         if(batch.length) invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
-        // invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
 
         //identify the invoice detail show table header and it will use to determine current invoice is seller led or buyer led
         console.log("workflow led = ", res.data.workflow)
@@ -347,97 +347,130 @@ export default {
         resolve(bankAccount.value)
       })
     }
+    
+    // to getting the upload invoice url and private ecosystem detail
+    const getPrivateEcosystemDetail = () => {
+      return new Promise( async resolve => {
+        const ecosystem = await appAxios.get(`/company/v1/ecosystems/${store.state.main.defaultEcosystem.ecosystemId}`).then(res => res.data)
+        var buyerLedWorkflowAPIEndpoint = ''
+        var sellerLedWorkflowAPIEndpoint = ''
+        
+        if(ecosystem.buyerLedWorkflowId !== '00000000-0000-0000-0000-000000000000') {
+          buyerLedWorkflowAPIEndpoint = await appAxios.get(`/workflow/v2/${ecosystem.buyerLedWorkflowId}`).then(res => {
+            return res.data.workflowStatuses[0].statusUpdateHandlerAPIEndpoint
+          })
+        } 
+        
+        if(ecosystem.sellerLedWorkflowId !== '00000000-0000-0000-0000-000000000000') {
+          sellerLedWorkflowAPIEndpoint = await appAxios.get(`/workflow/v2/${ecosystem.sellerLedWorkflowId}`).then(res => {
+            return res.data.workflowStatuses[0].statusUpdateHandlerAPIEndpoint
+          })
+        }
+
+        const rlt = {
+          ecosystem: ecosystem,
+          buyerLedUploadUrl: buyerLedWorkflowAPIEndpoint,
+          sellerLedUploadUrl: sellerLedWorkflowAPIEndpoint
+        }
+        resolve(rlt)
+      })
+      
+    }
 
     const submitInvoice = async () => {
       var api = ''
       var buyerCompanyId = '';
       var sellerCompanyId = '';
       var requestBodys = [];
-      
-      for(var i = 0; i < invoicesBatch.value.length; i++) {
-        for(var j = 0; j < invoicesBatch.value[i].invoices.length; j++) {
-          invoicesBatch.value[i].invoices[j].documentDate = moment.utc(invoicesBatch.value[i].invoices[j].documentDate).format()
-          invoicesBatch.value[i].invoices[j].paymentDueDate = moment.utc(invoicesBatch.value[i].invoices[j].paymentDueDate).format()
-        }
-      }
-      //preparing invoice upload request body
-      if(workflowLed.value === 'Buyer Led') {
-        api = "/workflow/v2/buyer-led-invoice-financing-workflow-0/0"
-        buyerCompanyId = await getCompanyIdByCompanyName(invoiceToCompanyName.value)
-        await Promise.all(
-          invoicesBatch.value.map(async batch => {
-            var journalBatchEntries = []
-            await Promise.all(
-              batch.invoices.map( async invoice => {
-                const companyId = await getCompanyIdByCompanyName(invoice.invoiceFromCompanyName)
-                journalBatchEntries.push({
-                  ...invoice,
-                  sellerCompanyId: companyId
-                })
-              })
-            )  
-            requestBodys.push({
-              buyerCompanyId: buyerCompanyId,
-              journalBatchEntries,
-              bidEndTime: moment(bidEndTime.value).format(),
-              remarks: batch.remark
-            })
-          })
-        )
-      } else {
-        api = "/workflow/v2/seller-led-invoice-financing-workflow-1/0"
-        sellerCompanyId = await getCompanyIdByCompanyName(invoiceFromCompanyName.value)
 
-        await Promise.all(
-          invoicesBatch.value.map(async batch => {
-            var journalBatchEntries = []
-            await Promise.all(
-              batch.invoices.map(async invoice => {
-                const companyId = await getCompanyIdByCompanyName(invoice.invoiceToCompanyName)
-                journalBatchEntries.push({
-                  ...invoice,
-                  buyerCompanyId: companyId
+      if(store.state.main.defaultEcosystem.ecosystemId === '00000000-0000-0000-0000-000000000000') {
+        //This is public ecosystem
+        //preparing invoice upload request body
+        if(workflowLed.value === 'Buyer Led') {
+          api = "/workflow/v2/buyer-led-invoice-financing-workflow-0/0"
+          buyerCompanyId = await getCompanyIdByCompanyName(invoiceToCompanyName.value)
+          await Promise.all(
+            invoicesBatch.value.map(async batch => {
+              var journalBatchEntries = []
+              await Promise.all(
+                batch.invoices.map( async invoice => {
+                  const companyId = await getCompanyIdByCompanyName(invoice.invoiceFromCompanyName)
+                  journalBatchEntries.push({
+                    ...invoice,
+                    sellerCompanyId: companyId
+                  })
                 })
+              )  
+              requestBodys.push({
+                buyerCompanyId: buyerCompanyId,
+                journalBatchEntries,
+                bidEndTime: moment(bidEndTime.value).format(),
+                remarks: batch.remark
               })
-            )
-            const bank = _.find(bankAccount.value, {bankAccountId: batch.bankId})
-            requestBodys.push({
-              sellerCompanyId: sellerCompanyId,
-              journalBatchEntries,
-              bidEndTime: moment(bidEndTime.value).format(),
-              disbursableBankAccount: {
-                ..._.find(bankAccount.value, {bankAccountId: batch.bankId})
-              },
-              remarks: batch.remark
+            })
+          )
+        } else {
+          api = "/workflow/v2/seller-led-invoice-financing-workflow-1/0"
+          sellerCompanyId = await getCompanyIdByCompanyName(invoiceFromCompanyName.value)
+
+          await Promise.all(
+            invoicesBatch.value.map(async batch => {
+              var journalBatchEntries = []
+              await Promise.all(
+                batch.invoices.map(async invoice => {
+                  const companyId = await getCompanyIdByCompanyName(invoice.invoiceToCompanyName)
+                  journalBatchEntries.push({
+                    ...invoice,
+                    buyerCompanyId: companyId
+                  })
+                })
+              )
+              requestBodys.push({
+                sellerCompanyId: sellerCompanyId,
+                journalBatchEntries,
+                bidEndTime: moment(bidEndTime.value).format(),
+                disbursableBankAccount: {
+                  ..._.find(bankAccount.value, {bankAccountId: batch.bankId})
+                },
+                remarks: batch.remark
+              })
+            })
+          )
+        }
+        //verification request body.
+        if(sellerCompanyId === '00000000-0000-0000-0000-000000000000') {
+          requestValide.value = false;
+          showValidationError(-1, `can not find seller company with ${invoiceFromCompanyName.value}`)
+          return;
+        }
+        else if(buyerCompanyId === '00000000-0000-0000-0000-000000000000') {
+          requestValide.value = false;
+          showValidationError(-1, `Can not find buyer company with ${invoiceToCompanyName.value}`);
+          return;
+        }
+      } else {
+        //This is private Ecosystem
+        const PrivateEcosystem = await getPrivateEcosystemDetail()
+        if(workflowLed.value === 'Buyer Led') api = PrivateEcosystem.buyerLedUploadUrl.replace('/api/genie', '')
+        else api = PrivateEcosystem.sellerLedUploadUrl
+
+        invoicesBatch.value.map(async batch => {
+          var journalBatchEntries = []
+          batch.invoices.map( async invoice => {
+            journalBatchEntries.push({
+              ...invoice,
+              sellerCompanyId: PrivateEcosystem.ecosystem.sellerCompanyId
             })
           })
-        )
+          requestBodys.push({
+            buyerCompanyId: PrivateEcosystem.ecosystem.buyerCompanyId,
+            ecosystemId: PrivateEcosystem.ecosystem.ecosystemId,
+            journalBatchEntries,
+            remarks: batch.remark
+          })
+        })
       }
-      //verification request body.
-      if(sellerCompanyId === '00000000-0000-0000-0000-000000000000') {
-        requestValide.value = false;
-        showValidationError(-1, `can not find seller company with ${invoiceFromCompanyName.value}`)
-        return;
-      }
-      else if(buyerCompanyId === '00000000-0000-0000-0000-000000000000') {
-        requestValide.value = false;
-        showValidationError(-1, `Can not find buyer company with ${invoiceToCompanyName.value}`);
-        return;
-      }
-      // else if(_.find(journalBatchEntries, {buyerCompanyId: '00000000-0000-0000-0000-000000000000'})) {
-      //   requestValide.value = false;
-      //   const index = _.findIndex(journalBatchEntries, {buyerCompanyId: '00000000-0000-0000-0000-000000000000'});
-      //   showValidationError(index, `Can not fild buyer company with ${journalBatchEntries[index].invoiceToCompanyName}`);
-      //   return;
-      // }
-      // else if(_.find(journalBatchEntries, {sellerCompanyId: '00000000-0000-0000-0000-000000000000'})) {
-      //   requestValide.value = false;
-      //   const index = _.findIndex(journalBatchEntries, {sellerCompanyId: '00000000-0000-0000-0000-000000000000'});
-      //   showValidationError(index, `Can not fild seller company with ${journalBatchEntries[index].invoiceFromCompanyName}`);
-      //   return;
-      // }
       
-      //upload invoice
       loading.value = !loading.value
       var noError = true
       await Promise.all(
@@ -482,7 +515,6 @@ export default {
     const fileChoosen = async (event) => {
       const fileUploadApi = 'uploads/v1/invoice_batch';
       let formData = new FormData();
-      // if(!event.target.files.length) return;
       if(event.target.files.length) {
         formData.append('file', event.target.files[0])
         uploadedFileId.value = await sysAxios.post(fileUploadApi, formData, {
@@ -494,9 +526,17 @@ export default {
 
     const init = async () => {
       await getCompanyBankAccounts()
-      documentFormats.value = await appAxios.get(`/company/v1/${store.state.account.company_uuid}/datasourcesystem`).then(res => res.data)
+      const datasourceAPI = `/company/v1/${store.state.main.defaultEcosystem.ecosystemId}/${store.state.account.company_uuid}/datasourcesystem`
+      documentFormats.value = await appAxios.get(datasourceAPI).then(res => res.data)
       loading.value = false
     }
+
+    watchEffect(() => {
+      if(store.state.main.defaultEcosystem.ecosystemId !== defaultEcosystemId.value) {
+        defaultEcosystemId.value = store.state.main.defaultEcosystem.ecosystemId
+        init()
+      }
+    })
 
     onMounted(() => {
       init()
@@ -510,6 +550,7 @@ export default {
       documentFormat,
       companyTypeHeader,
       workflowLed,
+      defaultEcosystemId,
       documentFormats,
       bankAccount,
       setDocumentFromat,

@@ -93,7 +93,7 @@
   </div>
 </template>
 <script>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watchEffect } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import feather from 'feather-icons'
@@ -109,10 +109,11 @@ export default {
     InvoiceUploadModal
   },
   setup() {
-    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT)
-    const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT) 
-    const selectedTab = ref('Pending Action')
     const store = useStore()
+    const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
+    const company_uuid = store.state.account.company_uuid
+    const defaultEcosystemId = ref(store.state.main.defaultEcosystem.ecosystemId)
+    const selectedTab = ref('Pending Action')
     const router = useRouter()
     const tableRef = ref()
     const tabulator = ref()
@@ -260,8 +261,10 @@ export default {
     }
   
     const getPendingAction = async () => {
-      const company_uuid = store.state.account.company_uuid
-      const pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`
+      pendingActions.value = []
+      let pendingActionApi = ''
+      if(defaultEcosystemId.value === '00000000-0000-0000-0000-000000000000') pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`
+      else pendingActionApi = `/company/v1/ecosystem/${defaultEcosystemId.value}/${company_uuid}/dashboarddata`
  
       await appAxios.get(pendingActionApi).then(async res => {
         let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction
@@ -344,6 +347,13 @@ export default {
       }      
     }
 
+    watchEffect(() => {
+      if(store.state.main.defaultEcosystem.ecosystemId !== defaultEcosystemId.value) {
+        defaultEcosystemId.value = store.state.main.defaultEcosystem.ecosystemId
+        getPendingAction()
+      }
+    })
+
     onMounted(async () => {
       
       getInvoiceOverview()
@@ -356,7 +366,6 @@ export default {
     })
 
     return {
-      dateFormat,
       dateTimeFormat,
       selectedTab,
       isCompany,

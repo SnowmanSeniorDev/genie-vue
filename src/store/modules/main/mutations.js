@@ -1,4 +1,10 @@
-import { SET_DARK_MODE, SET_MENU, SET_PERMISSIONS } from "./mutation-types";
+import {
+  SET_DARK_MODE,
+  SET_MENU,
+  SET_PERMISSIONS,
+  SET_ECOSYSTEMS,
+  UPDATE_DEFAULTECOSYSTEM
+} from "./mutation-types";
 
 export default {
   [SET_DARK_MODE](state, { darkMode }) {
@@ -9,5 +15,11 @@ export default {
   },
   [SET_PERMISSIONS](state, permissions) {
     state.permissions = permissions
+  },
+  [SET_ECOSYSTEMS](state, ecoSystem) {
+    state.ecoSystem = ecoSystem
+  },
+  [UPDATE_DEFAULTECOSYSTEM](state, defaultEcosystem) {
+    state.defaultEcosystem = defaultEcosystem
   }
 };

@@ -211,8 +211,7 @@ export default {
     const deleteCompany = () => {
       const api = `company/v1/${companyProfile.value.companyId}`
       appAxios.delete(api).then(res => {
-        if(res)
-        {
+        if(res) {
           router.push({path: `/companies`})
         }
       })

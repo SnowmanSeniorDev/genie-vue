@@ -33,7 +33,7 @@ import CurrencySettings from "../views/account/CurrencySettings.vue";
 import Kyc from "../views/account/Kyc.vue";
 import CompanyOnboard from "../views/onboard/index.vue";
 import Invoice from "../views/invoice/index.vue";
-import InvoiceDetail from "../views/invoice/InvoiceDetail.vue"
+import InvoiceDetail from "../views/invoice/invoiceDetail"
 import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Error.vue";
 import AccessDenied from "../views/error-page/AccessDenied.vue";
