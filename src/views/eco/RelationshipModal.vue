@@ -155,12 +155,16 @@
     </div>
     <hr class="my-8"/>
     <div class="flex justify-end">
-      <button class="w-32 btn" @click="deleteEcoSystem" :disabled='loading'>
+      <button class="w-32 btn" @click="deleteEcoSystem" :disabled='loading' v-if="ecoSystemBody.status == 'Pending' || ecoSystemBody.status == 'Active'">
         Delete
         <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
       </button> 
-      <button class="w-32 btn btn-primary" @click="saveEcoSystem" :disabled='loading'>
-        Submit
+       <button class="w-32 btn btn-primary" @click="activeEcoSystem" :disabled='loading' v-if="ecoSystemBody.status == 'Pending'">
+        Active
+        <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
+      </button>
+      <button class="w-32 btn btn-primary" @click="saveEcoSystem" :disabled='loading' v-if="ecoSystemBody.status == 'Pending'">
+        Save
         <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
       </button>
     </div> 
@@ -218,6 +222,13 @@ export default {
     const $v = useVuelidate(rules.value, ecoSystemBody);
     const deleteEcoSystem = async() => {
       ecoSystemBody.value.status ='Deleted';
+      await appAxios.put('/company/v1/ecosystems',ecoSystemBody.value).then(res => { 
+            cash("#relationship-modal").modal("hide");
+            props.callback()
+          })
+    }
+    const activeEcoSystem = async() => {
+      ecoSystemBody.value.status ='Active';
       await appAxios.put('/company/v1/ecosystems',ecoSystemBody.value).then(res => { 
             cash("#relationship-modal").modal("hide");
             props.callback()
@@ -292,6 +303,7 @@ export default {
       rules,
       saveEcoSystem,
       deleteEcoSystem,
+      activeEcoSystem,
       workflowLists,
       loading,
       dateFormat, 
