@@ -516,7 +516,7 @@
       </div>
     </div>
     <div id='funder-acknowledge-upload-repayment-advice' class='modal' tabindex='-1' aria-hidden='true'>
-      <div class='modal-dialog modal-lg' v-if='confirmFunderAcknowledgeReceiveOfRepaymentData'>
+      <div class='modal-dialog modal-lg'>
         <div class='modal-content'>
           <!-- BEGIN: Modal Header -->
           <div class='modal-header'>
@@ -563,12 +563,13 @@
 import { ref, onMounted, reactive } from 'vue'
 import { useStore } from 'vuex'
 import Toastify from 'toastify-js'
-import { useDropzone } from 'vue3-dropzone'
 import _ from 'lodash'
 import moment from 'moment'
-import SignaturePad from './SignaturePad.vue'
+import { useDropzone } from 'vue3-dropzone'
 
+import SignaturePad from './SignaturePad.vue'
 import { sysAxios, appAxios } from '@/plugins/axios'
+
 
 export default {
   props: {
@@ -618,11 +619,7 @@ export default {
     const valueDate = ref()
     const bidValue = ref(null)
     const files = ref()
-    const options = reactive({
-      multiple: true,
-      onDrop,
-      accept: '.jpg, .csv',
-    })
+    
     const disbursementData = ref({
       paymentAdviceNumber: null,
       paymentAdviceAmount: null,
@@ -637,6 +634,11 @@ export default {
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles
     }
+
+    const options = reactive({
+      multiple: true,
+      onDrop,
+    })
 
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
@@ -785,11 +787,7 @@ export default {
     const removeFile = () => files.value = null
 
     const openSellerAcknowledgeOfReceiveDisbursementModel = async () => {
-      var paymentInstructionId
-      if(batchDetails.value.workflowLed === 'Buyer Led') paymentInstructionId = await getpaymentInstructionId('DisbursableAmount')
-      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') paymentInstructionId = await getpaymentInstructionId('FirstDisbursableAmount')
-      else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FINAL_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') paymentInstructionId = await getpaymentInstructionId('FinalDisbursableAmount')
-
+      var paymentInstructionId = await getpaymentInstructionId('DisbursableAmount')
       const api = `/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
       const resData = await appAxios.get(api)
       confirmAbleDisbursementData.value = {..._.find(resData.data, {paymentInstructionId: paymentInstructionId}) }
@@ -970,9 +968,6 @@ export default {
         paymentAdviceDate: moment.utc(disbursementData.value.paymentAdviceDate).format()
       }
       
-      console.log(requestBody)
-      return
-
       appAxios.post(api, requestBody).then(res => {
         modalLoading.value = false
         if(res.status == '200') {
@@ -984,39 +979,33 @@ export default {
 
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
       modalLoading.value = true
-      await saveSignature().then( async()=>{ 
-        if(signatureFileUrl.value == null) {
-          Toastify({
-            node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
-            duration: 3000,
-            newWindow: true,
-            close: true,
-            gravity: 'top',
-            position: 'right',
-            stopOnFocus: true,
-          }).showToast()
+      const signatureUrl = await saveSignature()
+      if(signatureUrl) {
+        var api = '/workflow/v2/buyer-led-v2-eco-0/seller-acknowledged-receive-of-disbursement-branch/0'
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          signatureUri: signatureFileUrl.value,
+          remarks: remark.value
+        }
+        await appAxios.post(api, request).then(res => {
           modalLoading.value = false
-        }
-        else {
-          var api = ''
-          if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
-          else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
-          else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FINAL_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
-          
-          const request = {
-            externalReferenceId: props.workflowExecutionReferenceId,
-            signatureUri: signatureFileUrl.value,
-            remarks: remark.value
+          if(res.status === 200) {
+            cash('#seller-acknowledge-of-receive-disbursement').modal('hide')
+            provenanceApi()
           }
-          await appAxios.post(api, request).then(res => {
-            modalLoading.value = false
-            if(res.status === 200) {
-              cash('#seller-acknowledge-of-receive-disbursement').modal('hide')
-              provenanceApi()
-            }
-          })
-        }
-      })
+        })
+      } else {
+        Toastify({
+          node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
+          duration: 3000,
+          newWindow: true,
+          close: true,
+          gravity: 'top',
+          position: 'right',
+          stopOnFocus: true,
+        }).showToast()
+        modalLoading.value = false
+      }
     }
 
     const BuyerUploadRepaymentAdvice = async () => {

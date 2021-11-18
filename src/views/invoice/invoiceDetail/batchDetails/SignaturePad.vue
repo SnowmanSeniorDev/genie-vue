@@ -50,7 +50,11 @@ export default {
 
     const saveSignature = async () => {
       const signature = getSignaturePad().saveSignature()
-      if(!signature.isEmpty) context.emit('update:modelValue', signature)
+      console.log(signature)
+      if(!signature.isEmpty) {
+        context.emit('update:modelValue', signature)
+        console.log(props.signature)
+      }
     }
 
     const onInput = (value) => {
