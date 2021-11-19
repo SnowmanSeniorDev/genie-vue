@@ -69,12 +69,12 @@
         </tr> 
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
           <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
-        </tr>  
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' && batchDetails.workflowLed === 'Seller Led' || batchDetails.sellerCompanyId == currentLoginCompanyId && batchDetails.workflowLed === 'Seller Led'">
           <td class='border'>Balance Settlement Amount to Seller</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
-        </tr>  
+        </tr>
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
@@ -130,6 +130,14 @@
             <div class='self-center'>{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
             <div class='self-center'>Payment Due Date</div>
             <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
+            <div class='self-center' v-if="batchDetails.workflowLed == 'Buyer Led'">Select Disbursement Bank Account</div>
+            <div class='self-center' v-if="batchDetails.workflowLed == 'Buyer Led'">
+              <select v-model="disbursableBankAccount" class="form-select">
+                <option v-for="bank in bankAccounts" :key="bank.bankAccountId" :value="bank.bankAccountId">
+                  {{bank.accountNumber}} ({{bank.bankName}})
+                </option>
+              </select>
+            </div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
               <textarea v-model='remark' class='border-2 w-full' rows='3' />
@@ -238,7 +246,7 @@
                 <td class='border'>
                   <input type='text' v-model='bidValue' @change='getEstimateCalc' class='form-control'/>
                 </td>
-              </tr>  
+              </tr>
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Interest Earn</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
@@ -249,9 +257,11 @@
               </tr> 
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1}}</td>
+                <td class='border'>
+                  {{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount}}
+                </td>
               </tr>  
-              <tr class='hover:bg-gray-200'>
+              <tr class='hover:bg-gray-200' v-if="batchDetails.workflowLed === 'Seller Led'">
                 <td class='border'>Balance Settlement Amount to Seller</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2}}</td>
               </tr>  
@@ -571,6 +581,8 @@ export default {
       visibleBuyerUploadRepaymentAdvice: false,
       visibleFunderAcknowledgeRepaymentAdvice: false,
     })
+    const bankAccounts = ref([])
+    const disbursableBankAccount = ref('')
     const batchMessage = ref('')
     const adminCompany = ref(props.adminCompany)
     const signature = ref(null)
@@ -619,6 +631,16 @@ export default {
         })
 
         return {provenance: provenance.value}
+      })
+    }
+
+    const getCompanyBankAccounts = async () => {
+      bankAccounts.value = await appAxios.get(`company/v1/${store.state.account.company_uuid}/bankaccounts`).then(res => {
+        return res.data
+      })
+
+      return new Promise((resolve) => {
+        resolve(bankAccounts.value)
       })
     }
 
@@ -810,7 +832,7 @@ export default {
             externalReferenceId: props.workflowExecutionReferenceId,
             remark: remark.value,
             signatureUri: signatureUrl,
-            disbursableBankAccount: {}
+            disbursableBankAccount: _.find(bankAccounts.value, {bankAccountId: disbursableBankAccount.value})
           }
         }
 
@@ -856,7 +878,7 @@ export default {
       }) 
     }
 
-    const getEstimateCalc = async()=>{
+    const getEstimateCalc = async () => {
       if(valueDate.value != '' && valueDate.value != null && valueDate.value != undefined){
         batchDetails.value.valueDate = valueDate.value 
         let dueDt = moment(batchDetails.value.paymentDueDate)
@@ -870,7 +892,7 @@ export default {
         && valueDate.value != null && valueDate.value != undefined
       ) {
         let apiUrl = ''
-        if(batchDetails.value.initiatedByCompanyId == batchDetails.value.buyerCompanyId){
+        if(batchDetails.value.workflowLed === 'Buyer Led'){
           apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`
           //started by buyer
         }
@@ -882,8 +904,13 @@ export default {
           let data = res.data
           batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat)
           batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat)
-          batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1.toFixed(2)
-          batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2.toFixed(2)
+          if(batchDetails.value.workflowLed === 'Seller Led') {
+            batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1.toFixed(2)
+            batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2.toFixed(2)
+          } else {
+            batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount.toFixed(2)
+          }
+          
           batchDetails.value.formula.interestAmount = data.interestAmount.toFixed(2)
           batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount.toFixed(2)
           batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat)
@@ -891,6 +918,43 @@ export default {
           batchDetails.value.formula.repaymentAmountDueDate = moment(data.repaymentAmountDueDate).format(dateFormat)
         })
       }
+    }
+
+    const getFormulaFee = async () => {
+      return new Promise(async (resolve) => {
+        if(batchDetails.value.interestRate) {
+          var apiUrl = ''
+          if(batchDetails.value.workflowLed === 'Buyer Led'){
+          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&valueDate=${batchDetails.value.valueDate}`
+          //started by buyer
+          }
+          else{
+            apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&valueDate=${batchDetails.value.valueDate}`
+            //started by seller
+          }
+          await appAxios.get(apiUrl).then(res => {
+            console.log(res.data)
+            let data = res.data
+            batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat)
+            batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat)
+            if(batchDetails.value.workflowLed === 'Seller Led') {
+              batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount1.toFixed(2)
+              batchDetails.value.formula.disbursableAmount2 = data.disbursableAmount2.toFixed(2)
+            } else {
+              batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount.toFixed(2)
+            }
+            
+            batchDetails.value.formula.interestAmount = data.interestAmount.toFixed(2)
+            batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount.toFixed(2)
+            batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat)
+            batchDetails.value.formula.repaymentAmount = data.repaymentAmount.toFixed(2)
+            batchDetails.value.formula.repaymentAmountDueDate = moment(data.repaymentAmountDueDate).format(dateFormat)
+          })
+        }
+
+        resolve('get formula fee')
+      })
+      
     }
 
     const submitProposal = async () => {
@@ -1071,6 +1135,8 @@ export default {
     const init = async () => {
       console.log(batchDetails.value)
       await Promise.all([
+        getFormulaFee(),
+        getCompanyBankAccounts(),
         getProvenanceHistory(),
         getLastWorkflowStatus(),
         getCurrencyCode(),
@@ -1152,6 +1218,8 @@ export default {
       visibleWorkflowActions,
       batchMessage,
       approveAcknowledge,
+      bankAccounts,
+      disbursableBankAccount,
       declineAcknowledge,
       remark,
       valueDate,
