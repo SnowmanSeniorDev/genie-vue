@@ -214,7 +214,7 @@
                         months: true,
                         years: true
                       },
-                      callback:getEstimateCalc(),
+                      callback: getEstimateCalc,
                       lockDays: lockDays
                     }'
                     class='form-control'
@@ -577,18 +577,12 @@ export default {
 
     const initComponent = ref(false)
     const modalLoading = ref(false)
-    const signatureLoading = ref(false)
-    const signatureFileUrl = ref(null)
     const uploadErrorMessage = ref()
     const remark = ref(null)
     const valueDate = ref()
     const bidValue = ref(null)
     const files = ref()
-    const options = reactive({
-      multiple: true,
-      onDrop,
-      accept: '.jpg, .csv',
-    })
+    
     const disbursementData = ref({
       paymentAdviceNumber: null,
       paymentAdviceAmount: null,
@@ -603,6 +597,11 @@ export default {
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles
     }
+    const options = reactive({
+      multiple: true,
+      onDrop,
+      accept: '.jpg, .csv',
+    })
 
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
@@ -743,7 +742,6 @@ export default {
       const fileUploadApi = 'uploads/v1/acknowledgement_signature'
       return new Promise(resolve => {
         let formData = new FormData()
-        console.log(signature.value)
         if(signature.value === null) resolve(null)
         else {
           formData.append('file', signature.value.file)
@@ -813,13 +811,12 @@ export default {
       const signatureUrl = await saveSignature()
       if(signatureUrl) {
         let api = ''
-        let requestBody = {}
         if(batchDetails.value.workflowLed === 'Seller Led') {
           api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-acknowledge-the-transaction-branch/0'
           requestBody = {
             externalReferenceId: props.workflowExecutionReferenceId,
             remark: remark.value,
-            signatureUri: signatureFileUrl.value,
+            signatureUri: signatureUrl,
             disbursableBankAccount: {}
           }
         } else {
@@ -827,14 +824,14 @@ export default {
           requestBody = {
             externalReferenceId: props.workflowExecutionReferenceId,
             remark: remark.value,
-            signatureUri: signatureFileUrl.value
+            signatureUri: signatureUrl
           }
         }
 
         await appAxios.post(api, {
           externalReferenceId: props.workflowExecutionReferenceId,
           remark: remark.value,
-          signatureUri: signatureFileUrl.value
+          signatureUri: signatureUrl
         }).then(res => {
           modalLoading.value = false
           if(res.status === 200) {
@@ -865,7 +862,6 @@ export default {
       appAxios.post(api, {
         externalReferenceId: props.workflowExecutionReferenceId,
         remark: remark.value,
-        signatureUri: signatureFileUrl.value
       }).then(res => {
         if(res.status === 200) {
           visibleWorkflowActions.value.visibleApproveButton = false
@@ -974,41 +970,40 @@ export default {
     }
 
     const sellerAcknowledgeOfReceiveDisbursement = async () => {
-      modalLoading.value = true
-      await saveSignature().then( async()=>{ 
-        if(signatureFileUrl.value == null) {
-          uploadErrorMessage.value = 'Your signature is required!'
-          Toastify({
-            node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
-            duration: 3000,
-            newWindow: true,
-            close: true,
-            gravity: 'top',
-            position: 'right',
-            stopOnFocus: true,
-          }).showToast()
+     modalLoading.value = true
+      const signatureUrl = await saveSignature()
+      if(signatureUrl) {
+        var api = ''
+        if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
+        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
+        else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FINAL_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
+        
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          signatureUri: signatureUrl,
+          remarks: remark.value
+        }
+        await appAxios.post(api, request).then(res => {
           modalLoading.value = false
-        }
-        else {
-          var api = ''
-          if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledged-receive-of-disbursement-branch/0'
-          else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-first-disbursement-branch/0'
-          else if(batchDetails.value.workflowLed === 'Seller Led' && lastWorkStatus.value.statusName === 'FINAL_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/seller-acknowledged-receive-of-final-disbursement-branch/0'
-          
-          const request = {
-            externalReferenceId: props.workflowExecutionReferenceId,
-            signatureUri: signatureFileUrl.value,
-            remarks: remark.value
+          if(res.status === 200) {
+            cash('#seller-acknowledge-of-receive-disbursement').modal('hide')
+            provenanceApi()
           }
-          await appAxios.post(api, request).then(res => {
-            modalLoading.value = false
-            if(res.status === 200) {
-              cash('#seller-acknowledge-of-receive-disbursement').modal('hide')
-              provenanceApi()
-            }
-          })
-        }
-      })
+        })
+      }
+      else {
+        uploadErrorMessage.value = 'Your signature is required!'
+        Toastify({
+          node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
+          duration: 3000,
+          newWindow: true,
+          close: true,
+          gravity: 'top',
+          position: 'right',
+          stopOnFocus: true,
+        }).showToast()
+        modalLoading.value = false
+      }
     }
 
     const BuyerUploadRepaymentAdvice = async () => {
@@ -1037,42 +1032,25 @@ export default {
 
     const funderAcknowledgeOfRepaymentComfirm = async () => {
       modalLoading.value = true
-      await saveSignature().then( async()=>{ 
-        if(signatureFileUrl.value == null) {
-          uploadErrorMessage.value = 'Your signature is required!'
-          Toastify({
-            node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
-            duration: 3000,
-            newWindow: true,
-            close: true,
-            gravity: 'top',
-            position: 'right',
-            stopOnFocus: true,
-          }).showToast()
+      const signatureUrl = await saveSignature()
+      if(signatureUrl) {
+        var api = ''
+        if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
+        if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
+        const request = {
+          externalReferenceId: props.workflowExecutionReferenceId,
+          signatureUri: signatureUrl,
+          remarks: remark.value
+        }
+        await appAxios.post(api, request).then(res => {
           modalLoading.value = false
-        }
-        else {
-          var api = ''
-          if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-acknowledge-received-of-repayment-branch/0'
-          if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-acknowledge-received-of-repayment-branch/0'
-          const request = {
-            externalReferenceId: props.workflowExecutionReferenceId,
-            signatureUri: signatureFileUrl.value,
-            remarks: remark.value
+          if(res.status === 200){
+            cash('#funder-acknowledge-upload-repayment-advice').modal('hide')
+            updateProvenanceApi()
           }
-          await appAxios.post(api, request).then(res => {
-            modalLoading.value = false
-            if(res.status === 200){
-              cash('#funder-acknowledge-upload-repayment-advice').modal('hide')
-              updateProvenanceApi()
-            }
-          })
-        }
-      })
-    }
-
-    const funderAcknowledgeOfRepaymentDecline = async () => {
-      if(signatureFileUrl.value == null) {
+        })
+      }
+      else {
         uploadErrorMessage.value = 'Your signature is required!'
         Toastify({
           node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
@@ -1082,22 +1060,22 @@ export default {
           gravity: 'top',
           position: 'right',
           stopOnFocus: true,
-        }).showToast() 
+        }).showToast()
+        modalLoading.value = false
       }
-      else {
-        await saveSignature().then( async()=>{ 
-          if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
-          if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
-          const request = {
-            externalReferenceId: props.workflowExecutionReferenceId,
-            remarks: remark.value
-          }
-          await appAxios.post(api, request).then(res => {
-            cash('#funder-acknowledge-upload-repayment-advice').modal('hide')
-            updateProvenanceApi()
-          })
-        })
+    }
+
+    const funderAcknowledgeOfRepaymentDecline = async () => {
+      if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/funder-not-acknowledged-receive-of-repayment-branch/0'
+      if(batchDetails.value.workflowLed === 'Seller Led') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/funder-not-acknowledged-receive-of-repayment-branch/0'
+      const request = {
+        externalReferenceId: props.workflowExecutionReferenceId,
+        remarks: remark.value
       }
+      await appAxios.post(api, request).then(res => {
+        cash('#funder-acknowledge-upload-repayment-advice').modal('hide')
+        updateProvenanceApi()
+      })
     }
 
     const updateProvenanceApi = () => {
