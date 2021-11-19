@@ -9,15 +9,15 @@
       <table class='table mt-2'>
         <tr class='hover:bg-gray-200'>
           <td class='border w-1/2'>Buyer Company</td>
-          <td class='border'>{{batchDetails.batchInformation.buyerCompany}}</td>
+          <td class='border'>{{batchDetails.buyerCompanyName}}</td>
         </tr>
         <tr class='hover:bg-gray-200'>
           <td class='border'>Seller Company</td>
-          <td class='border'>{{batchDetails.batchInformation.sellerCompany ? batchDetails.batchInformation.sellerCompany : 'NA'}}</td>
+          <td class='border'>{{batchDetails.sellerCompanyName}}</td>
         </tr>
-        <tr class='hover:bg-gray-200' v-if="lodash.find(provenance, {statusName: 'AWAITING_BIDDING_RESULT'})?.passed">
+        <tr class='hover:bg-gray-200'>
           <td class='border'>Funder Company</td>
-          <td class='border'>{{batchDetails.batchInformation.funderCompany ? batchDetails.batchInformation.funderCompany : 'NA'}}</td>
+          <td class='border'>{{batchDetails.funderCompanyName ? batchDetails.funderCompanyName : 'Not Selected Yet'}}</td>
         </tr>
         <tr class='hover:bg-gray-200'>
           <td class='border'>No of batch entries</td>
@@ -665,27 +665,29 @@ export default {
 
     const invoiceDetailApi = async() => {
       return Promise.all([
-        new Promise((resolve) => {
-          const batchBuyerApi = `/company/v1/${batchDetails.value.buyerCompanyId}`
-          appAxios.get(batchBuyerApi).then(res => {
-            batchDetails.value.batchInformation.buyerCompany = res.data.companyDisplayName
-            resolve({buyerCompany: batchDetails.value.batchInformation.buyerCompany})
-          })
-        }),
-        new Promise((resolve) => {
-          const batchSellerApi = `/company/v1/${batchDetails.value.sellerCompanyId}`
-          appAxios.get(batchSellerApi).then(res => {
-            batchDetails.value.batchInformation.sellerCompany = res.data.companyDisplayName
-            resolve({sellerCompany: batchDetails.value.batchInformation.sellerCompany})
-          })
-        }),
-        new Promise((resolve) => {
-          const batchFunderApi = `/company/v1/${batchDetails.value.funderCompanyId}`
-          appAxios.get(batchFunderApi).then(res => {
-            batchDetails.value.batchInformation.funderCompany = res.data.companyDisplayName
-            resolve({funderCompany: batchDetails.value.batchInformation.funderCompany})
-          })
-        }),
+        // new Promise((resolve) => {
+        //   const batchBuyerApi = `/company/v1/${batchDetails.value.buyerCompanyId}`
+        //   appAxios.get(batchBuyerApi).then(res => {
+        //     batchDetails.value.batchInformation.buyerCompany = res.data.companyDisplayName
+        //     resolve({buyerCompany: batchDetails.value.batchInformation.buyerCompany})
+        //   })
+        // }),
+        // new Promise((resolve) => {
+        //   const batchSellerApi = `/company/v1/${batchDetails.value.sellerCompanyId}`
+        //   appAxios.get(batchSellerApi).then(res => {
+        //     batchDetails.value.batchInformation.sellerCompany = res.data.companyDisplayName
+        //     resolve({sellerCompany: batchDetails.value.batchInformation.sellerCompany})
+        //   })
+        // }),
+        // new Promise((resolve) => {
+        //   if(batchDetails.value.funderCompanyId !== '00000000-0000-0000-0000-000000000000') {
+        //     const batchFunderApi = `/company/v1/${batchDetails.value.funderCompanyId}`
+        //     appAxios.get(batchFunderApi).then(res => {
+        //       batchDetails.value.batchInformation.funderCompany = res.data.companyDisplayName
+        //       resolve({funderCompany: batchDetails.value.batchInformation.funderCompany})
+        //     })
+        //   }
+        // }),
         new Promise((resolve) => {
           const processingFeeApi = `/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
           appAxios.get(processingFeeApi).then(res => {
@@ -723,19 +725,6 @@ export default {
       ]).then(values => {
         return values
       })
-    }
-
-    const onInput = (value) => {
-      if (!value) {
-        signatureDataURL.value = null
-        signatureFile.value = null
-      } else if (value instanceof File) {
-        signatureDataURL.value = null
-        signatureFile.value = value
-      } else {
-        signatureDataURL.value = value
-        signatureFile.value = null
-      }
     }
 
     const saveSignature = async () => {
@@ -802,13 +791,10 @@ export default {
       })
     }
 
-    const getStatusUpdateHandlerAPIEndpoint = async () => {
-      console.log('lastwork status = ', lastWorkStatus.value)
-    }
-
     const approveAcknowledge = async () => { 
       modalLoading.value = true
       const signatureUrl = await saveSignature()
+      var requestBody = null
       if(signatureUrl) {
         let api = ''
         if(batchDetails.value.workflowLed === 'Seller Led') {
@@ -817,14 +803,14 @@ export default {
             externalReferenceId: props.workflowExecutionReferenceId,
             remark: remark.value,
             signatureUri: signatureUrl,
-            disbursableBankAccount: {}
           }
         } else {
           api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-acknowledge-the-transaction-branch/0'
           requestBody = {
             externalReferenceId: props.workflowExecutionReferenceId,
             remark: remark.value,
-            signatureUri: signatureUrl
+            signatureUri: signatureUrl,
+            disbursableBankAccount: {}
           }
         }
 
@@ -1083,7 +1069,7 @@ export default {
     }
 
     const init = async () => {
-      
+      console.log(batchDetails.value)
       await Promise.all([
         getProvenanceHistory(),
         getLastWorkflowStatus(),
@@ -1165,10 +1151,6 @@ export default {
       signature,
       visibleWorkflowActions,
       batchMessage,
-      signatureFile,
-      onInput,
-      undoSignature,
-      clearSignature,
       approveAcknowledge,
       declineAcknowledge,
       remark,

@@ -202,8 +202,8 @@ export default {
 
       var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
-        if(res.data[0].rootWorkflowId === buyerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
-        if(res.data[0].rootWorkflowId === sellerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
+        if(res.data[0].rootWorkflowId === buyerLedWorkflowId) batchDetails.value.workflowLed = 'Buyer Led'
+        if(res.data[0].rootWorkflowId === sellerLedWorkflowId) batchDetails.value.workflowLed = 'Seller Led'
         return batchDetails.value.workflowLed
       })
 
@@ -211,6 +211,7 @@ export default {
 
     onMounted(async () => {
       await init()
+      console.log('batchDetails: ', batchDetails.value)
       initComponent.value = true
     })
     
