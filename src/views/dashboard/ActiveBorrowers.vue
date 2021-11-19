@@ -32,7 +32,10 @@ export default {
     const init = async () => {
       const company_uuid = store.state.account.company_uuid;
       activeBorrowerCompanies.value = []
-      const companyIds = await appAxios.get(`/company/v1/ecosystem/${defaultEcosystemId.value}/${company_uuid}/dashboarddata`).then(res => res.data.funderCompanyDashBoard.activeBorrowerCompanyIds)
+      var api = ''
+      if(defaultEcosystemId.value === '00000000-0000-0000-0000-000000000000') api = `/company/v1/${company_uuid}/dashboarddata`
+      else api = `/company/v1/ecosystem/${defaultEcosystemId.value}/${company_uuid}/dashboarddata` 
+      const companyIds = await appAxios.get(api).then(res => res.data.funderCompanyDashBoard.activeBorrowerCompanyIds)
       await Promise.all(
         companyIds.map(companyId => {
           appAxios.get(`/company/v1/${companyId}`).then(

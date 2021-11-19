@@ -71,10 +71,10 @@
           <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
         </tr>  
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <!-- <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
           <td class='border'>Balance Settlement Amount to Seller</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
-        </tr>  
+        </tr>   -->
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
@@ -708,6 +708,31 @@ export default {
 
       return new Promise(resolve => resolve(lockDays.value))
     }
+    
+    const getFormulaFee = async () => {
+      return new Promise(async (resolve) => {
+        if(batchDetails.value.valueDate) {
+          var apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?refId=${props.workflowExecutionReferenceId}&valueDate=${batchDetails.value.valueDate}`
+          //started by buyer
+          await appAxios.get(apiUrl).then(res => {
+            console.log('get formularfee: ', res.data)
+            let data = res.data
+            batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat)
+            batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat)
+            batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount.toFixed(2)
+            
+            batchDetails.value.formula.interestAmount = data.interestAmount.toFixed(2)
+            batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount.toFixed(2)
+            batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat)
+            batchDetails.value.formula.repaymentAmount = data.repaymentAmount.toFixed(2)
+            batchDetails.value.formula.repaymentAmountDueDate = moment(data.repaymentAmountDueDate).format(dateFormat)
+          })
+        }
+
+        resolve('get formula fee')
+      })
+      
+    }
 
     const invoiceDetailApi = async() => {
       return Promise.all([
@@ -740,29 +765,9 @@ export default {
             let valueDt = moment(batchDetails.value.valueDate) 
             let noOfDays = dueDt.diff(valueDt,'days')
             batchDetails.value.numberOfDays = noOfDays
-            batchDetails.value.formula.interestAmount = (batchDetails.value.formula.interestRate * batchDetails.value.formula.repaymentAmountToFunder / 365 * noOfDays).toFixed(2)
-
-            var tax1 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId, label:'FirstDisbursableAmount'})
-            batchDetails.value.formula.disbursableAmount1 = tax1?.amountBeforeTax.toFixed(2)
-            batchDetails.value.formula.disburableAmount1DueDate = moment.utc(tax1?.dueDate).format(dateFormat)
-
-            var tax2 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId, label:'FinalDisbursableAmount'})
-            batchDetails.value.formula.disbursableAmount2 = tax2?.amountBeforeTax.toFixed(2)
-            batchDetails.value.formula.disburableAmount2DueDate = moment.utc(tax2?.dueDate).format(dateFormat)
-
-            var platformFee = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: adminCompany.value})
-            batchDetails.value.formula.platformFeeAmount = platformFee?.amountBeforeTax
-            batchDetails.value.formula.platformFeeDate = platformFee?.dueDate
 
             resolve({
               numberOfDays: noOfDays,
-              interestAmount: batchDetails.value.formula.interestAmount,
-              disbursableAmount1: batchDetails.value.formula.disbursableAmount1,
-              disburableAmount1DueDate: batchDetails.value.formula.disburableAmount1DueDate,
-              disbursableAmount2: batchDetails.value.formula.disbursableAmount2,
-              disburableAmount2DueDate: batchDetails.value.formula.disburableAmount2DueDate,
-              platformFeeAmount: batchDetails.value.formula.platformFeeAmount,
-              platformFeeDate: batchDetails.value.formula.platformFeeDate
             })
           })
         })
@@ -1082,6 +1087,7 @@ export default {
     const init = async () => {
       
       await Promise.all([
+        getFormulaFee(),
         getCompanyBankAccounts(),
         getProvenanceHistory(),
         getLastWorkflowStatus(),
