@@ -221,7 +221,7 @@
                           months: true,
                           years: true
                         },
-                        callback: getEstimateCalc(),
+                        callback: getEstimateCalc,
                         lockDays: lockDays
                       }'
                       class='form-control'
@@ -614,7 +614,6 @@ export default {
     const disbursableBankAccount = ref('')
     const initComponent = ref(false)
     const modalLoading = ref(false)
-    const signatureFileUrl = ref(null)
     const remark = ref(null)
     const valueDate = ref()
     const bidValue = ref(null)
