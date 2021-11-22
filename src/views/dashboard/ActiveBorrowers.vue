@@ -18,22 +18,29 @@
   </div>
 </template>
 <script>
-import { ref, onMounted } from "vue";
-import { useStore } from "vuex";
-import {appAxios, sysAxios} from "@/plugins/axios";
+import { ref, onMounted, watchEffect } from "vue"
+import { useStore } from "vuex"
+import {appAxios} from "@/plugins/axios"
 
 export default {
   setup() {
     const store = useStore()
-    const activeBorrowerCompanies = ref([]);
-    const loading = ref(true);
+    const activeBorrowerCompanies = ref([])
+    const loading = ref(true)
+    const defaultEcosystemId = ref(store.state.main.defaultEcosystem.ecosystemId)
 
     const init = async () => {
       const company_uuid = store.state.account.company_uuid;
-      const companyIds = await appAxios.get(`/company/v1/${company_uuid}/dashboarddata`).then(res => {return res.data.funderCompanyDashBoard.activeBorrowerCompanyIds});
+      activeBorrowerCompanies.value = []
+      var api = ''
+      if(defaultEcosystemId.value === '00000000-0000-0000-0000-000000000000') api = `/company/v1/${company_uuid}/dashboarddata`
+      else api = `/company/v1/ecosystem/${defaultEcosystemId.value}/${company_uuid}/dashboarddata` 
+      const companyIds = await appAxios.get(api).then(res => res.data.funderCompanyDashBoard.activeBorrowerCompanyIds)
       await Promise.all(
         companyIds.map(companyId => {
-          appAxios.get(`/company/v1/${companyId}`).then(res => activeBorrowerCompanies.value.push(res.data));
+          appAxios.get(`/company/v1/${companyId}`).then(
+            res => activeBorrowerCompanies.value.push(res.data)
+          );
         })
       )
       return new Promise(resolve => resolve(activeBorrowerCompanies.value))
@@ -44,6 +51,12 @@ export default {
       loading.value = false
     })
 
+    watchEffect(() => {
+      if(store.state.main.defaultEcosystem.ecosystemId !== defaultEcosystemId.value) {
+        defaultEcosystemId.value = store.state.main.defaultEcosystem.ecosystemId
+        init()
+      }
+    })
     return {
       loading,
       activeBorrowerCompanies

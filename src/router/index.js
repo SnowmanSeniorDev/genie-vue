@@ -16,6 +16,11 @@ import Permission from "../views/permissions/index.vue";
 import PermissionList from "../views/permissions/PermissionList.vue";
 import CreatePermission from "../views/permissions/Add.vue";
 import EditPermission from "../views/permissions/Edit.vue";
+
+import Company from "../views/companies/index.vue";
+import CompanyDetail from "../views/companies/CompanyDetail.vue";
+import Companies from "../views/companies/Companies.vue";
+
 import RolesIndex from "../views/roles/index.vue";
 import GrantAccess from "../views/roles/GrantAccess.vue";
 import SettingsIndex from "../views/settings/index.vue";
@@ -26,9 +31,9 @@ import CompanyInformation from "../views/account/CompanyInformation.vue";
 import BankInformation from "../views/account/BankInformation.vue";
 import CurrencySettings from "../views/account/CurrencySettings.vue";
 import Kyc from "../views/account/Kyc.vue";
-import CompanyOnboard from "../views/company/index.vue";
+import CompanyOnboard from "../views/onboard/index.vue";
 import Invoice from "../views/invoice/index.vue";
-import InvoiceDetail from "../views/invoice/InvoiceDetail.vue"
+import InvoiceDetail from "../views/invoice/invoiceDetail"
 import DashboardOverview1 from "../views/dashboard/index.vue";
 import ErrorPage from "../views/error-page/Error.vue";
 import AccessDenied from "../views/error-page/AccessDenied.vue";
@@ -103,6 +108,21 @@ const routes = [
         }],
         meta: {
           permission: "GENIE_USERS_ROLES"
+        }
+      }, {
+        path: "companies",
+        component: Company,
+        children: [{
+          path: "",
+          name: "GENIE_COMPANIES",
+          component: Companies
+        }, {
+          path: ":companyId",
+          component: CompanyDetail,
+          name: 'company-detail'
+        }],
+        meta: {
+          permission: "GENIE_ADMIN_COMPANIES"
         }
       }, {
         path: "settings",
