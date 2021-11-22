@@ -1184,7 +1184,7 @@ export default {
           const api = `bidding/v1/${props.workflowExecutionReferenceId}`
           appAxios.get(api).then(res => {
             if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
-            else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished.'
+            else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
           })
         }
         else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
@@ -1200,7 +1200,7 @@ export default {
           const api = `bidding/v1/${batchDetails.value.workflowExecutionReferenceId}`
           appAxios.get(api).then(res => {
             if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
-            else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished.'
+            else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
           })
         }
         else if(lastWorkStatus.value['statusName'] === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true

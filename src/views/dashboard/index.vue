@@ -121,17 +121,20 @@ export default defineComponent({
           let pendingAction = {}
           if(pendingItem.length > 0) {
             for(let i=0;i<pendingItem.length;i++) {
-              const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[0]}` 
-              appAxios.get(batchApi).then(res2 => {
-                let batchData = res2.data
-                pendingAction = {}
-                pendingAction.action = pendingItem[i].action
-                pendingAction.batchNumber = batchData.batchNumber
-                pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId
-                pendingAction.createdTime = moment(batchData.createdTime).format(dateFormat)
-                pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName
-                pendingActions.value.push(pendingAction)
-              })
+                for(let z=0;z<pendingItem[i].workflowExecutionids.length;z++)
+                {
+                  const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingItem[i].workflowExecutionids[z]}` 
+                  appAxios.get(batchApi).then(res2 => {
+                    let batchData = res2.data
+                    pendingAction = {}
+                    pendingAction.action = pendingItem[i].action
+                    pendingAction.batchNumber = batchData.batchNumber
+                    pendingAction.workflowExecutionReferenceId = batchData.workflowExecutionReferenceId
+                    pendingAction.createdTime = moment(batchData.createdTime).format(dateFormat)
+                    pendingAction.initiatedByCompanyName = batchData.initiatedByCompanyName
+                    pendingActions.value.push(pendingAction)
+                  })
+                } 
             }
           }
           if(store.state.account.company_type.toLowerCase() == 'funder') {

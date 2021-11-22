@@ -44,7 +44,10 @@
           </div>
           <div class='items-center'>
             <span class='font-bold ml-3'>{{ProvenanceLang[item.statusName]}}</span> 
-            <div v-if='item.updateTime != undefined' class='text-gray-500 ml-3'>Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}</div>
+            <div v-if='item.updateTime != undefined && item.updateTime != "0001-01-01T00:00:00"' class='text-gray-500 ml-3'>
+              Updated On :  {{moment(item.updateTime).format(dateTimeFormat)}}<br />
+              Transaction Hash : <a href="#">{{item.transactionHash.substring(0,25)}}.....</a>
+            </div>
             <div class='text-gray-500 ml-3' v-if="batchDetails.bidEndTime != undefined && item.statusName=='INVITATION_SEND_TO_FUNDERS'">
               Approval by : {{moment(batchDetails.bidEndTime).format(dateTimeFormat)}}
             </div>
@@ -119,6 +122,7 @@ export default {
           })
           provenance.value.push(...subProvenance)
         })
+        
 
         for(var i=0; i<provenance.value.length - 1; i++) {
           if( provenance.value[i].statusName === lastWorkStatus.value.statusName ) provenance.value[i + 1]['firstPending'] = true
@@ -166,6 +170,8 @@ export default {
 
         workStatusList.push(workStatus)
         await sysAxios.post(`/traceability/v2/verify/journalbatch/${batchDetails.value.traceId}/status`, workStatusList ).then(res => {
+          
+          provenance.value[index].transactionHash = res.data[0].transactionHash
           provenance.value[index].verified = res.data[0].verificationStatus
           provenance.value[index].loading= false
           if(!res.data[0].verificationStatus) {
