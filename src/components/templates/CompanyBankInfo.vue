@@ -133,6 +133,7 @@ export default {
 		}
 
 		const showNotification = (flg) => {
+			console.log(cash("#success-notification-content").clone()[0])
 			Toastify({
 				node: cash(flg ? "#success-notification-content" : "#failed-notification-content").clone().removeClass("hidden")[0],
 				duration: 3000,
@@ -169,6 +170,8 @@ export default {
 		}
 
     const submitBanks = async () => {
+			showNotification(true)
+			return
 			if(originBankInfo.value.length === 0) {
 				const status = await registerBankRequest(bankInfos.value)
 				if(status.result) showNotification(true)

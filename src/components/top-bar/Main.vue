@@ -9,7 +9,7 @@
     </div>
     <!-- END: Breadcrumb -->
     <!-- START: Eco system select -->
-    <div class='flex justify-center mr-4'>
+    <div v-if="user.user_role !== 'Genie Admin'" class='flex justify-center mr-4'>
       <div class='dropdown'>
         <button class='dropdown-toggle btn btn-primary' aria-expanded='false'>
           {{computedDefaultEcosystem.name}}
