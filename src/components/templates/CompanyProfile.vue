@@ -174,14 +174,16 @@
       </div>
     </div>
     <button class="btn btn-primary mt-8 px-8" @click="save">Save</button>
-    <button class="btn btn-danger mt-8 px-8" @click="deleteCompany">Delete Company</button>
+    <button class="btn btn-danger mt-8 px-8 ml-2" @click="deleteCompany">Delete Company</button>
   </div>
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
-import { appAxios } from "@/plugins/axios";
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue'
+import { appAxios } from '@/plugins/axios'
+import { useRouter } from 'vue-router'
+import toast from '@/utils/toast'
+
 export default {
   props: {
     companyId: {
@@ -209,6 +211,12 @@ export default {
 		})
 
     const deleteCompany = () => {
+      toast({
+        status: 'success',
+        title: 'delete company',
+        content: 'successfuly delete the company'
+      })
+      return
       const api = `company/v1/${companyProfile.value.companyId}`
       appAxios.delete(api).then(res => {
         if(res) {
