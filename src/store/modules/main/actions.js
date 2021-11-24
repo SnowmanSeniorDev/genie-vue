@@ -27,7 +27,7 @@ export const updateMenu = ({ commit }, payload) => {
 };
 
 export const updateEcosystems = ({ commit }, payload) => {
-  const api = `/company/v1/ecosystems/bycompanyid/${payload.company_uuid}`
+  const api = `/company/v1/ecosystems/bycompanyid/${payload.company_uuid}?status=active`
   return new Promise((resolve) => {
     appAxios.get(api).then(res => {
       commit(types.SET_ECOSYSTEMS, [{
@@ -47,9 +47,19 @@ export const updateDefaultEcosystem = ({ commit }, payload) => {
   commit(types.UPDATE_DEFAULTECOSYSTEM, payload)
 }
 
+export const NeedUpdateProvenanceHistory = ({ commit }) => {
+  commit(types.NEED_UPDATE_PROVENANCE_HISTORY)
+}
+
+export const UpdatedProvenanceHistory = ({ commit }) => {
+  commit(types.UPDATED_PROVENANCE_HISTORY)
+}
+
 export default {
 	setDarkMode,
   updateMenu,
   updateEcosystems,
-  updateDefaultEcosystem
+  updateDefaultEcosystem,
+  NeedUpdateProvenanceHistory,
+  UpdatedProvenanceHistory
 };

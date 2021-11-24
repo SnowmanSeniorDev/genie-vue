@@ -16,13 +16,13 @@
                     Upload Invoice
                   </button> 
                   <div class="dropdown inline-block" data-placement="bottom">
-                    <button class="dropdown-toggle btn btn-primary w-44 mr-1" aria-expanded="false"> {{documentFormat}} </button>
+                    <button class="dropdown-toggle btn btn-primary w-44 mr-1" aria-expanded="false" :disabled='!uploadedFileId.length'> {{documentFormat}} </button>
                     <div class="dropdown-menu w-40">
                       <div class="dropdown-menu__content box dark:bg-dark-1 p-2">
                         <a v-for="(document, index) in documentFormats" :key="index"
                           href="javascript:;"
                           class="block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md"
-                          @click="setDocumentFromat(document.dataSourceSystemName)"
+                          @click="setDocumentFormat(document.dataSourceSystemName)"
                         >
                           {{document.dataSourceSystemName}}
                         </a>
@@ -164,7 +164,7 @@
           </div>
           <div class="modal-footer text-right">
             <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20 mr-1"> Cancel </button>
-            <button type="button" class="btn btn-primary w-20" @click="submitInvoice"> Submit </button>
+            <button type="button" class="btn btn-primary w-20" @click="submitInvoice" :disabled='!submitableInvoice'> Submit </button>
           </div> <!-- END: Modal Footer -->
         </div>
       </div>
@@ -180,7 +180,7 @@
 </template>
 
 <script>
-import { ref, onMounted, watchEffect } from "vue";
+import { ref, onMounted, watchEffect, watch } from "vue";
 import { useStore } from 'vuex';
 import moment from "moment";
 import _ from "lodash";
@@ -221,8 +221,9 @@ export default {
     const invoiceToCompanyName = ref('');
     const requestValide = ref(true);
     const invoicesBatch = ref([]);
+    const submitableInvoice = ref(false)
 
-    const setDocumentFromat = (format) => {
+    const setDocumentFormat = (format) => {
       documentFormat.value = format
       sysAxios.get(`/uploads/v1/${uploadedFileId.value}/extractdata/${format}`).then(res => {
         console.log(res.data)
@@ -257,7 +258,7 @@ export default {
 
         //identify the invoice detail show table header and it will use to determine current invoice is seller led or buyer led
         console.log("workflow led = ", res.data.workflow)
-        console.log("invoiceBatch = ", invoicesBatch.value)
+        console.log("invoicesBatch = ", invoicesBatch.value)
         if(res.data.workflow === 'Buyer Led') {
           companyTypeHeader.value = "Seller Name";
           invoiceToCompanyName.value = res.data.invoiceToCompanyName;
@@ -531,10 +532,31 @@ export default {
       loading.value = false
     }
 
+    watch(
+      () => [invoicesBatch.value],
+      () => {
+        console.log('invoicesBatch = ', invoicesBatch.value)
+        var flg = true
+        invoicesBatch.value.forEach(batch => {
+          if(!batch.remark) flg = false
+          if(workflowLed.value === 'Seller Led') {
+            if(!batch.bankId) flg = false
+          }
+          batch.invoices.forEach(invoice => {
+            if(new Date(invoice.paymentDueDate) < new Date()) flg = false
+            if(!invoice.supportingDocuments.length) flg = false
+          })
+        })
+        console.log('flg = ', flg)
+        submitableInvoice.value = flg
+      },
+      { deep: true }
+    )
+    
     watchEffect(() => {
       if(store.state.main.defaultEcosystem.ecosystemId !== defaultEcosystemId.value) {
         defaultEcosystemId.value = store.state.main.defaultEcosystem.ecosystemId
-        init()
+        init() 
       }
     })
 
@@ -547,13 +569,14 @@ export default {
       loading,
       jsonData,
       fileUpload,
+      uploadedFileId,
       documentFormat,
       companyTypeHeader,
       workflowLed,
       defaultEcosystemId,
       documentFormats,
       bankAccount,
-      setDocumentFromat,
+      setDocumentFormat,
       removeRow,
       editRow,
       saveRow,
@@ -564,6 +587,7 @@ export default {
       removeSupportDoc,
       bidEndTime,
       editRowIndex,
+      submitableInvoice,
       moment,
       invoicesBatch
     }
