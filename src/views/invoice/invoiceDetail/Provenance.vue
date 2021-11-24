@@ -60,9 +60,9 @@
 </template>
 <script>
 
-import {ref, onMounted} from 'vue'
+import {ref, onMounted, watchEffect} from 'vue'
 import moment from 'moment'
-
+import { useStore } from 'vuex'
 import ProvenanceLang from '@/utils/provenanceLanguage'
 import { sysAxios, appAxios } from '@/plugins/axios'
 
@@ -78,6 +78,7 @@ export default {
     },
   },
   setup(props) {
+    const store = useStore()
     const loading = ref(true)
     const provenance = ref([])
     const batchDetails = ref(props.batchDetails)
@@ -186,7 +187,14 @@ export default {
     const init = async() => {
       await provenanceApi()
       loading.value = false
+      store.dispatch('main/UpdatedProvenanceHistory')
     }
+
+    watchEffect(() => {
+      if(store.state.main.provenanceHistoryUpdateNeed) {
+        init()
+      }
+    })
     onMounted(() => {
       init()
     })
