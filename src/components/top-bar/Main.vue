@@ -39,7 +39,7 @@
             Alert Center
           </div>
           <hr />
-          <div v-for='(alert, index) in alerts' class='cursor-pointer relative flex items-center py-2' :key='index'>
+          <div v-for='(alert, index) in alerts' class='cursor-pointer relative flex items-center py-2' :key='index' @click="gotoNotification(alert)">
             <div>
               <div class='w-8 mr-1 bg-pink-200 p-1 rounded-full text-center'>
                 <FileTextIcon class='notification__icon dark:text-gray-300 text-pink-700 text-sm w-4' />
@@ -163,6 +163,10 @@ export default defineComponent({
     const computedDefaultEcosystem = computed({
       get: () => store.state.main.defaultEcosystem
     })
+    const gotoNotification = (alert) => {
+      console.log(alert)
+      router.push({path: '/alerts', params: {notificationId: alert.notificationId}})
+    }
 
     onMounted(async () => {
       const company_uuid = store.state.account.company_uuid
@@ -195,7 +199,8 @@ export default defineComponent({
       logout,
       gotoUpdatePassword,
       gotoAlertCenter,
-      updateDefaultEcosystem
+      updateDefaultEcosystem,
+      gotoNotification
     };
   },
 });

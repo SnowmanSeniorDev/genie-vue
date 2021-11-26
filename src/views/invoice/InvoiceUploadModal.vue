@@ -535,7 +535,6 @@ export default {
     watch(
       () => [invoicesBatch.value],
       () => {
-        console.log('invoicesBatch = ', invoicesBatch.value)
         var flg = true
         invoicesBatch.value.forEach(batch => {
           if(!batch.remark) flg = false
@@ -547,7 +546,6 @@ export default {
             if(!invoice.supportingDocuments.length) flg = false
           })
         })
-        console.log('flg = ', flg)
         submitableInvoice.value = flg
       },
       { deep: true }
