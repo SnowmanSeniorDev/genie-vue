@@ -262,7 +262,7 @@
                 <td class='border'>
                   <select v-model="interestRateDuration" @change='getEstimateCalc' class="form-select">
                     <option value="monthly">Monthly</option>
-                    <option value="annual">Annual</option>
+                    <option value="yearly">Yearly</option>
                   </select>
                 </td>
               </tr>
@@ -924,16 +924,17 @@ export default {
         if(batchDetails.value.interestRate) {
           var apiUrl = ''
           if(batchDetails.value.workflowLed === 'Buyer Led'){
-          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&valueDate=${batchDetails.value.valueDate}`
+          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&interestRateDuration=${batchDetails.value.interestRateDuration}&valueDate=${batchDetails.value.valueDate}`
           //started by buyer
           }
           else{
-            apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&valueDate=${batchDetails.value.valueDate}`
+            apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&interestRateDuration=${batchDetails.value.interestRateDuration}&valueDate=${batchDetails.value.valueDate}`
             //started by seller
           }
           await appAxios.get(apiUrl).then(res => {
             console.log(res.data)
             let data = res.data
+            
             batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat)
             batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat)
             if(batchDetails.value.workflowLed === 'Seller Led') {
@@ -1007,6 +1008,7 @@ export default {
         modalLoading.value = false
         if(res.status == '200') {
           cash('#submit-disbursment-modal').modal('hide')
+          visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = false
           updateProvenanceApi()
         }
       })
@@ -1030,7 +1032,8 @@ export default {
           modalLoading.value = false
           if(res.status === 200) {
             cash('#seller-acknowledge-of-receive-disbursement').modal('hide')
-            provenanceApi()
+            visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = false
+            updateProvenanceApi()
           }
         })
       }
