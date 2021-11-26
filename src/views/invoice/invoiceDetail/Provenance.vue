@@ -108,11 +108,12 @@ export default {
     }
 
     const provenanceApi = async() => {
+      loading.value = true
+      provenance.value = []
       await getLastWorkflowStatus()
       var currentWorkflowStatusesApi = '/workflow/v2/statustransition/retrieve/byreferenceids?visibility=true'
       await appAxios.post(currentWorkflowStatusesApi, [batchDetails.value.workflowExecutionReferenceId]).then(async res => {
-        paymentAdviceWorksStatus.value = _.find(paymentAdviceWorksStatus.value, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames
-        console.log(res.data)
+        paymentAdviceWorksStatus.value = _.find(props.paymentAdviceWorksStatus, {WorkflowId: res.data[0].rootWorkflowId}).StatusNames
         provenancePendingStatusIndex.value = res.data[0].workflows.length
         _.map(res.data[0].workflows, (item) => {
           let subProvenance = item.statusTransitions
@@ -130,9 +131,9 @@ export default {
         }
       })
       
-      const paymentAdviceData = await appAxios.get(`/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`).then(res => {
-        return res.data
-      })
+      const paymentAdviceData = await appAxios.get(`/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${batchDetails.value.workflowExecutionReferenceId}`).then(res =>  res.data)
+      verifyRequestBody.value.TransactionWorkflowStatuses = []
+      
       await Promise.all(
         provenance.value.map(async status => {
           var paymentAdvice = null
@@ -195,9 +196,11 @@ export default {
         init()
       }
     })
+    
     onMounted(() => {
       init()
     })
+    
     return {
       loading,
       provenance,

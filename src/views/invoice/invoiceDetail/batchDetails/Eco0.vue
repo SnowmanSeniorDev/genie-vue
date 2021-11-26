@@ -55,26 +55,22 @@
     <div class='mt-5' v-if="lodash.find(provenance, {statusName: 'TRANSACTION_APPROVED_BY_FUNDER'})?.state === 'Completed'">
       <span>Formular</span>
       <table class='table mt-2'>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border w-1/2'>Interest Rate (Annual Rate %)</td>
           <td class='border'>{{batchDetails.formula.interestRate}}%</td>
         </tr>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Interest Earn</td>
           <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
         </tr> 
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Platform Fee Amount</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
         </tr> 
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
         </tr>  
-        <!-- <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
-          <td class='border'>Balance Settlement Amount to Seller</td>
-          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
-        </tr>   -->
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
@@ -109,6 +105,7 @@
       </div>
     </div> 
   </div>
+  
   <!-- Start: action modal -->
   <div v-if='initComponent'>
     <div id='approve-invoice-modal' class='modal' tabindex='-1' aria-hidden='true'>
@@ -139,7 +136,7 @@
               </div>
               <div class='self-center'>Remark</div>
               <div class='self-center'>
-                <textarea v-model='remark' class='border-2 w-full' rows='3' />
+                <textarea v-model='remark' class='border-2 w-full form-control' rows='3' />
               </div>
             </div>
             <SignaturePad v-model="signature"/>
@@ -174,7 +171,7 @@
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
               <div class='self-center'>
-                <textarea v-model='remark' class='border-2 w-full' rows='3' />
+                <textarea v-model='remark' class='border-2 w-full form-control' rows='3' />
               </div>
             </div>
           </div>
@@ -205,6 +202,16 @@
                   <td class='border'>Total Invoice Amount</td>
                   <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.totalAmount}}</td>
                 </tr> 
+                <tr class='hover:bg-gray-200'>
+                  <td class='border'>Repayment Bank Account</td>
+                  <td class='border'>
+                    <select v-model="repaymentBankAccount" class="form-select">
+                      <option v-for="bank in bankAccounts" :key="bank.bankAccountId" :value="bank.bankAccountId">
+                        {{bank.accountNumber}} ({{bank.bankName}})
+                      </option>
+                    </select>
+                  </td>
+                </tr>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Value Date</td>
                   <td class='border'>
@@ -242,25 +249,25 @@
                 </tr>  
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Interest Earn</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.interestAmount)}}</td>
                 </tr> 
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Platform Fee Amount</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}}</td>
                 </tr> 
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount - batchDetails.formula.interestAmount}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount - batchDetails.formula.interestAmount)}}</td>
                 </tr>  
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Repayment Amount To Funder</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.repaymentAmountToFunder}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}}</td>
                 </tr> 
               </table>
               <div class='grid grid-cols-2 grid-flow-row gap-4 mt-4'>
                 <div class='self-center'>Remark</div>
                 <div class='self-center'>
-                  <textarea v-model='remark' class='border-2 w-full' rows='3' />
+                  <textarea v-model='remark' class='border-2 w-full form-control' rows='3' />
                 </div>
               </div>
               <SignaturePad v-model="signature"/>
@@ -296,7 +303,7 @@
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
               <div class='self-center'>
-                <textarea v-model='remark' class='border-2 w-full' rows='3' />
+                <textarea v-model='remark' class='border-2 w-full form-control' rows='3' />
               </div>
             </div>
           </div>
@@ -414,7 +421,7 @@
               <div class='self-center'>{{moment(confirmAbleDisbursementData.paymentAdviceDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
               <div class='self-center'>
-                <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+                <textarea v-model='remark' class='border-2 border w-full form-control' rows='3' />
               </div>
             </div>
             <SignaturePad v-model='signature'/>
@@ -535,7 +542,7 @@
               <div class='self-center'>{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
               <div class='self-center'>
-                <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+                <textarea v-model='remark' class='border-2 border w-full form-control' rows='3' />
               </div>
             </div>
             <SignaturePad v-model='signature'/>
@@ -608,9 +615,9 @@ export default {
       visibleBuyerUploadRepaymentAdvice: false,
       visibleFunderAcknowledgeRepaymentAdvice: false,
     })
-    const adminCompany = ref(props.adminCompany)
     const signature = ref(null)
     const bankAccounts = ref([])
+    const repaymentBankAccount = ref('')
     const disbursableBankAccount = ref('')
     const initComponent = ref(false)
     const modalLoading = ref(false)
@@ -712,7 +719,7 @@ export default {
     const getFormulaFee = async () => {
       return new Promise(async (resolve) => {
         if(batchDetails.value.valueDate) {
-          var apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?refId=${props.workflowExecutionReferenceId}&valueDate=${batchDetails.value.valueDate}`
+          var apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&valueDate=${batchDetails.value.valueDate}`
           //started by buyer
           await appAxios.get(apiUrl).then(res => {
             console.log('get formularfee: ', res.data)
@@ -824,7 +831,6 @@ export default {
       const fileUploadApi = 'uploads/v1/acknowledgement_signature'
       return new Promise(resolve => {
         let formData = new FormData()
-        console.log(signature.value)
         if(signature.value === null) resolve(null)
         else {
           formData.append('file', signature.value.file)
@@ -899,6 +905,7 @@ export default {
           remarks: remark.value,
           signatureUri: signatureUrl,
           valueDate: moment.utc(valueDate.value).format(),
+          repaymentAccount: _.find(bankAccounts.value, {bankAccountId: repaymentBankAccount.value})
         }).then(res => {
           modalLoading.value = false
           if(res.status === 200) {
@@ -1082,6 +1089,8 @@ export default {
 
     const updateProvenanceApi = () => {
       console.log('need to update provenance api because new action was invoked')
+      store.dispatch('main/NeedUpdateProvenanceHistory')
+      init()
     }
 
     const init = async () => {
@@ -1136,6 +1145,7 @@ export default {
       dateFormat,
       batchDetails,
       modalLoading,
+      currentCompanyRole,
       provenance,
       user,
       lastWorkStatus,
@@ -1152,6 +1162,7 @@ export default {
       uploadFile,
       removeFile,
       bankAccounts,
+      repaymentBankAccount,
       disbursableBankAccount,
       disbursementData,
       setDisbursmentCurrencyCode,

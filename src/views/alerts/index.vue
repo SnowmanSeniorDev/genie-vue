@@ -77,7 +77,13 @@ import { sysAxios } from "@/plugins/axios";
 import moment from "moment";
 
 export default {
-  setup() {
+  props: {
+    notificationId: {
+      type: String,
+      required: false
+    }
+  },
+  setup(props) {
     const store = useStore()
     const tableRef = ref();
     const tabulator = ref();
@@ -231,6 +237,7 @@ export default {
     }
 
     onMounted(async () => {
+      console.log(props.notificationId)
       await init()
       reInitOnResizeWindow()
     });

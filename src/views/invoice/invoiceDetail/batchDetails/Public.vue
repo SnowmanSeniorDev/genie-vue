@@ -55,23 +55,23 @@
     <div class='mt-5' v-if="lodash.find(provenance, {statusName: 'TRANSACTION_APPROVED_BY_FUNDER'})?.state === 'Completed'">
       <span>Formular</span>
       <table class='table mt-2'>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border w-1/2'>Interest Rate (Annual Rate %)</td>
           <td class='border'>{{batchDetails.formula.interestRate}}%</td>
         </tr>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Interest Earn</td>
           <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
         </tr> 
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Platform Fee Amount</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
         </tr> 
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
         </tr>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' && batchDetails.workflowLed === 'Seller Led' || batchDetails.sellerCompanyId == currentLoginCompanyId && batchDetails.workflowLed === 'Seller Led'">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Balance Settlement Amount to Seller</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
         </tr>
@@ -140,7 +140,7 @@
             </div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
-              <textarea v-model='remark' class='border-2 w-full' rows='3' />
+              <textarea v-model='remark' class='border-2 w-full form-control' rows='3' />
             </div>
           </div>
           <SignaturePad v-model="signature"/>
@@ -175,7 +175,7 @@
             <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
-              <textarea v-model='remark' class='border-2 w-full' rows='3' />
+              <textarea v-model='remark' class='border-2 w-full form-control' rows='3' />
             </div>
           </div>
         </div>
@@ -248,14 +248,25 @@
                 </td>
               </tr>
               <tr class='hover:bg-gray-200'>
+                <td class='border'>Repayment Bank Account</td>
+                <td class='border'>
+                  <select v-model="repaymentBankAccount" class="form-select">
+                    <option v-for="bank in bankAccounts" :key="bank.bankAccountId" :value="bank.bankAccountId">
+                      {{bank.accountNumber}} ({{bank.bankName}})
+                    </option>
+                  </select>
+                </td>
+              </tr>
+              <tr class='hover:bg-gray-200'>
                 <td class='border'>Interest Rate Duration</td>
                 <td class='border'>
                   <select v-model="interestRateDuration" @change='getEstimateCalc' class="form-select">
                     <option value="monthly">Monthly</option>
-                    <option value="annual">Annual</option>
+                    <option value="yearly">Yearly</option>
                   </select>
                 </td>
               </tr>
+
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Interest Earn</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
@@ -398,7 +409,7 @@
             <div class='self-center'>{{moment(confirmAbleDisbursementData.paymentAdviceDate).format(dateFormat)}}</div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
-              <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+              <textarea v-model='remark' class='border-2 border w-full form-control' rows='3' />
             </div>
           </div>
           <SignaturePad v-model="signature"/>
@@ -519,7 +530,7 @@
             <div class='self-center'>{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format(dateFormat)}}</div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
-              <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+              <textarea v-model='remark' class='border-2 border w-full form-control' rows='3' />
             </div>
           </div>
           <SignaturePad v-model="signature"/>
@@ -593,6 +604,7 @@ export default {
     })
     const bankAccounts = ref([])
     const disbursableBankAccount = ref('')
+    const repaymentBankAccount = ref('')
     const batchMessage = ref('')
     const adminCompany = ref(props.adminCompany)
     const signature = ref(null)
@@ -912,16 +924,17 @@ export default {
         if(batchDetails.value.interestRate) {
           var apiUrl = ''
           if(batchDetails.value.workflowLed === 'Buyer Led'){
-          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&valueDate=${batchDetails.value.valueDate}`
+          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&interestRateDuration=${batchDetails.value.interestRateDuration}&valueDate=${batchDetails.value.valueDate}`
           //started by buyer
           }
           else{
-            apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&valueDate=${batchDetails.value.valueDate}`
+            apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&interestRateDuration=${batchDetails.value.interestRateDuration}&valueDate=${batchDetails.value.valueDate}`
             //started by seller
           }
           await appAxios.get(apiUrl).then(res => {
             console.log(res.data)
             let data = res.data
+            
             batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat)
             batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat)
             if(batchDetails.value.workflowLed === 'Seller Led') {
@@ -952,14 +965,8 @@ export default {
           companyId: store.state.account.company_uuid,
           bidValue: bidValue.value,
           valueDate: moment.utc(valueDate.value).format(),
-          repaymentAccount: {
-            bankName: 'Singapore Bank',
-            branchName: '10032',
-            address: 'Hong Kong Sar',
-            accountNumber: '1003210189102',
-            swiftCode: '1009',
-            currency: 'SGD'
-          }
+          interestRateDuration: interestRateDuration.value,
+          repaymentAccount: _.find(bankAccounts.value, {bankAccountId: repaymentBankAccount.value})
         }
       }).then(res => {
         modalLoading.value = false
@@ -1001,6 +1008,7 @@ export default {
         modalLoading.value = false
         if(res.status == '200') {
           cash('#submit-disbursment-modal').modal('hide')
+          visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = false
           updateProvenanceApi()
         }
       })
@@ -1024,7 +1032,8 @@ export default {
           modalLoading.value = false
           if(res.status === 200) {
             cash('#seller-acknowledge-of-receive-disbursement').modal('hide')
-            provenanceApi()
+            visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = false
+            updateProvenanceApi()
           }
         })
       }
@@ -1118,7 +1127,7 @@ export default {
     const updateProvenanceApi =  () => {
       console.log('need to update provenance api because new action was invoked')
       store.dispatch('main/NeedUpdateProvenanceHistory')
-      // init()
+      init()
     }
 
     const getValueDate = () => {
@@ -1214,6 +1223,7 @@ export default {
       modalLoading,
       provenance,
       user,
+      currentCompanyRole,
       lastWorkStatus,
       currencies,
       lockDays,
@@ -1223,6 +1233,7 @@ export default {
       approveAcknowledge,
       bankAccounts,
       disbursableBankAccount,
+      repaymentBankAccount,
       declineAcknowledge,
       remark,
       valueDate,
