@@ -3,7 +3,9 @@ import {
   SET_MENU,
   SET_PERMISSIONS,
   SET_ECOSYSTEMS,
-  UPDATE_DEFAULTECOSYSTEM
+  UPDATE_DEFAULTECOSYSTEM,
+  NEED_UPDATE_PROVENANCE_HISTORY,
+  UPDATED_PROVENANCE_HISTORY
 } from "./mutation-types";
 
 export default {
@@ -21,5 +23,11 @@ export default {
   },
   [UPDATE_DEFAULTECOSYSTEM](state, defaultEcosystem) {
     state.defaultEcosystem = defaultEcosystem
+  },
+  [NEED_UPDATE_PROVENANCE_HISTORY](state) {
+    state.provenanceHistoryUpdateNeed = true
+  },
+  [UPDATED_PROVENANCE_HISTORY](state) {
+    state.provenanceHistoryUpdateNeed = false
   }
 };

@@ -55,23 +55,23 @@
     <div class='mt-5' v-if="lodash.find(provenance, {statusName: 'TRANSACTION_APPROVED_BY_FUNDER'})?.state === 'Completed'">
       <span>Formular</span>
       <table class='table mt-2'>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border w-1/2'>Interest Rate (Annual Rate %)</td>
           <td class='border'>{{batchDetails.formula.interestRate}}%</td>
         </tr>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Interest Earn</td>
           <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
         </tr> 
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Platform Fee Amount</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
         </tr> 
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.sellerCompanyId == currentLoginCompanyId">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
         </tr>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' && batchDetails.workflowLed === 'Seller Led' || batchDetails.sellerCompanyId == currentLoginCompanyId && batchDetails.workflowLed === 'Seller Led'">
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Balance Settlement Amount to Seller</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
         </tr>
@@ -140,7 +140,7 @@
             </div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
-              <textarea v-model='remark' class='border-2 w-full' rows='3' />
+              <textarea v-model='remark' class='border-2 w-full form-control' rows='3' />
             </div>
           </div>
           <SignaturePad v-model="signature"/>
@@ -175,7 +175,7 @@
             <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
-              <textarea v-model='remark' class='border-2 w-full' rows='3' />
+              <textarea v-model='remark' class='border-2 w-full form-control' rows='3' />
             </div>
           </div>
         </div>
@@ -247,6 +247,26 @@
                   <input type='text' v-model='bidValue' @change='getEstimateCalc' class='form-control'/>
                 </td>
               </tr>
+              <tr class='hover:bg-gray-200'>
+                <td class='border'>Repayment Bank Account</td>
+                <td class='border'>
+                  <select v-model="repaymentBankAccount" class="form-select">
+                    <option v-for="bank in bankAccounts" :key="bank.bankAccountId" :value="bank.bankAccountId">
+                      {{bank.accountNumber}} ({{bank.bankName}})
+                    </option>
+                  </select>
+                </td>
+              </tr>
+              <tr class='hover:bg-gray-200'>
+                <td class='border'>Interest Rate Duration</td>
+                <td class='border'>
+                  <select v-model="interestRateDuration" @change='getEstimateCalc' class="form-select">
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
+                </td>
+              </tr>
+
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Interest Earn</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
@@ -389,7 +409,7 @@
             <div class='self-center'>{{moment(confirmAbleDisbursementData.paymentAdviceDate).format(dateFormat)}}</div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
-              <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+              <textarea v-model='remark' class='border-2 border w-full form-control' rows='3' />
             </div>
           </div>
           <SignaturePad v-model="signature"/>
@@ -510,7 +530,7 @@
             <div class='self-center'>{{moment(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceDate).format(dateFormat)}}</div>
             <div class='self-center'>Remark</div>
             <div class='self-center'>
-              <textarea v-model='remark' class='border-2 border w-full' rows='3' />
+              <textarea v-model='remark' class='border-2 border w-full form-control' rows='3' />
             </div>
           </div>
           <SignaturePad v-model="signature"/>
@@ -584,6 +604,7 @@ export default {
     })
     const bankAccounts = ref([])
     const disbursableBankAccount = ref('')
+    const repaymentBankAccount = ref('')
     const batchMessage = ref('')
     const adminCompany = ref(props.adminCompany)
     const signature = ref(null)
@@ -594,6 +615,7 @@ export default {
     const remark = ref(null)
     const valueDate = ref()
     const bidValue = ref(null)
+    const interestRateDuration = ref('monthly')
     const files = ref()
     
     const disbursementData = ref({
@@ -610,6 +632,7 @@ export default {
     const onDrop = (acceptFiles, rejectReasons) => {
       files.value = acceptFiles
     }
+
     const options = reactive({
       multiple: true,
       onDrop,
@@ -645,7 +668,7 @@ export default {
       })
     }
 
-    const getLastWorkflowStatus = async() => {
+    const getLastWorkflowStatus = async () => {
       const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
       await appAxios.post(api, [props.workflowExecutionReferenceId]).then(res => {
         console.log('limittolaststatustransition = ', res.data)
@@ -655,7 +678,7 @@ export default {
       return new Promise(resolve => resolve('get last workflow status done'))
     }
 
-    const getCurrencyCode = async() => {
+    const getCurrencyCode = async () => {
       const companyProfileSystemConfig = 'configuration/v1/Company Profile'
       await sysAxios.get(companyProfileSystemConfig).then(res => {
 				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: 'currencies'}).value)
@@ -686,31 +709,8 @@ export default {
       return new Promise(resolve => resolve(lockDays.value))
     }
 
-    const invoiceDetailApi = async() => {
+    const invoiceDetailApi = async () => {
       return Promise.all([
-        // new Promise((resolve) => {
-        //   const batchBuyerApi = `/company/v1/${batchDetails.value.buyerCompanyId}`
-        //   appAxios.get(batchBuyerApi).then(res => {
-        //     batchDetails.value.batchInformation.buyerCompany = res.data.companyDisplayName
-        //     resolve({buyerCompany: batchDetails.value.batchInformation.buyerCompany})
-        //   })
-        // }),
-        // new Promise((resolve) => {
-        //   const batchSellerApi = `/company/v1/${batchDetails.value.sellerCompanyId}`
-        //   appAxios.get(batchSellerApi).then(res => {
-        //     batchDetails.value.batchInformation.sellerCompany = res.data.companyDisplayName
-        //     resolve({sellerCompany: batchDetails.value.batchInformation.sellerCompany})
-        //   })
-        // }),
-        // new Promise((resolve) => {
-        //   if(batchDetails.value.funderCompanyId !== '00000000-0000-0000-0000-000000000000') {
-        //     const batchFunderApi = `/company/v1/${batchDetails.value.funderCompanyId}`
-        //     appAxios.get(batchFunderApi).then(res => {
-        //       batchDetails.value.batchInformation.funderCompany = res.data.companyDisplayName
-        //       resolve({funderCompany: batchDetails.value.batchInformation.funderCompany})
-        //     })
-        //   }
-        // }),
         new Promise((resolve) => {
           const processingFeeApi = `/ledger/v1/paymentinstruction/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
           appAxios.get(processingFeeApi).then(res => {
@@ -837,11 +837,7 @@ export default {
           }
         }
 
-        await appAxios.post(api, {
-          externalReferenceId: props.workflowExecutionReferenceId,
-          remark: remark.value,
-          signatureUri: signatureUrl
-        }).then(res => {
+        await appAxios.post(api, requestBody).then(res => {
           modalLoading.value = false
           if(res.status === 200) {
             cash('#approve-invoice-modal').modal('hide')
@@ -866,14 +862,16 @@ export default {
     }
 
     const declineAcknowledge = async () => { 
-      if(currentCompanyRole.value === 'System Admin') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
-      if(currentCompanyRole.value === 'System Admin') api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
+      var api = ''
+      if(batchDetails.value.workflowLed === 'Buyer Led') api = '/workflow/v2/buyer-led-invoice-financing-workflow-0/seller-not-acknowledge-the-transaction-branch/0'
+      else api = '/workflow/v2/seller-led-invoice-financing-workflow-1/buyer-not-acknowledge-the-transaction-branch/0'
       appAxios.post(api, {
         externalReferenceId: props.workflowExecutionReferenceId,
-        remark: remark.value,
+        remarks: remark.value,
       }).then(res => {
         if(res.status === 200) {
           visibleWorkflowActions.value.visibleApproveButton = false
+          cash('#decline-invoice-modal').modal('hide')
           updateProvenanceApi()
         }
       }) 
@@ -894,11 +892,11 @@ export default {
       ) {
         let apiUrl = ''
         if(batchDetails.value.workflowLed === 'Buyer Led'){
-          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`
+          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&interestRate=${bidValue.value}&interestRateDuration=${interestRateDuration.value}&valueDate=${valueDate.value}`
           //started by buyer
         }
         else{
-          apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${bidValue.value}&valueDate=${valueDate.value}`
+          apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&interestRate=${bidValue.value}&interestRateDuration=${interestRateDuration.value}&valueDate=${valueDate.value}`
           //started by seller
         }
         await appAxios.get(apiUrl).then(res => {
@@ -926,16 +924,17 @@ export default {
         if(batchDetails.value.interestRate) {
           var apiUrl = ''
           if(batchDetails.value.workflowLed === 'Buyer Led'){
-          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&valueDate=${batchDetails.value.valueDate}`
+          apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&interestRateDuration=${batchDetails.value.interestRateDuration}&valueDate=${batchDetails.value.valueDate}`
           //started by buyer
           }
           else{
-            apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&valueDate=${batchDetails.value.valueDate}`
+            apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?what=PayableAmounts&refId=${props.workflowExecutionReferenceId}&interestRate=${batchDetails.value.interestRate}&interestRateDuration=${batchDetails.value.interestRateDuration}&valueDate=${batchDetails.value.valueDate}`
             //started by seller
           }
           await appAxios.get(apiUrl).then(res => {
             console.log(res.data)
             let data = res.data
+            
             batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat)
             batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat)
             if(batchDetails.value.workflowLed === 'Seller Led') {
@@ -966,14 +965,8 @@ export default {
           companyId: store.state.account.company_uuid,
           bidValue: bidValue.value,
           valueDate: moment.utc(valueDate.value).format(),
-           repaymentAccount: {
-            bankName: 'Singapore Bank',
-            branchName: '10032',
-            address: 'Hong Kong Sar',
-            accountNumber: '1003210189102',
-            swiftCode: '1009',
-            currency: 'SGD'
-          }
+          interestRateDuration: interestRateDuration.value,
+          repaymentAccount: _.find(bankAccounts.value, {bankAccountId: repaymentBankAccount.value})
         }
       }).then(res => {
         modalLoading.value = false
@@ -1015,6 +1008,7 @@ export default {
         modalLoading.value = false
         if(res.status == '200') {
           cash('#submit-disbursment-modal').modal('hide')
+          visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = false
           updateProvenanceApi()
         }
       })
@@ -1038,7 +1032,8 @@ export default {
           modalLoading.value = false
           if(res.status === 200) {
             cash('#seller-acknowledge-of-receive-disbursement').modal('hide')
-            provenanceApi()
+            visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = false
+            updateProvenanceApi()
           }
         })
       }
@@ -1129,12 +1124,26 @@ export default {
       })
     }
 
-    const updateProvenanceApi = () => {
+    const updateProvenanceApi =  () => {
       console.log('need to update provenance api because new action was invoked')
+      store.dispatch('main/NeedUpdateProvenanceHistory')
+      init()
+    }
+
+    const getValueDate = () => {
+      return new Promise( async (resolve, reject) => {
+        var apiUrl = ''
+        if(batchDetails.value.workflowLed === 'Buyer Led') apiUrl = `/workflow/v2/buyer-led-invoice-financing-workflow-0/estimates?what=ValueDate&refId=${props.workflowExecutionReferenceId}`
+        else apiUrl = `/workflow/v2/seller-led-invoice-financing-workflow-1/estimates?what=ValueDate&refId=${props.workflowExecutionReferenceId}`
+
+        appAxios.get(apiUrl).then(res => {
+          valueDate.value = moment(res.data).format('DD MMM YYYY')
+          resolve(valueDate.value)
+        })
+      })
     }
 
     const init = async () => {
-      console.log(batchDetails.value)
       await Promise.all([
         getFormulaFee(),
         getCompanyBankAccounts(),
@@ -1143,6 +1152,7 @@ export default {
         getCurrencyCode(),
         getLockDays(),
         invoiceDetailApi(),
+        getValueDate()
       ]).then(values => {
         console.log("promise all return value = ", values)
       })
@@ -1213,6 +1223,7 @@ export default {
       modalLoading,
       provenance,
       user,
+      currentCompanyRole,
       lastWorkStatus,
       currencies,
       lockDays,
@@ -1222,11 +1233,13 @@ export default {
       approveAcknowledge,
       bankAccounts,
       disbursableBankAccount,
+      repaymentBankAccount,
       declineAcknowledge,
       remark,
       valueDate,
       getEstimateCalc,
       bidValue,
+      interestRateDuration,
       submitProposal,
       getRootProps,
       getInputProps,
