@@ -760,7 +760,7 @@ export default {
           sysAxios.post(fileUploadApi, formData, {
             headers: { 'Content-Type': 'multipart/form-data'}
           }).then(res => {
-            resolve(`https://authorization.api-dev.xyz/api/uploads/v1/${res.data}`)
+            resolve(`${process.env.VUE_APP_SYSTEM_API_URL}/uploads/v1/${res.data}`)
           })
         }
       })
@@ -779,7 +779,7 @@ export default {
             'Content-Type': 'multipart/form-data'
           }
       })
-      disbursementData.value.paymentAdviceUri = 'https://authorization.api-dev.xyz/api/uploads/v1/' + res.data
+      disbursementData.value.paymentAdviceUri = process.env.VUE_APP_SYSTEM_API_URL + '/uploads/v1/' + res.data
     }
 
     const removeFile = () => files.value = null
