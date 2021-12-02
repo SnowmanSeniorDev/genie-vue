@@ -200,7 +200,7 @@
                 </tr>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Total Invoice Amount</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.totalAmount}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.totalAmount)}}</td>
                 </tr> 
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Repayment Bank Account</td>
@@ -222,6 +222,7 @@
                         showWeekNumbers: true,
                         zIndex: 10001,
                         minDate: Date(),
+                        maxDate: batchDetail.paymentDueDate,
                         dropdowns: {
                           minYear: 1990,
                           maxYear: null,
