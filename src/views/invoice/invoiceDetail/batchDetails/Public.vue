@@ -204,7 +204,7 @@
               </tr>
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Total Invoice Amount</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.totalAmount}}</td>
+                <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.totalAmount)}}</td>
               </tr> 
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Value Date</td>
@@ -266,28 +266,27 @@
                   </select>
                 </td>
               </tr>
-
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Interest Earn</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
+                <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.interestAmount)}}</td>
               </tr> 
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Platform Fee Amount</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.platformFeeAmount}}</td>
+                <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}}</td>
               </tr> 
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
                 <td class='border'>
-                  {{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount}}
+                  {{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}
                 </td>
               </tr>  
               <tr class='hover:bg-gray-200' v-if="batchDetails.workflowLed === 'Seller Led'">
                 <td class='border'>Balance Settlement Amount to Seller</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount2}}</td>
+                <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
               </tr>  
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Repayment Amount To Funder</td>
-                <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.repaymentAmountToFunder}}</td>
+                <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}}</td>
               </tr> 
             </table>
           </div> 

@@ -326,12 +326,12 @@ export default {
 
     const invoiceFromMe = () => { 
       selectedTab.value = 'My Invoice'
-      let updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc')
+      // let updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc')
 
-      if(store.state.account.company_type.toLowerCase() == 'funder') {
-        updatedData = _.orderBy(_.filter(invoiceOverview.value, {funderCompanyId: store.state.account.company_uuid}),'createdTime','desc')
-      }
-      
+      // if(store.state.account.company_type.toLowerCase() == 'funder') {
+      //   updatedData = _.orderBy(_.filter(invoiceOverview.value, {funderCompanyId: store.state.account.company_uuid}),'createdTime','desc')
+      // }
+      let updatedData = _.orderBy('createdTime','desc')
       tabulator.value.clearData()
       if(updatedData.length > 0 ){
         tabulator.value.addRow(updatedData)
