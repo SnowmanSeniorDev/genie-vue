@@ -123,7 +123,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Select Disbursement Bank Account</div>
@@ -166,7 +166,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
@@ -258,7 +258,7 @@
                 </tr> 
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount - batchDetails.formula.interestAmount)}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount + ' ' + batchDetails.formula.interestAmount}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount - batchDetails.formula.interestAmount)}}</td>
                 </tr>  
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Repayment Amount To Funder</td>
@@ -299,7 +299,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
