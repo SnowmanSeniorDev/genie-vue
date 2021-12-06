@@ -127,7 +127,7 @@
             <div class='self-center'>Invoice Uploaded Date</div>
             <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
             <div class='self-center'>Invoice Amount</div>
-            <div class='self-center'>{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
+            <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
             <div class='self-center'>Payment Due Date</div>
             <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
             <div class='self-center' v-if="batchDetails.workflowLed == 'Buyer Led'">Select Disbursement Bank Account</div>
@@ -170,7 +170,7 @@
             <div class='self-center'>Invoice Uploaded Date</div>
             <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
             <div class='self-center'>Invoice Amount</div>
-            <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
+            <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
             <div class='self-center'>Payment Due Date</div>
             <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
             <div class='self-center'>Remark</div>
@@ -215,7 +215,8 @@
                       autoApply: false,
                       showWeekNumbers: true,
                       zIndex: 10001,
-                      minDate: moment(batchDetails.batchInformation.bidEndTime).format(dateFormat),
+                      minDate: Date(),
+                      maxDate: batchDetail.paymentDueDate,
                       dropdowns: {
                         minYear: 1990,
                         maxYear: null,
@@ -880,7 +881,7 @@ export default {
       if(valueDate.value != '' && valueDate.value != null && valueDate.value != undefined){
         batchDetails.value.valueDate = valueDate.value 
         let dueDt = moment(batchDetails.value.paymentDueDate)
-        let valueDt = moment(batchDetails.value.valueDate) 
+        let valueDt = moment(valueDate.value) 
         let noOfDays = dueDt.diff(valueDt,'days')
         batchDetails.value.numberOfDays = noOfDays
       }
@@ -1137,12 +1138,14 @@ export default {
 
         appAxios.get(apiUrl).then(res => {
           valueDate.value = moment(res.data).format('DD MMM YYYY')
+          batchDetails.value.valueDate = moment(res.data).format('DD MMM YYYY')
           resolve(valueDate.value)
         })
       })
     }
 
     const init = async () => {
+      await getValueDate()
       await Promise.all([
         getFormulaFee(),
         getCompanyBankAccounts(),
@@ -1151,7 +1154,6 @@ export default {
         getCurrencyCode(),
         getLockDays(),
         invoiceDetailApi(),
-        getValueDate()
       ]).then(values => {
         console.log("promise all return value = ", values)
       })
@@ -1174,27 +1176,32 @@ export default {
       if(batchDetails.value.workflowLed === 'Buyer Led') {
         if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleApproveButton = true
         else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS' && user.user_role === 'Funder Admin') {
-          const api = `bidding/v1/${props.workflowExecutionReferenceId}`
-          appAxios.get(api).then(res => {
-            if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
-            else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
-          })
+          if(new Date(batchDetails.value.bidEndTime) < new Date()) {
+            batchMessage.value = 'You cannot approve this invoice due to passed bid end time ('+moment(batchDetails.value.bidEndTime).format(dateTimeFormat) + ')'
+          } else {
+            const api = `bidding/v1/${props.workflowExecutionReferenceId}`
+            await appAxios.get(api).then(res => {
+              if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
+              else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
+            })
+          }
         }
         else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
         else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
         else if(lastWorkStatus.value['statusName'] === 'REPAYMENT_INSTRUCTION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
         else if(lastWorkStatus.value['statusName'] === 'REPAID_BY_BUYER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
-
-        //for the private ecosystem action case check
-      
       } else {
         if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
         else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS' && user.user_role === 'Funder Admin') {
-          const api = `bidding/v1/${batchDetails.value.workflowExecutionReferenceId}`
-          appAxios.get(api).then(res => {
-            if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
-            else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
-          })
+          if(new Date(batchDetails.value.bidEndTime) < new Date()) {
+            batchMessage.value = 'You cannot approve this invoice due to passed bid end time ('+moment(batchDetails.value.bidEndTime).format(dateTimeFormat) + ')'
+          } else {
+            const api = `bidding/v1/${batchDetails.value.workflowExecutionReferenceId}`
+            appAxios.get(api).then(res => {
+              if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
+              else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
+            })
+          }
         }
         else if(lastWorkStatus.value['statusName'] === 'FIRST_FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
         else if(lastWorkStatus.value['statusName'] === 'FIRST_FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
