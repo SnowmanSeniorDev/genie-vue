@@ -1138,7 +1138,9 @@ export default {
 
         appAxios.get(apiUrl).then(res => {
           valueDate.value = moment(res.data).format('DD MMM YYYY')
-          batchDetails.value.valueDate = moment(res.data).format('DD MMM YYYY')
+          if(batchDetails.value.valueDate == '0001-01-01T00:00:00') {
+            batchDetails.value.valueDate = moment(res.data).format('DD MMM YYYY')
+          }
           resolve(valueDate.value)
         })
       })

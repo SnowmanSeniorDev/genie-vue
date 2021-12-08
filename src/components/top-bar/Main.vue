@@ -39,7 +39,11 @@
             Alert Center
           </div>
           <hr />
-          <div v-for='(alert, index) in alerts' class='cursor-pointer relative flex items-center py-2' :key='index' @click="gotoNotification(alert)">
+          <div
+            v-for='(alert, index) in alerts.slice(0, 5)'
+            class='cursor-pointer relative flex items-center py-2'
+            :key='index'
+            @click="openAcknowledgeNotificationModal(alert)">
             <div>
               <div class='w-8 mr-1 bg-pink-200 p-1 rounded-full text-center'>
                 <FileTextIcon class='notification__icon dark:text-gray-300 text-pink-700 text-sm w-4' />
@@ -119,7 +123,32 @@
       </div>
     </div>
     <!-- END: Account Menu -->
+    <!-- START: Alert Modal -->
+    <div id="acknowledge-notification" class="modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <!-- BEGIN: Modal Header -->
+          <div class="modal-header">
+            <h2 class="font-medium text-base mr-auto"> {{viewingNotification.title}} </h2>
+          </div>
+          <!-- END: Modal Header -->
+          <div class="modal-body mx-8">
+            {{viewingNotification.content}}
+            <div class="text-right">
+              <br />
+              {{moment(viewingNotification.when).format(dateTimeFormat)}}
+            </div>
+          </div>
+          <div class="modal-footer text-right">
+            <button v-if="viewingNotification.status == 'Complete'" type="button" class="btn btn-primary w-24" @click="makeAsRead">OK</button>
+            <button v-else type="button" data-dismiss="modal" class="btn btn-primary w-24">Cancel</button>
+          </div> <!-- END: Modal Footer -->
+        </div>
+      </div>
+    </div>
+    <!-- END: Alert Modal -->
   </div>
+  
   <!-- END: Top Bar -->
 </template>
 
@@ -147,7 +176,12 @@ export default defineComponent({
     const unreadAlerts = ref(false)
     const holidays = ref([])
     const dayDiff = ref(100)
-
+    const viewingNotification = ref({
+      notificationId: null,
+      title: null,
+      content: null,
+      when: null,
+    });
     const logout = () => {
       store.dispatch('auth/logout')
     }
@@ -163,16 +197,22 @@ export default defineComponent({
     const computedDefaultEcosystem = computed({
       get: () => store.state.main.defaultEcosystem
     })
-    const gotoNotification = (alert) => {
-      console.log(alert)
-      router.push({path: '/alerts', params: {notificationId: alert.notificationId}})
+    const openAcknowledgeNotificationModal = (notification) => {
+      viewingNotification.value = notification;
+      cash("#acknowledge-notification").modal("show")
     }
-
+    const makeAsRead = async () => {
+      const api = `communications/v1/notification/${viewingNotification.value.notificationId}/Read`
+      _.remove(alerts.value, alert => alert.notificationId === viewingNotification.value.notificationId)
+      await sysAxios.put(api)
+      if(_.findIndex(alerts, {status: 'Complete'}) != -1) unreadAlerts.value = true
+      cash("#acknowledge-notification").modal("hide")
+    }
     onMounted(async () => {
       const company_uuid = store.state.account.company_uuid
       if(company_uuid !== '00000000-0000-0000-0000-000000000000') {
         sysAxios.get(`/communications/v1/notification/${company_uuid}`).then(res => {
-          alerts.value = _.filter(res.data, {status: 'Complete'}).slice(0, 5)
+          alerts.value = _.filter(res.data, {status: 'Complete'})
           if(_.findIndex(res.data, {status: 'Complete'}) != -1) unreadAlerts.value = true
         })
         appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
@@ -187,6 +227,7 @@ export default defineComponent({
     })
 
     return {
+      viewingNotification,
       dateFormat,
       dateTimeFormat,
       alerts,
@@ -203,7 +244,8 @@ export default defineComponent({
       gotoUpdatePassword,
       gotoAlertCenter,
       updateDefaultEcosystem,
-      gotoNotification
+      openAcknowledgeNotificationModal,
+      makeAsRead
     };
   },
 });

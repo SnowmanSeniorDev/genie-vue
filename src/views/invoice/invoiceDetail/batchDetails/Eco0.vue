@@ -258,7 +258,7 @@
                 </tr> 
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.disbursableAmount + ' ' + batchDetails.formula.interestAmount}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount - batchDetails.formula.interestAmount)}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
                 </tr>  
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Repayment Amount To Funder</td>
@@ -739,7 +739,21 @@ export default {
 
         resolve('get formula fee')
       })
-      
+    }
+
+    const getValueDate = () => {
+      return new Promise( async (resolve, reject) => {
+        var apiUrl = ''
+        apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?what=ValueDate&refId=${props.workflowExecutionReferenceId}`
+        
+        appAxios.get(apiUrl).then(res => {
+          valueDate.value = moment(res.data).format('DD MMM YYYY')
+          if(batchDetails.value.valueDate == '0001-01-01T00:00:00') {
+            batchDetails.value.valueDate = moment(res.data).format('DD MMM YYYY')
+          }
+          resolve(valueDate.value)
+        })
+      })
     }
 
     const invoiceDetailApi = async() => {
@@ -1095,7 +1109,7 @@ export default {
     }
 
     const init = async () => {
-      
+      await getValueDate()
       await Promise.all([
         getFormulaFee(),
         getCompanyBankAccounts(),
