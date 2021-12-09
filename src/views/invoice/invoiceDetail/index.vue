@@ -25,9 +25,9 @@
         <tbody v-for='(item, index) in journalBatchEntry' :key='index'>
           <tr>
             <td class='dark:border-dark-5'>{{item.vendorDocumentReferenceNumber}}</td>
-            <td class='dark:border-dark-5'>{{item.currencyCode +' '+item.amount.toFixed(2)}}</td>
-            <td class='dark:border-dark-5'>{{moment(item.postingDate).format(dateFormat)}}</td>
-            <td class='dark:border-dark-5'>{{moment(item.dueDate).format(dateFormat)}}</td>
+            <td class='dark:border-dark-5'>{{item.currencyCode +' '+item.amount.toFixed(2)}}</td>            
+            <td class='dark:border-dark-5'>{{moment(item.postingDate).local().format(dateFormat)}}</td>
+            <td class='dark:border-dark-5'>{{moment(item.dueDate).local().format(dateFormat)}}</td>            
             <td class='dark:border-dark-5'>{{moment(item.createdTime).format(dateTimeFormat)}}</td>
             <td class='dark:border-dark-5'>
               <button class='btn btn-primary h-6' @click='accordion(index)'>
