@@ -168,13 +168,6 @@ export default {
             repaymentDate: moment.utc(res.data.paymentDueDate).format(dateFormat)
           }
         }
-        
-        batchDetails.value.valueDate = moment().add(2,'days') 
-        valueDate.value = batchDetails.value.valueDate 
-        let dueDt = moment(batchDetails.value.paymentDueDate)
-        let valueDt = moment(batchDetails.value.valueDate) 
-        let noOfDays = dueDt.diff(valueDt,'days')
-        batchDetails.value.numberOfDays = noOfDays
         batchDetails.value = {...batchDetails.value, ...batch}
       })
 

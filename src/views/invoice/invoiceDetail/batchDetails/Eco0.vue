@@ -55,9 +55,21 @@
     <div class='mt-5' v-if="lodash.find(provenance, {statusName: 'TRANSACTION_APPROVED_BY_FUNDER'})?.state === 'Completed'">
       <span>Formular</span>
       <table class='table mt-2'>
-        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
-          <td class='border w-1/2'>Interest Rate (Annual Rate %)</td>
-          <td class='border'>{{batchDetails.formula.interestRate}}%</td>
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Value Date</td>
+          <td class='border'>{{moment(batchDetails.valueDate).format(dateFormat)}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Repayment Date</td>
+          <td class='border'>{{batchDetails.formula.repaymentDate}}</td>
+        </tr> 
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Total Financing Days</td>
+          <td class='border'>{{batchDetails.numberOfDays}} Days</td>
+        </tr>
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
+          <td class='border w-1/2'>Interest Rate (%)</td>
+          <td class='border'>{{batchDetails.interestRate}}% {{batchDetails.interestRateDuration}}</td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Interest Earn</td>
@@ -75,10 +87,7 @@
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
         </tr> 
-        <tr class='hover:bg-gray-200'>
-          <td class='border'>Repayment Date</td>
-          <td class='border'>{{batchDetails.formula.repaymentDate}}</td>
-        </tr>
+        
       </table>
     </div>
     
@@ -123,7 +132,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Select Disbursement Bank Account</div>
@@ -166,7 +175,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
@@ -258,7 +267,7 @@
                 </tr> 
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount - batchDetails.formula.interestAmount)}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
                 </tr>  
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Repayment Amount To Funder</td>
@@ -299,7 +308,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
+              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
@@ -739,7 +748,21 @@ export default {
 
         resolve('get formula fee')
       })
-      
+    }
+
+    const getValueDate = () => {
+      return new Promise( async (resolve, reject) => {
+        var apiUrl = ''
+        apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?what=ValueDate&refId=${props.workflowExecutionReferenceId}`
+        
+        appAxios.get(apiUrl).then(res => {
+          valueDate.value = moment(res.data).format('DD MMM YYYY')
+          if(batchDetails.value.valueDate == '0001-01-01T00:00:00') {
+            batchDetails.value.valueDate = moment(res.data).format('DD MMM YYYY')
+          }
+          resolve(valueDate.value)
+        })
+      })
     }
 
     const invoiceDetailApi = async() => {
@@ -772,6 +795,7 @@ export default {
             let dueDt = moment(batchDetails.value.paymentDueDate)
             let valueDt = moment(batchDetails.value.valueDate) 
             let noOfDays = dueDt.diff(valueDt,'days')
+            
             batchDetails.value.numberOfDays = noOfDays
 
             resolve({
@@ -1095,7 +1119,7 @@ export default {
     }
 
     const init = async () => {
-      
+      await getValueDate()
       await Promise.all([
         getFormulaFee(),
         getCompanyBankAccounts(),
@@ -1120,7 +1144,7 @@ export default {
       console.log("last work status  = ", lastWorkStatus.value['statusName'])
       console.log("current user role = ", user.user_role)
       console.log("current company role = ", currentCompanyRole.value)
-      console.log("batchdetails workflow led = ", batchDetails.value.workflowLed)
+      console.log("batchdetails workflow led = ", batchDetails.value)
 
       //determine what action button should be showed in Batch Detail page
       if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleApproveButton = true
