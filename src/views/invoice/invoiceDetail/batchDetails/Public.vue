@@ -80,11 +80,11 @@
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
         </tr> 
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
+          <td class='border'>Disbursement Amount Financed Less Platform Fee</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border'>Balance Settlement Amount to Seller</td>
+          <td class='border'>Balance Settlement Amount to Seller Less Interest Amount</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
         </tr>
         <tr class='hover:bg-gray-200'>
@@ -284,13 +284,13 @@
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}}</td>
               </tr> 
               <tr class='hover:bg-gray-200'>
-                <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
+                <td class='border'>Disbursement Amount Financed Less Platform Fee</td>
                 <td class='border'>
                   {{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}
                 </td>
               </tr>  
               <tr class='hover:bg-gray-200' v-if="batchDetails.workflowLed === 'Seller Led'">
-                <td class='border'>Balance Settlement Amount to Seller</td>
+                <td class='border'>Balance Settlement Amount to Seller Less Interest Amount</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
               </tr>  
               <tr class='hover:bg-gray-200'>
