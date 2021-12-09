@@ -165,7 +165,7 @@ export default {
             interestRate: res.data.interestRate,
             platformFeeRate: res.data.processingFeeRateForFunder,
             repaymentAmountToFunder: res.data.totalAmount,
-            repaymentDate: moment.utc(res.data.paymentDueDate).format(dateFormat)
+            repaymentDate: moment(res.data.paymentDueDate).local().format(dateFormat)
           }
         }
         batchDetails.value = {...batchDetails.value, ...batch}
