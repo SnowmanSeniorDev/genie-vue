@@ -51,6 +51,15 @@
             KYC Documents
 					</button>
         </div>
+				<div class="intro-x lg:text-center flex items-center mt-5 lg:mt-0 lg:block flex-1 z-10 pt-4">
+					<button 
+						:class="step === `holidays` ? `w-full h-12 btn bg-theme-2` : `w-full h-12 btn dark:bg-dark-1`"
+						@click="gotoHolidays"
+					>
+						<CalendarIcon class="w-6 h-6 pr-2"/>
+            Holidays
+					</button>
+        </div>
 			</div>
 			<div class="w-full lg:w-3/4 px-10">
 				<router-view></router-view>
@@ -105,6 +114,10 @@ export default {
 			store.commit('account/SET_STEP', {step: "kyc"});
 			router.push({path: "/account/kyc"});
 		}
+		const gotoHolidays = () => {
+			store.commit('account/SET_STEP', {step: "holidays"});
+			router.push({path: "/account/holidays"});
+		}
     
 		return {
 			step,
@@ -112,7 +125,8 @@ export default {
 			gotoCompanyInformation,
 			gotoBankInformation,
 			gotoCurrencySettings,
-      gotoKyc
+      gotoKyc,
+			gotoHolidays
 		}
 	},
 }

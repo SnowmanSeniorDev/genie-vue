@@ -31,6 +31,7 @@ import CompanyInformation from "../views/account/CompanyInformation.vue";
 import BankInformation from "../views/account/BankInformation.vue";
 import CurrencySettings from "../views/account/CurrencySettings.vue";
 import Kyc from "../views/account/Kyc.vue";
+import Holidays from "../views/account/Holidays.vue";
 import CompanyOnboard from "../views/onboard/index.vue";
 import Invoice from "../views/invoice/index.vue";
 import InvoiceDetail from "../views/invoice/invoiceDetail"
@@ -154,6 +155,9 @@ const routes = [
         }, {
           path: "kyc",
           component: Kyc
+        }, {
+          path: "holidays",
+          component: Holidays
         }],
         meta: {
           permission: "GENIE_COMPANY_PROFILE"

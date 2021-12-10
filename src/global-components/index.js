@@ -10,7 +10,8 @@ import ArrayInput from './arrayInput/Main.vue'
 import JsonEditor from './jsonEditor/Main.vue'
 import { Calendar, DatePicker } from 'v-calendar'
 import ConfirmDialog from './confirm-dialog/Main.vue'
-
+import FullCalendar from "./calendar/Main.vue";
+import FullCalendarDraggable from "./calendar/Draggable.vue";
 export default app => {
   app.component('Litepicker', Litepicker)
   app.component('Tippy', Tippy)
@@ -24,6 +25,9 @@ export default app => {
   app.component('Calendar', Calendar)
   app.component('DatePicker', DatePicker)
   app.component('ConfirmDialog', ConfirmDialog)
+  app.component("FullCalendar", FullCalendar);
+  app.component("FullCalendarDraggable", FullCalendarDraggable);
+
   for (const [key, icon] of Object.entries(featherIcons)) {
     icon.props.size.default = '24'
     app.component(key, icon)
