@@ -106,8 +106,9 @@ export default {
     const openFileViewer = async (doc) => {
       const api = doc.documentURI
       const fileResponse = await sysAxios.get(api, {responseType: 'blob'})
-      if(fileResponse.headers['content-type'] === 'image/jpeg') {
-        const file = new Blob([fileResponse.data], {type: 'image/jpeg'});
+      const externalLinkContentType = ['image/jpeg', 'image/png', 'text/plain']
+      if(externalLinkContentType.includes(fileResponse.headers['content-type'])) {
+        const file = new Blob([fileResponse.data], {type: fileResponse.headers['content-type']});
         const fileURL = URL.createObjectURL(file);
         // openFileUrl.value = fileURL
         // cash("#show-pdf-file-viewer").modal("show")
