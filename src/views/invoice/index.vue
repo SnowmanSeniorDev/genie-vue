@@ -76,7 +76,7 @@
         <button :class="`btn btn-sm mr-2 ${selectedTab =='Pending Action' ? 'btn-primary' : 'btn-outline-primary'}`" @click='invoiceFromPendingAction'>Pending Action</button>
       </div>
       <div>
-        <button :class="`btn btn-sm ml-2 mx-1 ${selectedTab =='My Invoice' ? 'btn-primary' : 'btn-outline-primary'}`" @click='invoiceFromMe'>My Invoice</button>
+        <button :class="`btn btn-sm ml-2 mx-2 ${selectedTab =='My Invoice' ? 'btn-primary' : 'btn-outline-primary'}`" @click='invoiceFromMe'>My Invoice</button>
       </div>
       <div v-if='isCompany'>
         <button :class="`btn btn-sm ml-2 ${selectedTab =='Invoice From My Partner' ? 'btn-primary' : 'btn-outline-primary'}`" @click='invoiceFromMyPartner'>Invoice From My Partner</button>
