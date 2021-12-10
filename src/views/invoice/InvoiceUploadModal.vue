@@ -65,7 +65,7 @@
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Document Type </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> {{companyTypeHeader}} </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Document Date </th>
-                          <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Invoice Due Date </th>
+                          <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Payment Due Date </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Currency Code </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Amount </th>
                           <th class="border-b-2 dark:border-dark-5 whitespace-nowrap"> Support Document </th>
