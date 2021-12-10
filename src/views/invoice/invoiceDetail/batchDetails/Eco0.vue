@@ -1137,7 +1137,11 @@ export default {
       console.log("batchdetails workflow led = ", batchDetails.value.workflowLed)
 
       //determine what action button should be showed in Batch Detail page
-      if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleApproveButton = true
+      if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') {
+        if(new Date(batchDetails.value.paymentDueDate) < new Date()){
+          batchMessage.value = 'This invoice has been expired. The payment Due Date is ' + moment(batchDetails.value.paymentDueDate).format(dateTimeFormat)
+        } else visibleWorkflowActions.value.visibleApproveButton = true
+      }
       else if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderApproveButton = true
       else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
       // else if(lastWorkStatus.value['statusName'] === 'RECEIPT_OF_FUND_ACKNOWLEDGED_BY_SELLER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true

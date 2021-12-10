@@ -1176,7 +1176,11 @@ export default {
 
       //determine what action button should be showed in Batch Detail page
       if(batchDetails.value.workflowLed === 'Buyer Led') {
-        if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleApproveButton = true
+        if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') {
+          if(new Date(batchDetails.value.paymentDueDate) < new Date()){
+            batchMessage.value = 'This invoice has been expired. The payment Due Date is ' + moment(batchDetails.value.paymentDueDate).format(dateTimeFormat)
+          } else visibleWorkflowActions.value.visibleApproveButton = true
+        }
         else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS' && user.user_role === 'Funder Admin') {
           if(new Date(batchDetails.value.bidEndTime) < new Date()) {
             batchMessage.value = 'You cannot approve this invoice due to passed bid end time ('+moment(batchDetails.value.bidEndTime).format(dateTimeFormat) + ')'
@@ -1193,7 +1197,12 @@ export default {
         else if(lastWorkStatus.value['statusName'] === 'REPAYMENT_INSTRUCTION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
         else if(lastWorkStatus.value['statusName'] === 'REPAID_BY_BUYER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = true
       } else {
-        if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleApproveButton = true
+        if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_BUYER' && currentCompanyRole.value === 'Buyer Admin') {
+          visibleWorkflowActions.value.visibleApproveButton = true
+          if(new Date(batchDetails.value.paymentDueDate) < new Date()) {
+            batchMessage.value = 'You cannot approve this invoice due to passed bid end time ('+moment(batchDetails.value.bidEndTime).format(dateTimeFormat) + ')'
+          } else visibleWorkflowActions.value.visibleApproveButton = true
+        } 
         else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS' && user.user_role === 'Funder Admin') {
           if(new Date(batchDetails.value.bidEndTime) < new Date()) {
             batchMessage.value = 'You cannot approve this invoice due to passed bid end time ('+moment(batchDetails.value.bidEndTime).format(dateTimeFormat) + ')'
