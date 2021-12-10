@@ -68,11 +68,11 @@
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
         </tr> 
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
+          <td class='border'>Disbursement Amount Financed Less Platform Fee</td>
+          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border'>Balance Settlement Amount to Seller</td>
+          <td class='border'>Balance Settlement Amount to Seller Less Interest Amount</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
         </tr>
         <tr class='hover:bg-gray-200'>
@@ -276,13 +276,13 @@
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}}</td>
               </tr> 
               <tr class='hover:bg-gray-200'>
-                <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
+                <td class='border'>Disbursement Amount Financed Less Platform Fee</td>
                 <td class='border'>
-                  {{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}
+                  {{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}
                 </td>
               </tr>  
               <tr class='hover:bg-gray-200' v-if="batchDetails.workflowLed === 'Seller Led'">
-                <td class='border'>Balance Settlement Amount to Seller</td>
+                <td class='border'>Balance Settlement Amount to Seller Less Interest Amount</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
               </tr>  
               <tr class='hover:bg-gray-200'>
@@ -719,7 +719,8 @@ export default {
             let valueDt = moment(batchDetails.value.valueDate) 
             let noOfDays = dueDt.diff(valueDt,'days')
             batchDetails.value.numberOfDays = noOfDays
-            batchDetails.value.formula.interestAmount = (batchDetails.value.formula.interestRate * batchDetails.value.formula.repaymentAmountToFunder / 365 * noOfDays).toFixed(2)
+            var interestAmount1 = _.find(res.data, {label:'InterestAmount'})
+            batchDetails.value.formula.interestAmount = interestAmount1?.amountBeforeTax.toFixed(2)
 
             var tax1 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId, label:'FirstDisbursableAmount'})
             batchDetails.value.formula.disbursableAmount1 = tax1?.amountBeforeTax.toFixed(2)

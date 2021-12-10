@@ -123,7 +123,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
+              <div class='self-center'>{{batchDetails.currencyCode}} {{batchDetails.batchInformation.totalAmount}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Select Disbursement Bank Account</div>
@@ -166,7 +166,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
+              <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
@@ -258,7 +258,7 @@
                 </tr> 
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
+                  <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount - batchDetails.formula.interestAmount)}}</td>
                 </tr>  
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Repayment Amount To Funder</td>
@@ -299,7 +299,7 @@
               <div class='self-center'>Invoice Uploaded Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.uploadDate).format(dateFormat)}}</div>
               <div class='self-center'>Invoice Amount</div>
-              <div class='self-center'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.batchInformation.totalAmount)}}</div>
+              <div class='self-center'>{{batchDetails.batchInformation.totalAmount}}</div>
               <div class='self-center'>Payment Due Date</div>
               <div class='self-center'>{{moment(batchDetails.batchInformation.paymentDueDate).format(dateFormat)}}</div>
               <div class='self-center'>Remark</div>
@@ -739,21 +739,7 @@ export default {
 
         resolve('get formula fee')
       })
-    }
-
-    const getValueDate = () => {
-      return new Promise( async (resolve, reject) => {
-        var apiUrl = ''
-        apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?what=ValueDate&refId=${props.workflowExecutionReferenceId}`
-        
-        appAxios.get(apiUrl).then(res => {
-          valueDate.value = moment(res.data).format('DD MMM YYYY')
-          if(batchDetails.value.valueDate == '0001-01-01T00:00:00') {
-            batchDetails.value.valueDate = moment(res.data).format('DD MMM YYYY')
-          }
-          resolve(valueDate.value)
-        })
-      })
+      
     }
 
     const invoiceDetailApi = async() => {
@@ -908,6 +894,10 @@ export default {
           updateProvenanceApi()
         }
       }) 
+    }
+
+    const bidExpiry = async () => { 
+      visibleWorkflowActions.value.bidExpiry
     }
 
     const funderApproveAcknowledge = async () => { 
@@ -1109,7 +1099,7 @@ export default {
     }
 
     const init = async () => {
-      await getValueDate()
+      
       await Promise.all([
         getFormulaFee(),
         getCompanyBankAccounts(),
@@ -1137,11 +1127,7 @@ export default {
       console.log("batchdetails workflow led = ", batchDetails.value.workflowLed)
 
       //determine what action button should be showed in Batch Detail page
-      if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') {
-        if(new Date(batchDetails.value.paymentDueDate) < new Date()){
-          batchMessage.value = 'This invoice has been expired. The payment Due Date is ' + moment(batchDetails.value.paymentDueDate).format(dateTimeFormat)
-        } else visibleWorkflowActions.value.visibleApproveButton = true
-      }
+      if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleApproveButton = true
       else if(lastWorkStatus.value['statusName'] === 'NOTIFICATION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleFunderApproveButton = true
       else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
       // else if(lastWorkStatus.value['statusName'] === 'RECEIPT_OF_FUND_ACKNOWLEDGED_BY_SELLER' && currentCompanyRole.value === 'Buyer Admin') visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = true
