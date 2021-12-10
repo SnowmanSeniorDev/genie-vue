@@ -56,8 +56,20 @@
       <span>Formular</span>
       <table class='table mt-2'>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border w-1/2'>Interest Rate (Annual Rate %)</td>
-          <td class='border'>{{batchDetails.formula.interestRate}}%</td>
+          <td class='border w-1/2'>Interest Rate</td>
+          <td class='border'>{{batchDetails.formula.interestRate}}% {{batchDetails.formula.interestRateDuration}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Value Date</td>
+          <td class='border'>{{batchDetails.formula.valueDate}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Maturity Date</td>
+          <td class='border'>{{batchDetails.formula.maturityDate}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Number of days</td>
+          <td class='border'>{{batchDetails.formula.numberOfDays}}</td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Interest Earn</td>
@@ -78,7 +90,7 @@
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
-        </tr> 
+        </tr>         
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Date</td>
           <td class='border'>{{batchDetails.formula.repaymentDate}}</td>
@@ -720,7 +732,7 @@ export default {
             let noOfDays = dueDt.diff(valueDt,'days')
             batchDetails.value.numberOfDays = noOfDays
             var interestAmount1 = _.find(res.data, {label:'InterestAmount'})
-            batchDetails.value.formula.interestAmount = interestAmount1?.amountBeforeTax.toFixed(2)
+            batchDetails.value.formula.interestAmount = interestAmount1?.amountBeforeTax.toFixed(2)            
 
             var tax1 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId, label:'FirstDisbursableAmount'})
             batchDetails.value.formula.disbursableAmount1 = tax1?.amountBeforeTax.toFixed(2)
@@ -1150,7 +1162,7 @@ export default {
     const init = async () => {
       await getValueDate()
       await Promise.all([
-        getFormulaFee(),
+        // getFormulaFee(),
         getCompanyBankAccounts(),
         getProvenanceHistory(),
         getLastWorkflowStatus(),

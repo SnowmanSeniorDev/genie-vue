@@ -163,9 +163,13 @@ export default {
           },
           formula: {
             interestRate: res.data.interestRate,
+            interestRateDuration: res.data.interestRateDuration,
             platformFeeRate: res.data.processingFeeRateForFunder,
             repaymentAmountToFunder: res.data.totalAmount,
-            repaymentDate: moment(res.data.paymentDueDate).local().format(dateFormat)
+            repaymentDate: moment(res.data.maturityDate).local().format(dateFormat),
+            maturityDate: moment(res.data.maturityDate).local().format(dateFormat),
+            valueDate: moment(res.data.valueDate).local().format(dateFormat),
+            numberOfDays: moment(res.data.maturityDate).diff(moment(res.data.valueDate), 'days')
           }
         }
         batchDetails.value = {...batchDetails.value, ...batch}
