@@ -76,10 +76,7 @@
       <button :class="`btn btn-sm mr-2 ${selectedTab =='Pending Action' ? 'btn-primary' : 'btn-outline-primary'}`" @click='invoiceFromPendingAction'>Pending Action</button>
       </div>
       <div>
-      <button style="margin-right: 0.5rem" :class="`btn btn-sm ml-2 ${selectedTab =='My Invoice' ? 'btn-primary' : 'btn-outline-primary'}`" @click='invoiceFromMe'>My Invoice</button>
-      </div>
-      <div v-if='isCompany'>
-      <button :class="`btn btn-sm ml-2 ${selectedTab =='Invoice From My Partner' ? 'btn-primary' : 'btn-outline-primary'}`" @click='invoiceFromMyPartner'>Invoice From My Partner</button>
+      <button :class="`btn btn-sm ml-2 ${selectedTab =='My Invoice' ? 'btn-primary' : 'btn-outline-primary'}`" @click='invoiceFromMe'>My Invoice</button>
       </div>
     </div>
     <div class='intro-y box px-3 pb-3 mt-3'>
@@ -329,22 +326,12 @@ export default {
 
     const invoiceFromMe = () => { 
       selectedTab.value = 'My Invoice'
-      let updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc')
+      // let updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc')
 
-      if(store.state.account.company_type.toLowerCase() == 'funder') {
-        updatedData = _.orderBy(_.filter(invoiceOverview.value, {funderCompanyId: store.state.account.company_uuid}),'createdTime','desc')
-      }
-      // let updatedData = _.orderBy(invoiceOverview.value, 'createdTime','desc')
-      tabulator.value.clearData()
-      if(updatedData.length > 0 ){
-        tabulator.value.addRow(updatedData)
-      }      
-    }
-
-    const invoiceFromMyPartner = () => {       
-      selectedTab.value = 'Invoice From My Partner'     
-      let initiatedByMe = _.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid})      
-      let updatedData = _.orderBy(_.differenceBy(invoiceOverview.value, initiatedByMe, 'workflowExecutionReferenceId'),'createdTime','desc')
+      // if(store.state.account.company_type.toLowerCase() == 'funder') {
+      //   updatedData = _.orderBy(_.filter(invoiceOverview.value, {funderCompanyId: store.state.account.company_uuid}),'createdTime','desc')
+      // }
+      let updatedData = _.orderBy('createdTime','desc')
       tabulator.value.clearData()
       if(updatedData.length > 0 ){
         tabulator.value.addRow(updatedData)
@@ -390,7 +377,6 @@ export default {
       getPendingAction,
       getInvoiceOverview,
       invoiceFromMe,
-      invoiceFromMyPartner,
       invoiceFromPendingAction,
       ProvenanceLang,
       userRole: store.state.auth.user_role

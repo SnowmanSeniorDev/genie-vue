@@ -217,10 +217,9 @@ export default defineComponent({
         })
         appAxios.get(`/company/v1/${company_uuid}/holidays`).then(res => {
           holidays.value = _.filter(res.data, (holiday) => {return new Date(holiday.date) > new Date()}).slice(0, 3)
-          if(holidays.value.length > 0)
-          {
+          if(holidays.value.length) {
             dayDiff.value = moment(holidays.value[0].date).diff(moment(new Date()), 'days');
-          }          
+          }
         })
         ecoSystem.value = await store.dispatch('main/updateEcosystems', {company_uuid})
       }

@@ -55,21 +55,9 @@
     <div class='mt-5' v-if="lodash.find(provenance, {statusName: 'TRANSACTION_APPROVED_BY_FUNDER'})?.state === 'Completed'">
       <span>Formular</span>
       <table class='table mt-2'>
-        <tr class='hover:bg-gray-200'>
-          <td class='border'>Value Date</td>
-          <td class='border'>{{moment(batchDetails.valueDate).format(dateFormat)}}</td>
-        </tr>
-        <tr class='hover:bg-gray-200'>
-          <td class='border'>Repayment Date</td>
-          <td class='border'>{{batchDetails.formula.repaymentDate}}</td>
-        </tr> 
-        <tr class='hover:bg-gray-200'>
-          <td class='border'>Total Financing Days</td>
-          <td class='border'>{{batchDetails.numberOfDays}} Days</td>
-        </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border w-1/2'>Interest Rate (%)</td>
-          <td class='border'>{{batchDetails.interestRate}}% {{batchDetails.interestRateDuration}}</td>
+          <td class='border w-1/2'>Interest Rate (Annual Rate %)</td>
+          <td class='border'>{{batchDetails.formula.interestRate}}%</td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Interest Earn</td>
@@ -80,17 +68,21 @@
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
         </tr> 
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border'>Disbursement Amount Financed Less Platform Fee</td>
-          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
+          <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
+          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border'>Balance Settlement Amount to Seller Less Interest Amount</td>
+          <td class='border'>Balance Settlement Amount to Seller</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
         </tr>
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
-        </tr>  
+        </tr> 
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Repayment Date</td>
+          <td class='border'>{{batchDetails.formula.repaymentDate}}</td>
+        </tr>
       </table>
     </div>
     
@@ -284,13 +276,13 @@
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}}</td>
               </tr> 
               <tr class='hover:bg-gray-200'>
-                <td class='border'>Disbursement Amount Financed Less Platform Fee</td>
+                <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
                 <td class='border'>
-                  {{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}
+                  {{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}
                 </td>
               </tr>  
               <tr class='hover:bg-gray-200' v-if="batchDetails.workflowLed === 'Seller Led'">
-                <td class='border'>Balance Settlement Amount to Seller Less Interest Amount</td>
+                <td class='border'>Balance Settlement Amount to Seller</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
               </tr>  
               <tr class='hover:bg-gray-200'>
@@ -727,9 +719,7 @@ export default {
             let valueDt = moment(batchDetails.value.valueDate) 
             let noOfDays = dueDt.diff(valueDt,'days')
             batchDetails.value.numberOfDays = noOfDays
-
-            var interestAmount1 = _.find(res.data, {label:'InterestAmount'})
-            batchDetails.value.formula.interestAmount = interestAmount1?.amountBeforeTax.toFixed(2)
+            batchDetails.value.formula.interestAmount = (batchDetails.value.formula.interestRate * batchDetails.value.formula.repaymentAmountToFunder / 365 * noOfDays).toFixed(2)
 
             var tax1 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId, label:'FirstDisbursableAmount'})
             batchDetails.value.formula.disbursableAmount1 = tax1?.amountBeforeTax.toFixed(2)
@@ -1182,7 +1172,7 @@ export default {
       console.log("last work status  = ", lastWorkStatus.value['statusName'])
       console.log("current user role = ", user.user_role)
       console.log("current company role = ", currentCompanyRole.value)
-      console.log("batchdetails workflow led = ", batchDetails.value)
+      console.log("batchdetails workflow led = ", batchDetails.value.workflowLed)
 
       //determine what action button should be showed in Batch Detail page
       if(batchDetails.value.workflowLed === 'Buyer Led') {
