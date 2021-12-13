@@ -220,8 +220,8 @@
               </tr> 
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Value Date</td>
-                <td class='border'>
-                  <Litepicker
+                <td class='border'> 
+                  <Litepicker v-if="getLockDaysState"
                     v-model='valueDate'
                     :options='{
                       autoApply: false,
@@ -599,7 +599,7 @@ export default {
     const user = store.state.auth 
     const dateFormat = process.env.VUE_APP_DATE_FORMAT
     const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
-
+    const getLockDaysState = ref(false);
     const batchDetails = ref(props.batchDetail)
     const provenance = ref([])
     const lastWorkStatus = ref()
@@ -702,7 +702,7 @@ export default {
     const getLockDays = async () => {
       await appAxios.get(`/company/v1/${batchDetails.value.buyerCompanyId}/holidays`).then(res => {
         res.data.forEach(item => {
-          if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
+          if(!lockDays.value.includes(new Date(item.date))) lockDays.value.push(item.date)
         })
       })
       await appAxios.get(`/company/v1/${batchDetails.value.sellerCompanyId}/holidays`).then(res => {
@@ -712,13 +712,16 @@ export default {
       })
       if(batchDetails.value.funderCompanyId != '00000000-0000-0000-0000-000000000000') {
         await appAxios.get(`/company/v1/${batchDetails.value.funderCompanyId}/holidays`).then(res => {
-          res.data.forEach(item => {
-            if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
+          res.data.forEach(item => { 
+          if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
           })
         })
       }
       
-      return new Promise(resolve => resolve(lockDays.value))
+      return new Promise(resolve => {
+        getLockDaysState.value = true;
+        return resolve(lockDays.value)
+        })
     }
 
     const invoiceDetailApi = async () => {
@@ -890,7 +893,7 @@ export default {
       }) 
     }
 
-    const getEstimateCalc = async () => {
+    const getEstimateCalc = async () => { 
       if(valueDate.value != '' && valueDate.value != null && valueDate.value != undefined){
         batchDetails.value.valueDate = valueDate.value 
         let dueDt = moment(batchDetails.value.paymentDueDate)
@@ -1287,7 +1290,8 @@ export default {
       sellerAcknowledgeOfReceiveDisbursement,
       BuyerUploadRepaymentAdvice,
       funderAcknowledgeOfRepaymentComfirm,
-      funderAcknowledgeOfRepaymentDecline
+      funderAcknowledgeOfRepaymentDecline,
+      getLockDaysState
     }
   },
 }
