@@ -255,9 +255,13 @@
                 <td class='border'>{{batchDetails.numberOfDays}}</td>
               </tr>  
               <tr class='hover:bg-gray-200'>
-                <td class='border'>Interest Rate(Annual Rate %)</td>
+                <td class='border'>Interest Rate(%)</td>
                 <td class='border'>
                   <input type='text' v-model='bidValue' @change='getEstimateCalc' class='form-control'/>
+                  <select v-model="interestRateDuration" @change='getEstimateCalc' class="form-select">
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
                 </td>
               </tr>
               <tr class='hover:bg-gray-200'>
@@ -267,15 +271,6 @@
                     <option v-for="bank in bankAccounts" :key="bank.bankAccountId" :value="bank.bankAccountId">
                       {{bank.accountNumber}} ({{bank.bankName}})
                     </option>
-                  </select>
-                </td>
-              </tr>
-              <tr class='hover:bg-gray-200'>
-                <td class='border'>Interest Rate Duration</td>
-                <td class='border'>
-                  <select v-model="interestRateDuration" @change='getEstimateCalc' class="form-select">
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
                   </select>
                 </td>
               </tr>
