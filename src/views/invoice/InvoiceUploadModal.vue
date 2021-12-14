@@ -14,7 +14,7 @@
                   <button class="btn btn-outline-primary w-40 mr-1 inline-block" @click="chooseFiles">
                     <UploadIcon class="w-4 h-4 mr-2" />
                     Upload Invoice
-                  </button> 
+                  </button>
                   <div class="dropdown inline-block" data-placement="bottom">
                     <button class="dropdown-toggle btn btn-primary w-44 mr-1" aria-expanded="false" :disabled='!uploadedFileId.length'> {{documentFormat}} </button>
                     <div class="dropdown-menu w-40">
@@ -42,7 +42,7 @@
                       v-on="inputEvents"
                     />
                   </template>
-                </DatePicker> 
+                </DatePicker>
               </div>
             </div>
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
@@ -100,7 +100,7 @@
                             <input v-if="batchIndex == editRowIndex.batchIndex && index == editRowIndex.index" type="text" v-model="invoicesBatch[batchIndex].invoices[index].documentType" size="5"/>
                             <span v-else>{{item.documentType}}</span>
                           </td>
-                          <td class="border-b dark:border-dark-5">                            
+                          <td class="border-b dark:border-dark-5">
                             <input v-if="batchIndex == editRowIndex.batchIndex && index == editRowIndex.index && companyTypeHeader === 'Seller Name'" type="text" v-model="invoicesBatch[batchIndex].invoices[index].invoiceFromCompanyName"/>
                             <input v-else-if="batchIndex == editRowIndex.batchIndex && index == editRowIndex.index && companyTypeHeader === 'Buyer Name'" type="text" v-model="invoicesBatch[batchIndex].invoices[index].invoiceToCompanyName"/>
                             <span v-else-if="companyTypeHeader === 'Seller Name'">{{item.invoiceFromCompanyName}}</span>
@@ -187,6 +187,7 @@ import _ from "lodash";
 import { appAxios, sysAxios } from "@/plugins/axios";
 import SupportDropzone from "./SupportFileDropzone";
 import Toastify from "toastify-js";
+import toast from '@/utils/toast'
 
 export default {
   components: {
@@ -198,7 +199,7 @@ export default {
     }
   },
   setup(props){
-    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT); 
+    const dateFormat = ref(process.env.VUE_APP_DATE_FORMAT);
     const dateTimeFormat = ref(process.env.VUE_APP_DATETIME_FORMAT);
     const store = useStore();
     const company_uuid = store.state.account.company_uuid;
@@ -226,51 +227,56 @@ export default {
     const setDocumentFormat = (format) => {
       documentFormat.value = format
       sysAxios.get(`/uploads/v1/${uploadedFileId.value}/extractdata/${format}`).then(res => {
-        console.log(res.data)
-        workflowLed.value = res.data.workflow;
-        res.data.invoices.forEach((entity) => {
-          entity['supportingDocuments'] = []
-        })
-        jsonData.value = res.data.invoices
-        //group the invoices to batch by payment due date and company name
-        let paymentDueDate = jsonData.value[0].paymentDueDate
-        let companyName = jsonData.value[0].invoiceFromCompanyName ? jsonData.value[0].invoiceFromCompanyName : jsonData.value[0].invoiceToCompanyName
-        let batch = [];
-        invoicesBatch.value = []
-        for(var i = 0; i < jsonData.value.length; i++) {
-          if( jsonData.value[i].paymentDueDate == paymentDueDate  && jsonData.value[i].invoiceFromCompanyName == companyName ||
-            jsonData.value[i].paymentDueDate == paymentDueDate && jsonData.value[i].invoiceToCompanyName == companyName
-          ) {
-            batch.push({...jsonData.value[i]})
-          } else {
-            invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
-            batch = []
-            batch.push({...jsonData.value[i]})
-            paymentDueDate = jsonData.value[i].paymentDueDate
-            companyName = jsonData.value[i].invoiceFromCompanyName ? jsonData.value[0].invoiceFromCompanyName : jsonData.value[0].invoiceToCompanyName
-            if(i == jsonData.value.length - 1) {
+        console.log(res)
+        if (res.status === 204) {
+          toast({status: 'error', title: 'File format error', content: `You have choosen ${format}. It's Invalid file format for your upload invoice file. Please try again with a valid file format`})
+        } else {
+          workflowLed.value = res.data.workflow;
+          res.data.invoices.forEach((entity) => {
+            entity['supportingDocuments'] = []
+          })
+          jsonData.value = res.data.invoices
+          //group the invoices to batch by payment due date and company name
+          let paymentDueDate = jsonData.value[0].paymentDueDate
+          let companyName = jsonData.value[0].invoiceFromCompanyName ? jsonData.value[0].invoiceFromCompanyName : jsonData.value[0].invoiceToCompanyName
+          let batch = [];
+          invoicesBatch.value = []
+          for(var i = 0; i < jsonData.value.length; i++) {
+            if( jsonData.value[i].paymentDueDate == paymentDueDate  && jsonData.value[i].invoiceFromCompanyName == companyName ||
+              jsonData.value[i].paymentDueDate == paymentDueDate && jsonData.value[i].invoiceToCompanyName == companyName
+            ) {
+              batch.push({...jsonData.value[i]})
+            } else {
               invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
               batch = []
+              batch.push({...jsonData.value[i]})
+              paymentDueDate = jsonData.value[i].paymentDueDate
+              companyName = jsonData.value[i].invoiceFromCompanyName ? jsonData.value[0].invoiceFromCompanyName : jsonData.value[0].invoiceToCompanyName
+              if(i == jsonData.value.length - 1) {
+                invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
+                batch = []
+              }
             }
           }
-        }
-        if(batch.length) invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
+          if(batch.length) invoicesBatch.value.push({bankId: '', remark: '', invoices: batch})
 
-        //identify the invoice detail show table header and it will use to determine current invoice is seller led or buyer led
-        console.log("workflow led = ", res.data.workflow)
-        console.log("invoicesBatch = ", invoicesBatch.value)
-        if(res.data.workflow === 'Buyer Led') {
-          companyTypeHeader.value = "Seller Name";
-          invoiceToCompanyName.value = res.data.invoiceToCompanyName;
+          //identify the invoice detail show table header and it will use to determine current invoice is seller led or buyer led
+          console.log("workflow led = ", res.data.workflow)
+          console.log("invoicesBatch = ", invoicesBatch.value)
+          if(res.data.workflow === 'Buyer Led') {
+            companyTypeHeader.value = "Seller Name";
+            invoiceToCompanyName.value = res.data.invoiceToCompanyName;
+          }
+          else {
+            companyTypeHeader.value = "Buyer Name";
+            invoiceFromCompanyName.value = res.data.invoiceFromCompanyName;
+          }
         }
-        else {
-          companyTypeHeader.value = "Buyer Name";
-          invoiceFromCompanyName.value = res.data.invoiceFromCompanyName;
-        }
+
       })
       cash(".dropdown-menu").dropdown("hide");
     }
-    
+
     const removeRow = (batchIndex, index) => {
       invoicesBatch.value[batchIndex].invoices.splice(index, 1)
       if(!invoicesBatch.value[batchIndex].invoices.length) {
@@ -288,12 +294,12 @@ export default {
       editRowIndex.value.index = null;
       var companyName = invoicesBatch.value[batchIndex].invoices[index].invoiceFromCompanyName ? invoicesBatch.value[batchIndex].invoices[index].invoiceFromCompanyName : invoicesBatch.value[batchIndex].invoices[index].invoiceToCompanyName
       var paymentDueDate = invoicesBatch.value[batchIndex].invoices[index].paymentDueDate
-  
+
       for(var i = 0; i < invoicesBatch.value.length; i++) {
         for(var j = 0; j < invoicesBatch.value[i].invoices.length; j++) {
           var compareCompanyName = invoicesBatch.value[i].invoices[j].invoiceFromCompanyName ? invoicesBatch.value[i].invoices[j].invoiceFromCompanyName : invoicesBatch.value[i].invoices[j].invoiceToCompanyName
           var comparePaymentDuedate = invoicesBatch.value[i].invoices[j].paymentDueDate
-          var paymentDueDateDayDiff = moment(paymentDueDate).diff(moment(comparePaymentDuedate), 'days') 
+          var paymentDueDateDayDiff = moment(paymentDueDate).diff(moment(comparePaymentDuedate), 'days')
           if(i == batchIndex && j == index) continue;
           if(i == batchIndex) {
             if(companyName != compareCompanyName || paymentDueDateDayDiff) {
@@ -313,7 +319,7 @@ export default {
           }
         }
       }
-    } 
+    }
 
     const addSupportDoc = (batchIndex, index, documentId, documentName) => {
       invoicesBatch.value[batchIndex].invoices[index].supportingDocuments.push({
@@ -329,7 +335,7 @@ export default {
     const chooseFiles = () => {
       document.getElementById("file-upload").click();
     }
-    
+
     const getCompanyIdByCompanyName = (companyName) => {
       const api = `/company/v1/${companyName}`;
       return new Promise( resolve => {
@@ -348,20 +354,20 @@ export default {
         resolve(bankAccount.value)
       })
     }
-    
+
     // to getting the upload invoice url and private ecosystem detail
     const getPrivateEcosystemDetail = () => {
       return new Promise( async resolve => {
         const ecosystem = await appAxios.get(`/company/v1/ecosystems/${store.state.main.defaultEcosystem.ecosystemId}`).then(res => res.data)
         var buyerLedWorkflowAPIEndpoint = ''
         var sellerLedWorkflowAPIEndpoint = ''
-        
+
         if(ecosystem.buyerLedWorkflowId !== '00000000-0000-0000-0000-000000000000') {
           buyerLedWorkflowAPIEndpoint = await appAxios.get(`/workflow/v2/${ecosystem.buyerLedWorkflowId}`).then(res => {
             return res.data.workflowStatuses[0].statusUpdateHandlerAPIEndpoint
           })
-        } 
-        
+        }
+
         if(ecosystem.sellerLedWorkflowId !== '00000000-0000-0000-0000-000000000000') {
           sellerLedWorkflowAPIEndpoint = await appAxios.get(`/workflow/v2/${ecosystem.sellerLedWorkflowId}`).then(res => {
             return res.data.workflowStatuses[0].statusUpdateHandlerAPIEndpoint
@@ -375,7 +381,7 @@ export default {
         }
         resolve(rlt)
       })
-      
+
     }
 
     const submitInvoice = async () => {
@@ -401,7 +407,7 @@ export default {
                     sellerCompanyId: companyId
                   })
                 })
-              )  
+              )
               requestBodys.push({
                 buyerCompanyId: buyerCompanyId,
                 journalBatchEntries,
@@ -471,7 +477,7 @@ export default {
           })
         })
       }
-      
+
       loading.value = !loading.value
       var noError = true
       await Promise.all(
@@ -512,7 +518,7 @@ export default {
         stopOnFocus: true,
       }).showToast();
     }
-    
+
     const fileChoosen = async (event) => {
       const fileUploadApi = 'uploads/v1/invoice_batch';
       let formData = new FormData();
@@ -550,11 +556,11 @@ export default {
       },
       { deep: true }
     )
-    
+
     watchEffect(() => {
       if(store.state.main.defaultEcosystem.ecosystemId !== defaultEcosystemId.value) {
         defaultEcosystemId.value = store.state.main.defaultEcosystem.ecosystemId
-        init() 
+        init()
       }
     })
 
