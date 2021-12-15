@@ -44,7 +44,31 @@
                   </template>
                 </DatePicker>
               </div>
+              <!-- <div v-if="invoicesBatch.length" class="grid grid-cols-2 gap-x-4 mx-4"> -->
+              <div v-if="invoicesBatch.length" class="grid grid-cols-2 gap-x-4 mx-4">
+                <div v-if="workflowLed == 'Seller Led'" class="flex gap-x-2 items-center col-span-1" :class="`${submitableInvoice.selectDisbursableBankAccount ? 'text-gray-500 line-through' : 'text-theme-6'}`">
+                  <CheckIcon v-if="submitableInvoice.selectDisbursableBankAccount" class="w-4 text-green-700"/>
+                  <AlertCircleIcon v-else class="w-4"/>
+                  <p>Select disbursable Bank Account</p>
+                </div>
+                <div class="flex gap-x-2 items-center col-span-1"  :class="`${submitableInvoice.batchRemark ? 'text-gray-500 line-through' : 'text-theme-6'}`">
+                  <CheckIcon v-if="submitableInvoice.batchRemark" class="w-4 text-green-700"/>
+                  <AlertCircleIcon v-else class="w-4"/>
+                  <p>Inupt batch Remark</p>
+                </div>
+                <div class="flex gap-x-2 items-center col-span-1" :class="`${submitableInvoice.uploadSupportDocuments ? 'text-gray-500 line-through' : 'text-theme-6'}`">
+                  <CheckIcon v-if="submitableInvoice.uploadSupportDocuments" class="w-4 text-green-700"/>
+                  <AlertCircleIcon class="w-4"/>
+                  <p>Upload Support Documents</p>
+                </div>
+                <div class="flex gap-x-2 items-center col-span-1" :class="`${submitableInvoice.paymentDueDate ? 'text-gray-500 line-through' : 'text-theme-6'}`">
+                  <CheckIcon v-if="submitableInvoice.paymentDueDate" class="w-4 text-green-700"/>
+                  <AlertCircleIcon v-else class="w-4"/>
+                  <p>Payment Due date mush be future date</p>
+                </div>
+              </div>
             </div>
+
             <input id="file-upload" ref="fileUpload" type="file" class="hidden" @change="fileChoosen">
             <div class="col-span-12 h-full overflow-y-auto overflow-x-invisible bg-gray-200 p-1 mt-5">
               <div v-if="loading" class="py-16 h-full flex">
@@ -162,9 +186,9 @@
               </div>
             </div>
           </div>
-          <div class="modal-footer text-right">
+          <div class="modal-footer mx-3">
             <button type="button" data-dismiss="modal" class="btn btn-outline-secondary w-20 mr-1"> Cancel </button>
-            <button type="button" class="btn btn-primary w-20" @click="submitInvoice" :disabled='!submitableInvoice'> Submit </button>
+            <button type="button" class="btn btn-primary w-20" @click="submitInvoice" :disabled='!submitableInvoice.verified'> Submit </button>
           </div> <!-- END: Modal Footer -->
         </div>
       </div>
@@ -222,7 +246,12 @@ export default {
     const invoiceToCompanyName = ref('');
     const requestValide = ref(true);
     const invoicesBatch = ref([]);
-    const submitableInvoice = ref(false)
+    const submitableInvoice = ref({
+      selectDisbursableBankAccount: false,
+      batchRemark: false,
+      uploadSupportDocuments: false,
+      verified: false
+    })
 
     const setDocumentFormat = (format) => {
       documentFormat.value = format
@@ -543,16 +572,35 @@ export default {
       () => {
         var flg = true
         invoicesBatch.value.forEach(batch => {
-          if(!batch.remark) flg = false
-          if(workflowLed.value === 'Seller Led') {
-            if(!batch.bankId) flg = false
+          if(!batch.remark) {
+            flg = false
+            submitableInvoice.value.batchRemark = false
+          } else {
+            submitableInvoice.value.batchRemark = true
           }
+          if(workflowLed.value === 'Seller Led') {
+            if(!batch.bankId) {
+              submitableInvoice.value.selectDisbursableBankAccount = false
+              flg = false
+            }
+            else submitableInvoice.value.selectDisbursableBankAccount = true
+          }
+          var supportDocumentVerification = true
+          var paymentDueDateVerification = true
           batch.invoices.forEach(invoice => {
-            if(new Date(invoice.paymentDueDate) < new Date()) flg = false
-            if(!invoice.supportingDocuments.length) flg = false
+            if(new Date(invoice.paymentDueDate) < new Date()) {
+              flg = false
+              paymentDueDateVerification = false
+            }
+            if(!invoice.supportingDocuments.length) {
+              flg = false
+              supportDocumentVerification = false
+            }
           })
+          submitableInvoice.value.uploadSupportDocuments = supportDocumentVerification
+          submitableInvoice.value.paymentDueDate = paymentDueDateVerification
         })
-        submitableInvoice.value = flg
+        submitableInvoice.value.verified = flg
       },
       { deep: true }
     )
