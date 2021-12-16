@@ -3,7 +3,7 @@
     <div class='flex items-center'>
       <ListIcon class='w-6 h-6 mr-3' /><span class='text-lg'>Batch Details: {{batchDetails.workflowLed}}</span>
     </div>
-    
+
     <div class='mt-5'>
       <span>Batch Information</span>
       <table class='table mt-2'>
@@ -62,26 +62,26 @@
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Interest Earn</td>
           <td class='border'>{{batchDetails.currencyCode}} {{batchDetails.formula.interestAmount}}</td>
-        </tr> 
+        </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Platform Fee Amount</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
-        </tr> 
+        </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
-        </tr>  
+        </tr>
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
-        </tr> 
+        </tr>
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Date</td>
           <td class='border'>{{batchDetails.formula.repaymentDate}}</td>
         </tr>
       </table>
     </div>
-    
+
     <div v-if='initComponent'>
       <div v-if='visibleWorkflowActions.visibleApproveButton' class='pt-8 flex justify-center'>
         <a href='javascript:;' data-toggle='modal' data-target='#decline-invoice-modal' class='btn btn-secondary w-48 sm:w-auto mr-2' >Decline</a>
@@ -103,9 +103,9 @@
       <div v-if='visibleWorkflowActions.visibleFunderAcknowledgeRepaymentAdvice' class='pt-8 flex justify-center'>
         <a href='javascript:;' @click='openFunderAcknowledgeUploadRepaymentAdviceModel' class='btn btn-primary w-48 sm:w-auto mr-2' >Acknowledge Repayment Advice</a>
       </div>
-    </div> 
+    </div>
   </div>
-  
+
   <!-- Start: action modal -->
   <div v-if='initComponent'>
     <div id='approve-invoice-modal' class='modal' tabindex='-1' aria-hidden='true'>
@@ -193,7 +193,7 @@
           <div class='modal-body mx-8'>
             <div class='mt-5'>
               <span>Formular</span>
-              <table class='table mt-2'> 
+              <table class='table mt-2'>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Batch Number</td>
                   <td class='border'>{{batchDetails.batchNumber}}</td>
@@ -201,7 +201,7 @@
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Total Invoice Amount</td>
                   <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.totalAmount)}}</td>
-                </tr> 
+                </tr>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Repayment Bank Account</td>
                   <td class='border'>
@@ -243,27 +243,27 @@
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Payment Due Date</td>
                   <td class='border'>{{moment(batchDetails.paymentDueDate).format(dateFormat)}}</td>
-                </tr> 
+                </tr>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Numbers of Days</td>
                   <td class='border'>{{batchDetails.numberOfDays}}</td>
-                </tr>  
+                </tr>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Interest Earn</td>
                   <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.interestAmount)}}</td>
-                </tr> 
+                </tr>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Platform Fee Amount</td>
                   <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}}</td>
-                </tr> 
+                </tr>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
                   <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
-                </tr>  
+                </tr>
                 <tr class='hover:bg-gray-200'>
                   <td class='border'>Repayment Amount To Funder</td>
                   <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}}</td>
-                </tr> 
+                </tr>
               </table>
               <div class='grid grid-cols-2 grid-flow-row gap-4 mt-4'>
                 <div class='self-center'>Remark</div>
@@ -275,7 +275,7 @@
             </div>
           </div>
           <div class='modal-footer text-right'>
-            <button type='button' class='btn btn-primary w-24 mr-1' @click='funderApproveAcknowledge' :disabled='modalLoading'> 
+            <button type='button' class='btn btn-primary w-24 mr-1' @click='funderApproveAcknowledge' :disabled='modalLoading'>
               Approve
               <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
             </button>
@@ -330,7 +330,7 @@
                 <template v-if='!files'>
                   <input v-bind='getInputProps()' >
                   <UploadCloudIcon class='w-24 h-20 text-red-400' />
-                  <div class='text-lg font-medium text-gray-600'> 
+                  <div class='text-lg font-medium text-gray-600'>
                     Drag and drop here<br>or
                   </div>
                   <div class='text-red-400'>browse</div>
@@ -360,7 +360,7 @@
                 <button class='dropdown-toggle btn btn-primary mr-1' aria-expanded='false'> {{disbursementData.currencyCode}} </button>
                 <div class='dropdown-menu' id='currencyCodeDropDown' style='z-index: 10001;'>
                   <div class='dropdown-menu__content box dark:bg-dark-1 p-2'>
-                    
+
                     <a v-for='(currency, index) in currencies' :key='index'
                       href='javascript:;'
                       class='block p-2 transition duration-300 ease-in-out bg-white dark:bg-dark-1 hover:bg-gray-200 dark:hover:bg-dark-2 rounded-md'
@@ -370,7 +370,7 @@
                     </a>
                   </div>
                 </div>
-              </div>  
+              </div>
               <div class='self-center'>Payment Advice Date</div>
               <div class='self-center'>
                 <Litepicker
@@ -452,7 +452,7 @@
                 <template v-if='!files'>
                   <input v-bind='getInputProps()' >
                   <UploadCloudIcon class='w-24 h-20 text-red-400' />
-                  <div class='text-lg font-medium text-gray-600'> 
+                  <div class='text-lg font-medium text-gray-600'>
                     Drag and drop here<br>or
                   </div>
                   <div class='text-red-400'>browse</div>
@@ -491,7 +491,7 @@
                     </a>
                   </div>
                 </div>
-              </div>  
+              </div>
               <div class='self-center'>Payment Advice Date</div>
               <div class='self-center'>
                 <Litepicker
@@ -556,13 +556,6 @@
         </div>
       </div>
     </div>
-    <div id='failed-notification-content' class='toastify-content hidden flex'>
-      <XCircleIcon class='text-theme-6' />
-      <div class='ml-4 mr-4'>
-        <div class='font-medium'>Upload failed!</div>
-        <div class='text-gray-600 mt-1' id='error-content'>Your signature is required!</div>
-      </div>
-    </div>
   </div>
   <!-- End: action modal -->
 </template>
@@ -570,7 +563,6 @@
 <script>
 import { ref, onMounted, reactive } from 'vue'
 import { useStore } from 'vuex'
-import Toastify from 'toastify-js'
 import _ from 'lodash'
 import moment from 'moment'
 import { useDropzone } from 'vue3-dropzone'
@@ -599,7 +591,7 @@ export default {
   },
   setup(props) {
     const store = useStore()
-    const user = store.state.auth 
+    const user = store.state.auth
     const dateFormat = process.env.VUE_APP_DATE_FORMAT
 
     const batchDetails = ref(props.batchDetail)
@@ -626,7 +618,7 @@ export default {
     const valueDate = ref()
     const bidValue = ref(null)
     const files = ref()
-    
+
     const disbursementData = ref({
       paymentAdviceNumber: null,
       paymentAdviceAmount: null,
@@ -716,7 +708,7 @@ export default {
 
       return new Promise(resolve => resolve(lockDays.value))
     }
-    
+
     const getFormulaFee = async () => {
       return new Promise(async (resolve) => {
         if(batchDetails.value.valueDate) {
@@ -728,7 +720,7 @@ export default {
             batchDetails.value.formula.disburableAmount1DueDate = moment(data.disburableAmount1DueDate).format(dateFormat)
             batchDetails.value.formula.disburableAmount2DueDate = moment(data.disburableAmount2DueDate).format(dateFormat)
             batchDetails.value.formula.disbursableAmount1 = data.disbursableAmount.toFixed(2)
-            
+
             batchDetails.value.formula.interestAmount = data.interestAmount.toFixed(2)
             batchDetails.value.formula.platformFeeAmount = data.platformFeeAmount.toFixed(2)
             batchDetails.value.formula.platformFeeAmountDueDate = moment(data.platformFeeAmountDueDate).format(dateFormat)
@@ -745,7 +737,7 @@ export default {
       return new Promise( async (resolve, reject) => {
         var apiUrl = ''
         apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?what=ValueDate&refId=${props.workflowExecutionReferenceId}`
-        
+
         appAxios.get(apiUrl).then(res => {
           valueDate.value = moment(res.data).format('DD MMM YYYY')
           if(batchDetails.value.valueDate == '0001-01-01T00:00:00') {
@@ -784,7 +776,7 @@ export default {
           appAxios.get(processingFeeApi).then(res => {
             //calculate interest amount
             let dueDt = moment(batchDetails.value.paymentDueDate)
-            let valueDt = moment(batchDetails.value.valueDate) 
+            let valueDt = moment(batchDetails.value.valueDate)
             let noOfDays = dueDt.diff(valueDt,'days')
             batchDetails.value.numberOfDays = noOfDays
 
@@ -862,7 +854,7 @@ export default {
       disbursementData.value.currencyCode = currencyCode
     }
 
-    const approveAcknowledge = async () => { 
+    const approveAcknowledge = async () => {
       modalLoading.value = true
       const signatureUrl = await saveSignature()
       getStatusUpdateHandlerAPIEndpoint()
@@ -884,20 +876,12 @@ export default {
         })
       }
       else {
-        Toastify({
-          node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
-          duration: 3000,
-          newWindow: true,
-          close: true,
-          gravity: 'top',
-          position: 'right',
-          stopOnFocus: true,
-        }).showToast()
+        toast({status: 'error', title: 'Buyer Acknowledge Failed', content: 'Your signature is required!'})
         modalLoading.value = false
       }
     }
 
-    const declineAcknowledge = async () => { 
+    const declineAcknowledge = async () => {
       let api = '/workflow/v2/buyer-led-v2-eco-0/seller-not-acknowledge-the-transaction-branch/0'
       appAxios.post(api, {
         externalReferenceId: props.workflowExecutionReferenceId,
@@ -907,10 +891,10 @@ export default {
           visibleWorkflowActions.value.visibleApproveButton = false
           updateProvenanceApi()
         }
-      }) 
+      })
     }
 
-    const funderApproveAcknowledge = async () => { 
+    const funderApproveAcknowledge = async () => {
       modalLoading.value = true
       const signatureUrl = await saveSignature()
       if(signatureUrl) {
@@ -931,20 +915,12 @@ export default {
         })
       }
       else {
-        Toastify({
-          node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
-          duration: 3000,
-          newWindow: true,
-          close: true,
-          gravity: 'top',
-          position: 'right',
-          stopOnFocus: true,
-        }).showToast()
+        toast({status: 'error', title: 'Funder Acknowledge Failed', content: 'Your signature is required!'})
         modalLoading.value = false
       }
     }
 
-    const funderDeclineAcknowledge = async () => { 
+    const funderDeclineAcknowledge = async () => {
       let api = '/workflow/v2/buyer-led-v2-eco-0/funder-not-approved-the-transaction-branch/0'
       appAxios.post(api, {
         externalReferenceId: props.workflowExecutionReferenceId,
@@ -954,14 +930,14 @@ export default {
           visibleWorkflowActions.value.visibleFunderApproveButton = false
           updateProvenanceApi()
         }
-      }) 
+      })
     }
 
     const getEstimateCalc = async()=>{
       if(valueDate.value != '' && valueDate.value != null && valueDate.value != undefined){
-        batchDetails.value.valueDate = valueDate.value 
+        batchDetails.value.valueDate = valueDate.value
         let dueDt = moment(batchDetails.value.paymentDueDate)
-        let valueDt = moment(batchDetails.value.valueDate) 
+        let valueDt = moment(batchDetails.value.valueDate)
         let noOfDays = dueDt.diff(valueDt,'days')
         batchDetails.value.numberOfDays = noOfDays
         let apiUrl = `/workflow/v2/buyer-led-v2-eco-0/estimates?refId=${props.workflowExecutionReferenceId}&valueDate=${valueDate.value}`
@@ -993,7 +969,7 @@ export default {
         currencyCode: disbursementData.value.currencyCode,
         paymentAdviceDate: moment.utc(disbursementData.value.paymentAdviceDate).format()
       }
-      
+
       appAxios.post(api, requestBody).then(res => {
         modalLoading.value = false
         if(res.status == '200') {
@@ -1021,15 +997,7 @@ export default {
           }
         })
       } else {
-        Toastify({
-          node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
-          duration: 3000,
-          newWindow: true,
-          close: true,
-          gravity: 'top',
-          position: 'right',
-          stopOnFocus: true,
-        }).showToast()
+        toast({status: 'error', title: 'Seller Acknowledge Failed', content: 'Your signature is required!'})
         modalLoading.value = false
       }
     }
@@ -1075,15 +1043,7 @@ export default {
         })
       }
       else {
-        Toastify({
-          node: cash('#failed-notification-content').clone().removeClass('hidden')[0],
-          duration: 3000,
-          newWindow: true,
-          close: true,
-          gravity: 'top',
-          position: 'right',
-          stopOnFocus: true,
-        }).showToast()
+        toast({status: 'error', title: 'Funder Acknowledge Failed', content: 'Your signature is required!'})
         modalLoading.value = false
       }
     }
@@ -1121,7 +1081,7 @@ export default {
       ]).then(values => {
         console.log("promise all return value = ", values)
       })
-      
+
       //determine current company is seller role or buyer role in this invoice
       if(user.user_role !== 'Funder Admin') {
         if(batchDetails.value.initiatedByCompanyId === store.state.account.company_uuid) currentCompanyRole.value = 'Buyer Admin'
@@ -1129,7 +1089,7 @@ export default {
       } else {
         currentCompanyRole.value = ''
       }
-      
+
 
       console.log("last work status  = ", lastWorkStatus.value['statusName'])
       console.log("current user role = ", user.user_role)
