@@ -90,11 +90,7 @@
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
-<<<<<<< HEAD
         </tr>
-=======
-        </tr>
->>>>>>> 33dedb871d8bdf0e2109ae4d2362fa95489d9b59
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Date</td>
           <td class='border'>{{batchDetails.formula.repaymentDate}}</td>
