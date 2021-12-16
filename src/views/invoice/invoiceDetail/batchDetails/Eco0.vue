@@ -216,6 +216,7 @@
                   <td class='border'>Value Date</td>
                   <td class='border'>
                     <Litepicker
+                    v-if="getLockDaysState"
                       v-model='valueDate'
                       :options='{
                         autoApply: false,
@@ -599,6 +600,7 @@ export default {
     const lastWorkStatus = ref()
     const currencies = ref(null)
     const lockDays = ref([])
+    const getLockDaysState = ref(false);
     const currentCompanyRole = ref('')
     const visibleWorkflowActions = ref({
       visibleApproveButton: false,
@@ -706,7 +708,10 @@ export default {
         })
       }
 
-      return new Promise(resolve => resolve(lockDays.value))
+      return new Promise(resolve => {
+        getLockDaysState.value = true;
+        return resolve(lockDays.value)
+        })
     }
 
     const getFormulaFee = async () => {
@@ -1158,7 +1163,8 @@ export default {
       sellerAcknowledgeOfReceiveDisbursement,
       BuyerUploadRepaymentAdvice,
       funderAcknowledgeOfRepaymentComfirm,
-      funderAcknowledgeOfRepaymentDecline
+      funderAcknowledgeOfRepaymentDecline,
+      getLockDaysState
     }
   },
 }

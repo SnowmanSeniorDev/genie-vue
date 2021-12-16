@@ -56,8 +56,20 @@
       <span>Formular</span>
       <table class='table mt-2'>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border w-1/2'>Interest Rate (Annual Rate %)</td>
-          <td class='border'>{{batchDetails.formula.interestRate}}%</td>
+          <td class='border w-1/2'>Interest Rate</td>
+          <td class='border'>{{batchDetails.formula.interestRate}}% {{batchDetails.formula.interestRateDuration}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Value Date</td>
+          <td class='border'>{{batchDetails.formula.valueDate}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Maturity Date</td>
+          <td class='border'>{{batchDetails.formula.maturityDate}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200'>
+          <td class='border'>Number of days</td>
+          <td class='border'>{{batchDetails.formula.numberOfDays}}</td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Interest Earn</td>
@@ -68,17 +80,21 @@
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
-          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}</td>
+          <td class='border'>Disbursement Amount Financed Less Platform Fee</td>
+          <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
         </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || batchDetails.workflowLed === 'Seller Led' && currentCompanyRole === 'Seller Admin' || batchDetails.workflowLed === 'Buyer Led' && currentCompanyRole === 'Buyer Admin'">
-          <td class='border'>Balance Settlement Amount to Seller</td>
+          <td class='border'>Balance Settlement Amount to Seller Less Interest Amount</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
         </tr>
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.repaymentAmountToFunder)}} </td>
+<<<<<<< HEAD
         </tr>
+=======
+        </tr>
+>>>>>>> 33dedb871d8bdf0e2109ae4d2362fa95489d9b59
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Date</td>
           <td class='border'>{{batchDetails.formula.repaymentDate}}</td>
@@ -209,7 +225,7 @@
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Value Date</td>
                 <td class='border'>
-                  <Litepicker
+                  <Litepicker v-if="getLockDaysState"
                     v-model='valueDate'
                     :options='{
                       autoApply: false,
@@ -243,9 +259,13 @@
                 <td class='border'>{{batchDetails.numberOfDays}}</td>
               </tr>
               <tr class='hover:bg-gray-200'>
-                <td class='border'>Interest Rate(Annual Rate %)</td>
+                <td class='border'>Interest Rate(%)</td>
                 <td class='border'>
                   <input type='text' v-model='bidValue' @change='getEstimateCalc' class='form-control'/>
+                  <select v-model="interestRateDuration" @change='getEstimateCalc' class="form-select">
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                  </select>
                 </td>
               </tr>
               <tr class='hover:bg-gray-200'>
@@ -259,15 +279,6 @@
                 </td>
               </tr>
               <tr class='hover:bg-gray-200'>
-                <td class='border'>Interest Rate Duration</td>
-                <td class='border'>
-                  <select v-model="interestRateDuration" @change='getEstimateCalc' class="form-select">
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                  </select>
-                </td>
-              </tr>
-              <tr class='hover:bg-gray-200'>
                 <td class='border'>Interest Earn</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.interestAmount)}}</td>
               </tr>
@@ -276,13 +287,13 @@
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}}</td>
               </tr>
               <tr class='hover:bg-gray-200'>
-                <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
+                <td class='border'>Disbursement Amount Financed Less Platform Fee</td>
                 <td class='border'>
-                  {{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1 - batchDetails.formula.interestAmount)}}
+                  {{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}
                 </td>
               </tr>
               <tr class='hover:bg-gray-200' v-if="batchDetails.workflowLed === 'Seller Led'">
-                <td class='border'>Balance Settlement Amount to Seller</td>
+                <td class='border'>Balance Settlement Amount to Seller Less Interest Amount</td>
                 <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount2)}}</td>
               </tr>
               <tr class='hover:bg-gray-200'>
@@ -580,7 +591,7 @@ export default {
     const user = store.state.auth
     const dateFormat = process.env.VUE_APP_DATE_FORMAT
     const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
-
+    const getLockDaysState = ref(false);
     const batchDetails = ref(props.batchDetail)
     const provenance = ref([])
     const lastWorkStatus = ref()
@@ -683,7 +694,7 @@ export default {
     const getLockDays = async () => {
       await appAxios.get(`/company/v1/${batchDetails.value.buyerCompanyId}/holidays`).then(res => {
         res.data.forEach(item => {
-          if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
+          if(!lockDays.value.includes(new Date(item.date))) lockDays.value.push(item.date)
         })
       })
       await appAxios.get(`/company/v1/${batchDetails.value.sellerCompanyId}/holidays`).then(res => {
@@ -694,12 +705,15 @@ export default {
       if(batchDetails.value.funderCompanyId != '00000000-0000-0000-0000-000000000000') {
         await appAxios.get(`/company/v1/${batchDetails.value.funderCompanyId}/holidays`).then(res => {
           res.data.forEach(item => {
-            if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
+          if(!lockDays.value.includes(item.date)) lockDays.value.push(item.date)
           })
         })
       }
 
-      return new Promise(resolve => resolve(lockDays.value))
+      return new Promise(resolve => {
+        getLockDaysState.value = true;
+        return resolve(lockDays.value)
+      })
     }
 
     const invoiceDetailApi = async () => {
@@ -712,7 +726,8 @@ export default {
             let valueDt = moment(batchDetails.value.valueDate)
             let noOfDays = dueDt.diff(valueDt,'days')
             batchDetails.value.numberOfDays = noOfDays
-            batchDetails.value.formula.interestAmount = (batchDetails.value.formula.interestRate * batchDetails.value.formula.repaymentAmountToFunder / 365 * noOfDays).toFixed(2)
+            var interestAmount1 = _.find(res.data, {label:'InterestAmount'})
+            batchDetails.value.formula.interestAmount = interestAmount1?.amountBeforeTax.toFixed(2)
 
             var tax1 = _.find(res.data, {fromCompanyId: batchDetails.value.funderCompanyId, toCompanyId: batchDetails.value.sellerCompanyId, label:'FirstDisbursableAmount'})
             batchDetails.value.formula.disbursableAmount1 = tax1?.amountBeforeTax.toFixed(2)
@@ -1115,7 +1130,7 @@ export default {
     const init = async () => {
       await getValueDate()
       await Promise.all([
-        getFormulaFee(),
+        // getFormulaFee(),
         getCompanyBankAccounts(),
         getProvenanceHistory(),
         getLastWorkflowStatus(),
@@ -1239,7 +1254,8 @@ export default {
       sellerAcknowledgeOfReceiveDisbursement,
       BuyerUploadRepaymentAdvice,
       funderAcknowledgeOfRepaymentComfirm,
-      funderAcknowledgeOfRepaymentDecline
+      funderAcknowledgeOfRepaymentDecline,
+      getLockDaysState
     }
   },
 }
