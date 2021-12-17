@@ -51,9 +51,7 @@ export default {
     const uploadingFiles = ref(false)
 
     const onDrop = async (acceptFiles, rejectReasons ) => {
-      console.log('reject reasons: ', rejectReasons)
       if(rejectReasons.length) {
-        console.log(rejectReasons.length)
         rejectReasons.forEach(reason => {
           var content = reason.errors[0].message
           var title = 'Can not upload ' + reason.file.name + ' file'

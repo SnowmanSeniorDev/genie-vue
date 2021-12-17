@@ -630,7 +630,16 @@ export default {
     const confirmFunderAcknowledgeReceiveOfRepaymentData = ref()
 
     const onDrop = (acceptFiles, rejectReasons) => {
-      files.value = acceptFiles
+      if(acceptFiles.length) {
+        files.value = acceptFiles
+      }
+      if(rejectReasons.length) {
+        rejectReasons.forEach(reason => {
+          var content = reason.errors[0].message
+          var title = 'Can not upload ' + reason.file.name + ' file'
+          toast({status: 'error', title: title, content: content})
+        })
+      }
     }
 
     const options = reactive({
@@ -1079,6 +1088,7 @@ export default {
           if(res.status === 200){
             cash('#funder-acknowledge-upload-repayment-advice').modal('hide')
             updateProvenanceApi()
+            visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = false
           }
         })
       }
@@ -1098,6 +1108,7 @@ export default {
       await appAxios.post(api, request).then(res => {
         cash('#funder-acknowledge-upload-repayment-advice').modal('hide')
         updateProvenanceApi()
+        visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = false
       })
     }
 
