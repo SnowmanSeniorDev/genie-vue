@@ -1079,6 +1079,7 @@ export default {
           if(res.status === 200){
             cash('#funder-acknowledge-upload-repayment-advice').modal('hide')
             updateProvenanceApi()
+            visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = false
           }
         })
       }
@@ -1098,6 +1099,7 @@ export default {
       await appAxios.post(api, request).then(res => {
         cash('#funder-acknowledge-upload-repayment-advice').modal('hide')
         updateProvenanceApi()
+        visibleWorkflowActions.value.visibleFunderAcknowledgeRepaymentAdvice = false
       })
     }
 
