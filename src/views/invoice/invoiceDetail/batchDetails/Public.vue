@@ -105,6 +105,7 @@
       </div>
       <div v-if='visibleWorkflowActions.visibleSubmitProposal' class='pt-8 flex justify-center'>
         <a href='javascript:;' data-toggle='modal' data-target='#submit-proposal-modal' class='btn btn-primary w-48 sm:w-auto mr-2' >Approve Transaction</a>
+        <a href='javascript:;' data-toggle='modal' data-target='#reject-proposal-modal' class='btn btn-primary w-48 sm:w-auto mr-2' >Reject Transaction</a>
       </div>
       <div v-if='visibleWorkflowActions.visibleSubmitDisbursmentAdvice' class='pt-8 flex justify-center'>
         <a href='javascript:;' data-toggle='modal' data-target='#submit-disbursment-modal' class='btn btn-primary w-48 sm:w-auto mr-2' >Submit Disbursment</a>
@@ -302,6 +303,32 @@
         <div class='modal-footer text-right'>
           <button type='button' class='btn btn-primary w-24 mr-1' @click='submitProposal' :disabled='modalLoading'>
             Approve
+            <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
+          </button>          
+          <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
+        </div> <!-- END: Modal Footer -->
+      </div>
+    </div>
+  </div>
+  <div id='reject-proposal-modal' class='modal' tabindex='-1' aria-hidden='true'>
+    <div class='modal-dialog modal-lg'>
+      <div class='modal-content'>
+        <!-- BEGIN: Modal Header -->
+        <div class='modal-header'>
+          <h2 class='font-medium text-base mr-auto'> Reject Transaction </h2>
+        </div>
+        <!-- END: Modal Header -->
+        <div class='modal-body mx-8'>
+          <div class='grid grid-cols-2 grid-flow-row gap-4'>            
+            <div class='self-center'>Remark</div>
+            <div class='self-center'>
+              <textarea v-model='rejectProposalRemark' class='border-2 w-full form-control' rows='3' />
+            </div>
+          </div>
+        </div>
+        <div class='modal-footer text-right'>
+          <button type='button' class='btn btn-primary w-24 mr-1' @click='rejectProposal' :disabled='modalLoading'>
+            Reject
             <LoadingIcon v-if='modalLoading' icon='oval' color='white' class='w-4 h-4 ml-2' />
           </button>
           <button type='button' data-dismiss='modal' class='btn btn-outline-secondary w-20'> Cancel </button>
@@ -613,6 +640,7 @@ export default {
     const modalLoading = ref(false)
     const uploadErrorMessage = ref()
     const remark = ref(null)
+    const rejectProposalRemark = ref(null)
     const valueDate = ref()
     const bidValue = ref(null)
     const interestRateDuration = ref('monthly')
@@ -982,6 +1010,24 @@ export default {
       })
     }
 
+    const rejectProposal = async () => {
+      modalLoading.value = true
+      const api = `/bidding/v1/${batchDetails.value.workflowExecutionReferenceId}/reject`
+      appAxios.put(api, {
+        reject: {
+          companyId: store.state.account.company_uuid,
+          remark: rejectProposalRemark.value
+        }
+      }).then(res => {
+        modalLoading.value = false
+        if(res.status === 201) {
+          cash('#reject-proposal-modal').modal('hide')
+          visibleWorkflowActions.value.visibleRejectProposal = false
+          updateProvenanceApi()
+        }
+      })
+    }
+
     const submitDisbursmentAdvice = async () => {
       modalLoading.value = true
       await uploadFile()
@@ -1175,8 +1221,17 @@ export default {
           } else {
             const api = `bidding/v1/${props.workflowExecutionReferenceId}`
             await appAxios.get(api).then(res => {
-              if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
-              else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
+              let hasVoted = _.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) >= 0
+              let hasRejected = _.findIndex(res.data[0].rejections, {companyId: store.state.account.company_uuid}) >= 0                            
+              if(!hasVoted && !hasRejected) {
+                visibleWorkflowActions.value.visibleSubmitProposal = true
+                visibleWorkflowActions.value.visibleSubmitReject = true
+              }
+              else {
+                visibleWorkflowActions.value.visibleSubmitProposal = false
+                visibleWorkflowActions.value.visibleSubmitReject = false
+                batchMessage.value = 'You have already responded to this bid. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
+              }
             })
           }
         }
@@ -1196,8 +1251,17 @@ export default {
           } else {
             const api = `bidding/v1/${batchDetails.value.workflowExecutionReferenceId}`
             appAxios.get(api).then(res => {
-              if(_.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) < 0) visibleWorkflowActions.value.visibleSubmitProposal = true
-              else batchMessage.value = 'You have already bid this Batch. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
+              let hasVoted = _.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) >= 0
+              let hasRejected = _.findIndex(res.data[0].rejections, {companyId: store.state.account.company_uuid}) >= 0                            
+              if(!hasVoted && !hasRejected) {
+                visibleWorkflowActions.value.visibleSubmitProposal = true
+                visibleWorkflowActions.value.visibleSubmitReject = true
+              }
+              else {
+                visibleWorkflowActions.value.visibleSubmitProposal = false
+                visibleWorkflowActions.value.visibleSubmitReject = false
+                batchMessage.value = 'You have already responded to this bid. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
+              }
             })
           }
         }
@@ -1240,11 +1304,13 @@ export default {
       repaymentBankAccount,
       declineAcknowledge,
       remark,
+      rejectProposalRemark,
       valueDate,
       getEstimateCalc,
       bidValue,
       interestRateDuration,
       submitProposal,
+      rejectProposal,
       getRootProps,
       getInputProps,
       uploadFile,
