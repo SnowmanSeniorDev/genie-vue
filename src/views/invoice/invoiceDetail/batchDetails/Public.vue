@@ -436,7 +436,7 @@
             <div class='self-center'>Payment Advice Number</div>
             <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceNumber}}</div>
             <div class='self-center'>Payment Advice File</div>
-            <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceNumber}}</div>
+            <div class='self-center'><a @click="openFileViewer(confirmAbleDisbursementData.paymentAdviceUri)" class="cursor-pointer underline text-blue-500">open file</a></div>
             <div class='self-center'>Payment Advice Amount</div>
             <div class='self-center'>{{confirmAbleDisbursementData.paymentAdviceAmount + ' ' + confirmAbleDisbursementData.currencyCode}}</div>
             <div class='self-center'>Payment Advice Date</div>
@@ -557,7 +557,7 @@
             <div class='self-center'>Payment Advice Number</div>
             <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceNumber}}</div>
             <div class='self-center'>Payment Advice File</div>
-            <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceNumber}}</div>
+            <div class='self-center'><a @click="openFileViewer(confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceUri)" class="cursor-pointer underline text-blue-500">open file</a></div>
             <div class='self-center'>Payment Advice Amount</div>
             <div class='self-center'>{{confirmFunderAcknowledgeReceiveOfRepaymentData.paymentAdviceAmount + ' ' + confirmFunderAcknowledgeReceiveOfRepaymentData.currencyCode}}</div>
             <div class='self-center'>Payment Advice Date</div>
@@ -578,6 +578,28 @@
     </div>
   </div>
   <!-- End: action modal -->
+  <!-- Start: pdf file show -->
+  <div id="show-pdf-file-viewer" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <embed type="application/pdf" :src="openFileUrl" width="1000" height="1500">
+      </div>
+    </div>
+  </div>
+  <!-- End: pdf file show -->
+  <!-- Start: xlsx file show -->
+  <div id="show-xlsx-file-viewer" class="modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-body mx-8 xlsx-viewer">
+          <xlsx-read :file="xlsx.file">
+            <xlsx-table />
+          </xlsx-read>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End: xlsx file show -->
 </template>
 
 <script>
@@ -586,6 +608,7 @@ import { useStore } from 'vuex'
 import { useDropzone } from 'vue3-dropzone'
 import _ from 'lodash'
 import moment from 'moment'
+import { XlsxRead, XlsxTable } from "vue3-xlsx"
 import SignaturePad from './SignaturePad.vue'
 import toast from '@/utils/toast'
 
@@ -607,11 +630,21 @@ export default {
     }
   },
   components: {
-    SignaturePad
+    SignaturePad,
+    XlsxRead,
+    XlsxTable,
   },
   setup(props) {
     const store = useStore()
     const user = store.state.auth
+    const xlsx = ref({
+      file: null,
+      selectedSheet: null,
+      sheetName: null,
+      sheets: null,
+      collection: null
+    });
+    const openFileUrl = ref('');
     const dateFormat = process.env.VUE_APP_DATE_FORMAT
     const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
     const getLockDaysState = ref(false);
@@ -673,7 +706,7 @@ export default {
     const options = reactive({
       multiple: true,
       onDrop,
-      accept: '.jpg, .csv',
+      accept: '.jpg, .csv, .xlsx, .pdf',
     })
 
     const { getRootProps, getInputProps, ...rest } = useDropzone(options)
@@ -825,6 +858,32 @@ export default {
 
     const removeFile = () => files.value = null
 
+    const openFileViewer = async (url) => {
+      const api = url
+      console.log(api)
+      const fileResponse = await sysAxios.get(api, {responseType: 'blob'})
+      console.log(fileResponse.headers['content-type'])
+      const externalLinkContentType = ['image/jpeg', 'image/png', 'text/plain']
+      if(externalLinkContentType.includes(fileResponse.headers['content-type'])) {
+        const file = new Blob([fileResponse.data], {type: fileResponse.headers['content-type']});
+        const fileURL = URL.createObjectURL(file);
+        // openFileUrl.value = fileURL
+        // cash("#show-pdf-file-viewer").modal("show")
+        window.open(fileURL);
+      } else if (fileResponse.headers['content-type'] === 'application/pdf') {
+        const file = new Blob([fileResponse.data], {type: 'application/pdf'});
+
+        const fileURL = URL.createObjectURL(file);
+        openFileUrl.value = fileURL
+        cash('#show-pdf-file-viewer').modal("show")
+      } else if (fileResponse.headers['content-type'] === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        const file = new Blob([fileResponse.data], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        xlsx.value.file = file
+
+        cash("#show-xlsx-file-viewer").modal("show")
+      }
+    }
+
     const openSellerAcknowledgeOfReceiveDisbursementModel = async () => {
       var paymentInstructionId
       if(batchDetails.value.workflowLed === 'Buyer Led') paymentInstructionId = await getpaymentInstructionId('DisbursableAmount')
@@ -834,6 +893,8 @@ export default {
       const api = `/ledger/v1/paymentadvice/byworkflowexecutionreferenceid/${props.workflowExecutionReferenceId}`
       const resData = await appAxios.get(api)
       confirmAbleDisbursementData.value = {..._.find(resData.data, {paymentInstructionId: paymentInstructionId}) }
+
+      console.log('confirmAbleDisbursementData : ', confirmAbleDisbursementData.value)
       cash('#seller-acknowledge-of-receive-disbursement').modal('show')
     }
 
@@ -1112,7 +1173,11 @@ export default {
       }
       appAxios.post(api, request).then(res => {
         modalLoading.value = false
-        if(res.status === 200) cash('#buyer-upload-repayment-advice').modal('hide')
+        if(res.status === 200) {
+         visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice
+         cash('#buyer-upload-repayment-advice').modal('hide')
+        }
+
         updateProvenanceApi()
       })
     }
@@ -1284,6 +1349,8 @@ export default {
     return {
       lodash: _,
       moment,
+      xlsx,
+      openFileUrl,
       initComponent,
       dateFormat,
       dateTimeFormat,
@@ -1328,7 +1395,8 @@ export default {
       BuyerUploadRepaymentAdvice,
       funderAcknowledgeOfRepaymentComfirm,
       funderAcknowledgeOfRepaymentDecline,
-      getLockDaysState
+      getLockDaysState,
+      openFileViewer
     }
   },
 }
