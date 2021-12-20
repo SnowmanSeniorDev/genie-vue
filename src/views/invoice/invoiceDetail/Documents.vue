@@ -18,7 +18,7 @@
           role='alert'
         >
           <LoadingIcon icon="puff" color="gray" class="w-3 h-3 mr-2" />
-          <span>Verifying</span> 
+          <span>Verifying</span>
         </div>
       </div>
       <div
@@ -126,16 +126,16 @@ export default {
       }
     }
 
-    const getUploadedByUserName = async (userId) => {                 
+    const getUploadedByUserName = async (userId) => {
 
       var userName = "";
       if(userId === '00000000-0000-0000-0000-000000000000') {
-        userName = "System";  
+        userName = "System";
       }
       else {
         await sysAxios.get(`/user/v1/${userId}`).then(res => {
           userName = res.data.firstName + ' ' + res.data.lastName;
-        });                 
+        });
       }
       return new Promise(resolve => resolve(userName))
     };
@@ -198,6 +198,6 @@ export default {
       xlsx,
       verifying
     }
-  }  
+  }
 }
 </script>
