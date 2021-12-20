@@ -1128,7 +1128,7 @@ export default {
       appAxios.post(api, request).then(res => {
         modalLoading.value = false
         if(res.status === 200) {
-         visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice
+         visibleWorkflowActions.value.visibleBuyerUploadRepaymentAdvice = false
          cash('#buyer-upload-repayment-advice').modal('hide')
         }
 
