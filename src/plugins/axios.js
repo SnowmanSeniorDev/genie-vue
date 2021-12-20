@@ -14,8 +14,7 @@ import axios from "axios";
 import store from "@/store";
 
 export const sysAxios = axios.create({
-  baseURL: process.env.VUE_APP_DEV_SYSTEM_API_URL,
-  // baseURL: process.env.VUE_APP_STG_SYSTEM_API_URL,
+  baseURL: process.env.VUE_APP_SYSTEM_API_URL,
   headers: {
     common: {
       'Accept': 'application/json',
@@ -24,8 +23,7 @@ export const sysAxios = axios.create({
 })
 
 export const appAxios = axios.create({
-  baseURL: process.env.VUE_APP_DEV_SERVICE_API_URL,
-  // baseURL: process.env.VUE_APP_STG_SERVICE_API_URL,
+  baseURL: process.env.VUE_APP_SERVICE_API_URL,
   headers: {
     common: {
       'Accept': 'application/json',
