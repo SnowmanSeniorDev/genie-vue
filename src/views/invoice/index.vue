@@ -129,8 +129,8 @@ export default {
       type: 'like',
       value: ''
     })
-      
-    const initTabulator = (data) => { 
+
+    const initTabulator = (data) => {
       tabulator.value = new Tabulator(tableRef.value, {
         data: data,
         pagination: 'local',
@@ -201,7 +201,7 @@ export default {
             headerHozAlign: 'center',
             resizable: true,
             headerSort: true,
-            formatter(cell) { 
+            formatter(cell) {
               return moment(cell.getData().createdTime).format(dateTimeFormat.value)
             }
           }, {
@@ -262,13 +262,13 @@ export default {
       )
       invoiceOverview.value = _.orderBy(invoices, 'createdTime', 'desc')
     }
-  
+
     const getPendingAction = async () => {
       pendingActions.value = []
       let pendingActionApi = ''
       if(defaultEcosystemId.value === '00000000-0000-0000-0000-000000000000') pendingActionApi = `/company/v1/${company_uuid}/dashboarddata`
       else pendingActionApi = `/company/v1/ecosystem/${defaultEcosystemId.value}/${company_uuid}/dashboarddata`
- 
+
       await appAxios.get(pendingActionApi).then(async res => {
         let pendingItem = res.data.transactionsSnapShot.pendingForAction.groupingByAction
         let pendingAction = {}
@@ -286,7 +286,7 @@ export default {
             if(pendingBid.workflowExecutionids.length > 0) {
               for(let i = 0; i < pendingBid.workflowExecutionids.length; i ++) {
                 const batchApi = `/journalbatch/v1/header/byworkflowexecutionid/${pendingBid.workflowExecutionids[i]}`
-                await appAxios.get(batchApi).then(res2 => { 
+                await appAxios.get(batchApi).then(res2 => {
                   let batchData = res2.data
                   pendingAction = batchData
                   pendingAction.action = 'BIDDING_IN_PROGRESS'
@@ -297,12 +297,12 @@ export default {
           }
         }
         pendingActions.value = _.filter(pendingActions.value, {workflowVersion: 'v2'})
-        
+
         pendingActions.value = await getLastUpdatedBy(pendingActions.value)
         initTabulator(pendingActions.value)
-      }) 
+      })
     }
-    
+
     const getLastUpdatedBy = async (invoices) => {
       invoices = invoices ?? []
       const api = '/workflow/v2/statustransition/retrieve/byreferenceids/limittolaststatustransition'
@@ -317,7 +317,7 @@ export default {
             withLastUpdatedBy.push({...invoice, lastUpdatedBy: 'System', action: lastWorkflowData.workflow.lastStatusTransition.statusName})
           }
           else {
-            const userData = await sysAxios.get(`/user/v1/${userId}`) 
+            const userData = await sysAxios.get(`/user/v1/${userId}`)
             withLastUpdatedBy.push({...invoice, lastUpdatedBy: userData.firstName + ' ' + userData.lastName, action: lastWorkflowData.workflow.lastStatusTransition.statusName})
           }
         })
@@ -325,7 +325,8 @@ export default {
       return new Promise(resolve => resolve(withLastUpdatedBy))
     }
 
-    const invoiceFromMe = () => { 
+    const invoiceFromMe = () => {
+      selectedTab.value = 'My Invoice'
       let updatedData = _.orderBy(_.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid}),'createdTime','desc')
 
       if(store.state.account.company_type.toLowerCase() == 'funder') {
@@ -335,11 +336,11 @@ export default {
       tabulator.value.clearData()
       if(updatedData.length > 0 ){
         tabulator.value.addRow(updatedData)
-      }      
+      }
     }
-    const invoiceFromMyPartner = () => {       
-      selectedTab.value = 'Invoice From My Partner'     
-      let initiatedByMe = _.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid})      
+    const invoiceFromMyPartner = () => {
+      selectedTab.value = 'Invoice From My Partner'
+      let initiatedByMe = _.filter(invoiceOverview.value, {initiatedByCompanyId: store.state.account.company_uuid})
       let updatedData = _.orderBy(_.differenceBy(invoiceOverview.value, initiatedByMe, 'workflowExecutionReferenceId'),'createdTime','desc')
        tabulator.value.clearData()
        if(updatedData.length > 0 ){
@@ -353,7 +354,7 @@ export default {
       tabulator.value.clearData()
       if(updatedData.length > 0 ){
         tabulator.value.addRow(updatedData)
-      }      
+      }
     }
 
     watchEffect(() => {
@@ -364,7 +365,7 @@ export default {
     })
 
     onMounted(async () => {
-      
+
       getInvoiceOverview()
       getPendingAction()
       if(store.state.account.company_type.toLowerCase() == 'company'){
