@@ -58,7 +58,7 @@
                 </div>
                 <div class="flex gap-x-2 items-center col-span-1" :class="`${submitableInvoice.uploadSupportDocuments ? 'text-gray-500 line-through' : 'text-theme-6'}`">
                   <CheckIcon v-if="submitableInvoice.uploadSupportDocuments" class="w-4 text-green-700"/>
-                  <AlertCircleIcon class="w-4"/>
+                  <AlertCircleIcon v-else class="w-4"/>
                   <p>Upload Support Documents</p>
                 </div>
                 <div class="flex gap-x-2 items-center col-span-1" :class="`${submitableInvoice.paymentDueDate ? 'text-gray-500 line-through' : 'text-theme-6'}`">

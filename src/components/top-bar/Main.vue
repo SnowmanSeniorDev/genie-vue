@@ -58,7 +58,7 @@
               </div>
             </div>
           </div>
-          <hr /> 
+          <hr />
           <button class='btn btn-primary w-full px-2 mt-2' @click='gotoAlertCenter'>Show All Alerts</button>
         </div>
       </div>
@@ -71,7 +71,7 @@
       </div>
       <div class='notification-content pt-2 dropdown-menu'>
         <div class='notification-content__box dropdown-menu__content box dark:bg-dark-6'>
-          <div class='notification-content__title'>Upcomming Holiday Calendar</div>
+          <div class='notification-content__title'>Upcoming Holiday Calendar</div>
           <div v-for='holiday in holidays' :key='holiday.holidayCalendarEntryId' class='cursor-pointer relative flex items-center mt-2'>
             <div class='w-8 mr-1 bg-pink-200 p-1 rounded-md'>
               <CalendarIcon class='notification__icon dark:text-gray-300 text-pink-700 text-sm' />
@@ -148,7 +148,7 @@
     </div>
     <!-- END: Alert Modal -->
   </div>
-  
+
   <!-- END: Top Bar -->
 </template>
 

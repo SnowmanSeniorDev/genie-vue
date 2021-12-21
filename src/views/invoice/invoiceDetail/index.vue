@@ -13,12 +13,12 @@
       <table class='table table--lg border-l border-r'>
         <thead>
           <tr class='bg-gray-400'>
-            <th class='dark:border-dark-5 whitespace-nowrap'> BATCH REF NO </th>
+            <th class='dark:border-dark-5 whitespace-nowrap'> BATCH NO </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> INVOICE AMOUNT </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> INVOICE DATE </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> PAYMENT DUE DATE </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> UPLOAD DATE </th>
-            
+
             <th class='dark:border-dark-5 whitespace-nowrap'> ACTIONS </th>
           </tr>
         </thead>
@@ -100,10 +100,10 @@ export default {
     Eco0BatchDetails
   },
   setup(props) {
-    
+
     const journalBatchEntry = ref()
     const adminCompany = ref()
-    
+
     const dateFormat = process.env.VUE_APP_DATE_FORMAT
     const dateTimeFormat = process.env.VUE_APP_DATETIME_FORMAT
     const batchDetails = ref({
@@ -177,7 +177,7 @@ export default {
 
       //getting documents of invoice
       journalBatchEntry.value = await appAxios.get(`/journalbatch/v1/header/${batchDetails.value.journalBatchHeaderId}/entries`).then(res => res.data)
-      
+
       //getting global values to use invoice detail page
       const genieGlobalSetting = `configuration/v1/Genie Global Settings`
       let buyerLedWorkflowId = ''
@@ -211,8 +211,8 @@ export default {
       console.log('batchDetails: ', batchDetails.value)
       initComponent.value = true
     })
-    
-    return { 
+
+    return {
       props,
       adminCompany,
       accordion,
