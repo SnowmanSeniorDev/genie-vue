@@ -5,7 +5,7 @@
         <h2 class='text-lg font-medium mr-auto'>Invoice</h2>
       </div>
       <div class='text-lg font-medium mr-auto pl-2'>
-        <span class='bg-pink-900 p-1 text-white text-sm'>Branch No: {{batchDetails.batchNumber}}</span>
+        <span class='bg-pink-900 p-1 text-white text-sm'>Batch No: {{batchDetails.batchNumber}}</span>
       </div>
     </div>
     <div class='intro-y box p-5 mt-5'>
@@ -13,7 +13,7 @@
       <table class='table table--lg border-l border-r'>
         <thead>
           <tr class='bg-gray-400'>
-            <th class='dark:border-dark-5 whitespace-nowrap'> BATCH NO </th>
+            <th class='dark:border-dark-5 whitespace-nowrap'> BATCH REF NO </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> INVOICE AMOUNT </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> INVOICE DATE </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> PAYMENT DUE DATE </th>
