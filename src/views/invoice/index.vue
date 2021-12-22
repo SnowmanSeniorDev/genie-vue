@@ -4,14 +4,14 @@
       <h2 class='text-lg font-medium mr-auto'>Invoices</h2>
     </div>
     <div class='intro-y box p-5 mt-5'>
-      <div class='flex flex-col sm:flex-row sm:items-end xl:items-start'>
+      <div class='flex flex-col sm:flex-row sm:items-end xl:items-start gap-2'>
         <div class='flex mt-5 sm:mt-0' v-if="userRole == 'System Admin'">
-          <a href='javascript:;' data-toggle='modal' data-target='#upload-invoice-modal' class='btn btn-outline-primary w-1/2 sm:w-auto mr-2' v-if='isCompany'>
+          <a href='javascript:;' data-toggle='modal' data-target='#upload-invoice-modal' class='btn btn-outline-primary w-full sm:w-auto mr-2' v-if='isCompany'>
             <UploadIcon class='w-4 h-4 mr-2' /> Upload&nbsp;Invoice
           </a>
         </div>
-        <div class='w-full xl:flex xl:justify-end sm:mr-auto '>
-          <div class='sm:flex items-center sm:mr-4'>
+        <div class='w-full grid grid-cols-2 lg:flex justify-end gap-2'>
+          <div class='sm:flex justify-end items-center'>
             <label class='w-12 flex-none xl:w-auto xl:flex-initial mr-2'>Field</label>
             <select
               id='tabulator-html-filter-field'
@@ -23,7 +23,7 @@
               <option value='buyerCompanyName'>Buyer</option>
             </select>
           </div>
-          <div class='sm:flex items-center sm:mr-4 mt-2 xl:mt-0'>
+          <div class='sm:flex justify-end items-center xl:mt-0 '>
             <label class='w-12 flex-none xl:w-auto xl:flex-initial mr-2'>Type</label>
             <select
               id='tabulator-html-filter-type'
@@ -39,7 +39,7 @@
               <option value='!='>!=</option>
             </select>
           </div>
-          <div class='sm:flex items-center sm:mr-4 mt-2 xl:mt-0'>
+          <div class='sm:flex justify-end items-center '>
             <label class='w-12 flex-none xl:w-auto xl:flex-initial mr-2'>Value</label>
             <input
               id='tabulator-html-filter-value'
@@ -49,11 +49,11 @@
               placeholder='Search...'
             />
           </div>
-          <div class='mt-2 xl:mt-0'>
+          <div class='flex justify-end items-end gap-2'>
             <button
               id='tabulator-html-filter-go'
               type='button'
-              class='btn btn-primary w-full sm:w-16'
+              class='btn btn-primary w-16 h-10'
               @click='onFilter'
             >
               Go
@@ -61,7 +61,7 @@
             <button
               id='tabulator-html-filter-reset'
               type='button'
-              class='btn btn-secondary w-full sm:w-16 mt-2 sm:mt-0 sm:ml-1'
+              class='btn btn-secondary w-16 h-10'
               @click='onResetFilter'
             >
               Reset
