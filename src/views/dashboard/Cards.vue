@@ -27,7 +27,7 @@
               <div class='text-2xl font-bold leading-8'>LINE INFORMATION</div>
               <div class='ml-auto'>Available Limit: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.lineInformation.availableLimit}}</div>
               <div class='ml-auto'>Outstanding Amount For Disbursement: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.lineInformation.outstandingForDisbursementAmount}}</div>
-              <div class='ml-auto'>Utilized Amount: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.lineInformation.outstandingForDisbursementAmount}}</div>
+              <div class='ml-auto'>Utilized Amount: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.lineInformation.utilisedAmount}}</div>
               <div class='ml-auto'>Overall Limit: {{cardsData.currencyCode}} {{cardsData.companyDashBoard.lineInformation.overallLimit}}</div>
             </div>
             <div class='flex justify-end items-center'>
