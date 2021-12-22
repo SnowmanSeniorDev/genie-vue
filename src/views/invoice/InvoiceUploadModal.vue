@@ -426,7 +426,7 @@ export default {
           api = "/workflow/v2/buyer-led-invoice-financing-workflow-0/0"
           buyerCompanyId = await getCompanyIdByCompanyName(invoiceToCompanyName.value)
           await Promise.all(
-            invoicesBatch.value.map(async batch => {
+            invoicesBatch.value.map(async (batch, index) => {
               var journalBatchEntries = []
               await Promise.all(
                 batch.invoices.map( async invoice => {
@@ -438,6 +438,7 @@ export default {
                 })
               )
               requestBodys.push({
+                invoicesBatchIndex: index,
                 buyerCompanyId: buyerCompanyId,
                 journalBatchEntries,
                 bidEndTime: moment(bidEndTime.value).format(),
@@ -450,7 +451,7 @@ export default {
           sellerCompanyId = await getCompanyIdByCompanyName(invoiceFromCompanyName.value)
 
           await Promise.all(
-            invoicesBatch.value.map(async batch => {
+            invoicesBatch.value.map(async (batch, index) => {
               var journalBatchEntries = []
               await Promise.all(
                 batch.invoices.map(async invoice => {
@@ -462,6 +463,7 @@ export default {
                 })
               )
               requestBodys.push({
+                invoicesBatchIndex: index,
                 sellerCompanyId: sellerCompanyId,
                 journalBatchEntries,
                 bidEndTime: moment(bidEndTime.value).format(),
@@ -490,7 +492,7 @@ export default {
         if(workflowLed.value === 'Buyer Led') api = PrivateEcosystem.buyerLedUploadUrl.replace('/api/genie', '')
         else api = PrivateEcosystem.sellerLedUploadUrl
 
-        invoicesBatch.value.map(async batch => {
+        invoicesBatch.value.map(async (batch, index) => {
           var journalBatchEntries = []
           batch.invoices.map( async invoice => {
             journalBatchEntries.push({
@@ -499,6 +501,7 @@ export default {
             })
           })
           requestBodys.push({
+            invoicesBatchIndex: index,
             buyerCompanyId: PrivateEcosystem.ecosystem.buyerCompanyId,
             ecosystemId: PrivateEcosystem.ecosystem.ecosystemId,
             journalBatchEntries,
@@ -509,28 +512,38 @@ export default {
 
       loading.value = !loading.value
       var noError = true
+      var errorMessages = []
       await Promise.all(
-        requestBodys.map( async requestBody => {
+        requestBodys.map( async (requestBody) => {
           var invoiceUploadResponse = await appAxios.post(api, requestBody)
           //notify to show invoice upload result
           if(invoiceUploadResponse.status === 'error') {
             noError = false
-            cash("#error-content").text(invoiceUploadResponse.error.response.data)
-            Toastify({
-              node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
-              duration: 5000,
-              newWindow: true,
-              close: true,
-              gravity: "top",
-              position: "center",
-              stopOnFocus: true,
-            }).showToast()
+            errorMessages.push(invoiceUploadResponse.error.response.data)
+          } else {
+            console.log(requestBody.invoicesBatchIndex)
+            invoicesBatch.value = _.filter(invoicesBatch.value, (batch, index) => {
+              return (index !== requestBody.invoicesBatchIndex)
+            })
           }
         })
       )
       if(noError) {
         cash("#upload-invoice-modal").modal("hide");
         props.callback()
+      } else {
+        errorMessages.forEach(message => {
+          cash("#error-content").text(message)
+          Toastify({
+            node: cash("#failed-notification-content").clone().removeClass("hidden")[0],
+            duration: 5000,
+            newWindow: true,
+            close: true,
+            gravity: "top",
+            position: "center",
+            stopOnFocus: true,
+          }).showToast()
+        })
       }
       loading.value = !loading.value;
     }
