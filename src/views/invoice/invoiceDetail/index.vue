@@ -13,7 +13,7 @@
       <table class='table table--lg border-l border-r'>
         <thead>
           <tr class='bg-gray-400'>
-            <th class='dark:border-dark-5 whitespace-nowrap'> BATCH REF NO </th>
+            <th class='dark:border-dark-5 whitespace-nowrap'> INVOICE NO </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> INVOICE AMOUNT </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> INVOICE DATE </th>
             <th class='dark:border-dark-5 whitespace-nowrap'> PAYMENT DUE DATE </th>
