@@ -8,5 +8,6 @@
 
 export default {
   darkMode: state => state.darkMode,
-  menu: state => state.menu
+  menu: state => state.menu,
+  getLayout: state => state.layout
 };
