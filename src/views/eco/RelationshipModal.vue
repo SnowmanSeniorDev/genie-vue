@@ -163,7 +163,7 @@
         Active
         <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
       </button>
-      <button class="w-32 btn btn-primary" @click="saveEcoSystem" :disabled='loading' v-if="ecoSystemBody.status == 'Pending'">
+      <button class="w-32 btn btn-primary" @click="saveEcoSystem" :disabled='loading'>
         Save
         <LoadingIcon v-if="loading" icon="oval" color="white" class="w-4 h-4 ml-2" />
       </button>
