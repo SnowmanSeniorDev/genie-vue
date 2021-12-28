@@ -67,9 +67,17 @@
           <td class='border'>Platform Fee Amount</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.platformFeeAmount)}} </td>
         </tr>
+        <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' && batchDetails.extraData?.disbursableAccount">
+          <td class='border'>Disbursement Bank Account</td>
+          <td class='border'>{{batchDetails.extraData.disbursableAccount.bankName}} {{batchDetails.extraData.disbursableAccount.accountNumber}}</td>
+        </tr>
         <tr class='hover:bg-gray-200' v-if="user.user_role === 'Funder Admin' || currentCompanyRole === 'Buyer Admin'">
           <td class='border'>Disbursement Amount Financed Less Interest and Fees</td>
           <td class='border'>{{batchDetails.currencyCode}} {{$h.formatCurrency(batchDetails.formula.disbursableAmount1)}}</td>
+        </tr>
+        <tr class='hover:bg-gray-200' v-if="currentCompanyRole === 'Buyer Admin' && batchDetail.extraData?.repaymentAccount">
+          <td class='border'>Repayment Bank Account</td>
+          <td class='border'>{{batchDetails.extraData.repaymentAccount.bankName}} {{batchDetails.extraData.repaymentAccount.accountNumber}}</td>
         </tr>
         <tr class='hover:bg-gray-200'>
           <td class='border'>Repayment Amount To Funder</td>
