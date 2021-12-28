@@ -28,23 +28,23 @@ export const updateMenu = ({ commit }, payload) => {
 
 export const updateEcosystems = ({ commit }, payload) => {
   const api = `/company/v1/ecosystems/bycompanyid/${payload.company_uuid}?status=active`
-  return new Promise((resolve) => {
-    appAxios.get(api).then(res => {
-      commit(types.SET_ECOSYSTEMS, [{
-        ecosystemId: '00000000-0000-0000-0000-000000000000',
-        name: 'Public ecosystem'
-      }, ...res.data])
-
-      resolve([{
-        ecosystemId: '00000000-0000-0000-0000-000000000000',
-        name: 'Public ecosystem'
-      }, ...res.data])
-    })
+  return new Promise(async(resolve) => {
+    var res = await appAxios.get(api)
+    console.log('update Ecosystem: ', res.data)
+    commit(types.SET_ECOSYSTEMS, [{ecosystemId: '00000000-0000-0000-0000-000000000000', name: 'Public ecosystem'}, ...res.data])
+    commit(types.UPDATE_DEFAULTECOSYSTEM, {ecosystemId: '00000000-0000-0000-0000-000000000000', name: 'Public ecosystem'})
+    resolve([{
+      ecosystemId: '00000000-0000-0000-0000-000000000000',
+      name: 'Public ecosystem'
+    }, ...res.data])
   })
 }
 
 export const updateDefaultEcosystem = ({ commit }, payload) => {
-  commit(types.UPDATE_DEFAULTECOSYSTEM, payload)
+  return new Promise((resolve) => {
+    commit(types.UPDATE_DEFAULTECOSYSTEM, payload)
+    resolve('default Ecosystem has been set')
+  })
 }
 
 export const NeedUpdateProvenanceHistory = ({ commit }) => {
