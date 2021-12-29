@@ -265,7 +265,7 @@
               </tr>
               <tr class='hover:bg-gray-200'>
                 <td class='border'>Interest Rate(%)</td>
-                <td class='border'>
+                <td class='border gap-y-2'>
                   <input type='text' v-model='bidValue' @change='getEstimateCalc' class='form-control'/>
                   <select v-model="interestRateDuration" @change='getEstimateCalc' class="form-select">
                     <option value="monthly">Monthly</option>
@@ -1067,6 +1067,8 @@ export default {
           cash('#submit-proposal-modal').modal('hide')
           visibleWorkflowActions.value.visibleSubmitProposal = false
           updateProvenanceApi()
+        } else {
+          toast({status: 'error', title: 'Approve faild', content: res.error.response.data})
         }
       })
     }
@@ -1293,8 +1295,7 @@ export default {
                   if(!hasVoted && !hasRejected) {
                     visibleWorkflowActions.value.visibleSubmitProposal = true
                     visibleWorkflowActions.value.visibleSubmitReject = true
-                  }
-                  else {
+                  } else {
                     visibleWorkflowActions.value.visibleSubmitProposal = false
                     visibleWorkflowActions.value.visibleSubmitReject = false
                     batchMessage.value = 'You have already responded to this bid. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
