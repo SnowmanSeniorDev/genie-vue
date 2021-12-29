@@ -1281,25 +1281,30 @@ export default {
               batchMessage.value = 'This invoice has been expired. The payment Due Date is ' + moment(batchDetails.value.paymentDueDate).format(dateTimeFormat)
             } else visibleWorkflowActions.value.visibleApproveButton = true
           }
-          else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS' && user.user_role === 'Funder Admin') {
-            if(new Date(batchDetails.value.bidEndTime) < new Date()) {
-              batchMessage.value = 'You cannot approve this invoice due to passed bid end time ('+moment(batchDetails.value.bidEndTime).format(dateTimeFormat) + ')'
+          else if(lastWorkStatus.value['statusName'] === 'INVITATION_SENT_TO_FUNDERS') {
+            if(user.user_role === 'Funder Admin') {
+              if(new Date(batchDetails.value.bidEndTime) < new Date()) {
+                batchMessage.value = 'You cannot approve this invoice due to passed bid end time ('+moment(batchDetails.value.bidEndTime).format(dateTimeFormat) + ')'
+              } else {
+                const api = `bidding/v1/${props.workflowExecutionReferenceId}`
+                await appAxios.get(api).then(res => {
+                  let hasVoted = _.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) >= 0
+                  let hasRejected = _.findIndex(res.data[0].rejections, {companyId: store.state.account.company_uuid}) >= 0
+                  if(!hasVoted && !hasRejected) {
+                    visibleWorkflowActions.value.visibleSubmitProposal = true
+                    visibleWorkflowActions.value.visibleSubmitReject = true
+                  }
+                  else {
+                    visibleWorkflowActions.value.visibleSubmitProposal = false
+                    visibleWorkflowActions.value.visibleSubmitReject = false
+                    batchMessage.value = 'You have already responded to this bid. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
+                  }
+                })
+              }
             } else {
-              const api = `bidding/v1/${props.workflowExecutionReferenceId}`
-              await appAxios.get(api).then(res => {
-                let hasVoted = _.findIndex(res.data[0].votes, {companyId: store.state.account.company_uuid}) >= 0
-                let hasRejected = _.findIndex(res.data[0].rejections, {companyId: store.state.account.company_uuid}) >= 0
-                if(!hasVoted && !hasRejected) {
-                  visibleWorkflowActions.value.visibleSubmitProposal = true
-                  visibleWorkflowActions.value.visibleSubmitReject = true
-                }
-                else {
-                  visibleWorkflowActions.value.visibleSubmitProposal = false
-                  visibleWorkflowActions.value.visibleSubmitReject = false
-                  batchMessage.value = 'You have already responded to this bid. Please wait until the bidding is finished at '+moment(batchDetails.value.bidEndTime).format(dateTimeFormat)
-                }
-              })
+              batchMessage.value = 'The bid end time is ('+moment(batchDetails.value.bidEndTime).format(dateTimeFormat) + ')'
             }
+
           }
           else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_INSTRUCTION_SENT_TO_FUNDER' && user.user_role === 'Funder Admin') visibleWorkflowActions.value.visibleSubmitDisbursmentAdvice = true
           else if(lastWorkStatus.value['statusName'] === 'FUND_DISBURSEMENT_NOTIFICATION_SENT_TO_SELLER' && currentCompanyRole.value === 'Seller Admin') visibleWorkflowActions.value.visibleSellerAcknowledgeOfReceiveDisbursement = true
