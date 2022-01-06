@@ -39,8 +39,10 @@ const init = (el, props, emit) => {
  
         emit('update:modelValue', date)
       });
-      picker.on('button:apply', (startDate, endDate) => { 
-        if(props.callback!==undefined) props.callback 
+      picker.on('button:apply', (startDate, endDate) => {
+        if(props.options.callback!==undefined) {
+          props.options.callback()
+        }
       });
     }
   })

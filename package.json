@@ -4,6 +4,7 @@
   "private": true,
   "description": "TailwindCSS HTML Admin Template",
   "author": "Left4code",
+  "node-version": "14.16.0",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
@@ -70,6 +71,7 @@
     "vue3-dropzone": "^0.0.7",
     "vue3-recaptcha2": "^1.1.0",
     "vue3-signature-pad": "^1.0.7",
+    "vue3-xlsx": "^1.1.1",
     "vuex": "^4.0.0-0",
     "vuex-persistedstate": "^4.0.0-beta.3",
     "xlsx": "^0.16.9",
@@ -83,6 +85,7 @@
     "@vue/cli-plugin-vuex": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "@vue/compiler-sfc": "^3.0.0",
+    "@vue/devtools": "^5.3.4",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-standard": "^5.1.2",
     "autoprefixer": "^9",
@@ -94,11 +97,11 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^7.6.0",
-    "node-sass": "^4.12.0",
+    "node-sass": "^6.0.1",
     "postcss": "^7",
     "postcss-loader": "4",
     "raw-loader": "^4.0.2",
-    "sass-loader": "^8.0.2",
+    "sass-loader": "^10",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat",
     "vue-cli-plugin-i18n": "~2.0.1"
   }

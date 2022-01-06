@@ -314,7 +314,6 @@
 <script>
 import { ref, onMounted, watch } from "vue";
 import { sysAxios } from "@/plugins/axios";
-import { copySource } from '../../global-components/highlight';
 
 export default {
   setup() {

@@ -11,7 +11,7 @@
 
 // import Vue from "vue";
 import axios from "axios";
-import store from "@/store";  
+import store from "@/store";
 
 export const sysAxios = axios.create({
   baseURL: process.env.VUE_APP_SYSTEM_API_URL,
@@ -76,7 +76,7 @@ appAxios.interceptors.response.use(
     if (error.response.status === 401 || error.response.status === 403) {
       store.dispatch('auth/logout');
     }
-    
+
     Promise.reject(error);
     return {status: 'error', error: error}
   }

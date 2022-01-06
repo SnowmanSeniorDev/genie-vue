@@ -41,11 +41,12 @@ export default {
   },
 
   [LOGOUT](state) {
-    state.authenticated = false;
-    state.loginSuccess = false;
-    localStorage.removeItem('id_token');
-    localStorage.removeItem('user_role');
-    localStorage.removeItem('profile');
+    state.authenticated = false
+    state.loginSuccess = false
+    localStorage.removeItem('id_token')
+    localStorage.removeItem('user_role')
+    localStorage.removeItem('profile')
+    localStorage.removeItem('vuex')
     state.token = null;
   },
 

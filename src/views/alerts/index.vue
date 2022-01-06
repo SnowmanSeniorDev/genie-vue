@@ -77,7 +77,13 @@ import { sysAxios } from "@/plugins/axios";
 import moment from "moment";
 
 export default {
-  setup() {
+  props: {
+    notificationId: {
+      type: String,
+      required: false
+    }
+  },
+  setup(props) {
     const store = useStore()
     const tableRef = ref();
     const tabulator = ref();
@@ -222,7 +228,6 @@ export default {
       const api = `communications/v1/notification/${store.state.account.company_uuid}`
       notifications.value = await sysAxios.get(api + '?status=Complete').then(res => {return res.data})
       await sysAxios.get(api + '?status=Read').then(res => {
-        console.log("read", res.data)
         notifications.value.push(...res.data)
       })
       initTabulator()
@@ -232,6 +237,7 @@ export default {
     }
 
     onMounted(async () => {
+      console.log(props.notificationId)
       await init()
       reInitOnResizeWindow()
     });
@@ -248,8 +254,20 @@ export default {
       dateTimeFormat,
       split,
       showUnreadNotification,
-      showAllNotification
+      showAllNotification,
     };
   },
 }
 </script>
+
+<style>
+  .xlsx-viewer tr:nth-child(odd) {
+    background: #adb3bd80;
+  }
+  .xlsx-viewer tr {
+    border: 1px solid black;
+  }
+  .xlsx-viewer td {
+    height: 20px;
+  }
+</style>

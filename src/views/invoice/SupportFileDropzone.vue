@@ -7,20 +7,21 @@
         uploading
         <LoadingIcon icon="oval" color="red" class="w-3 h-3 ml-2" />
       </div>
-    </div> 
-  </div> 
-    <div class="justify-center flex-flow" > 
+    </div>
+  </div>
+    <div class="justify-center flex-flow" >
         <div v-for="(item, index) in data" :key="index" >
           {{item.documentName}} <button @click="onRemove(index)" style="color:red;"><Trash2Icon class="w-3 h-3" /></button>
-          <br /> 
+          <br />
       </div>
     </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
 import { useDropzone } from 'vue3-dropzone';
 import { sysAxios } from '@/plugins/axios';
+import toast from '@/utils/toast'
 
 export default {
   props: {
@@ -48,31 +49,44 @@ export default {
   setup(props){
     const files = ref([]);
     const uploadingFiles = ref(false)
+
     const onDrop = async (acceptFiles, rejectReasons ) => {
-      const fileUploadApi = 'uploads/v1/supporting_document';
-      let formData = new FormData();
-      uploadingFiles.value = true
-      acceptFiles.forEach(async file => {
+      if(rejectReasons.length) {
+        rejectReasons.forEach(reason => {
+          var content = reason.errors[0].message
+          var title = 'Can not upload ' + reason.file.name + ' file'
+          toast({status: 'error', title: title, content: content})
+        })
+      } else {
+        const fileUploadApi = 'uploads/v1/supporting_document';
+        let formData = new FormData();
         uploadingFiles.value = true
-        formData.append('file', file)
-        let res = await sysAxios.post(fileUploadApi, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-        });
-        if(res.status === 200) {
-          files.value.push(file)
-          uploadingFiles.value = false
-          props.addSupportDoc(props.batchIndex, props.index, res.data, file.name);
-        }
-      })
-      
+        acceptFiles.forEach(async file => {
+          uploadingFiles.value = true
+          formData.append('file', file)
+          let res = await sysAxios.post(fileUploadApi, formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              }
+          });
+          if(res.status === 200) {
+            files.value.push(file)
+            uploadingFiles.value = false
+            props.addSupportDoc(props.batchIndex, props.index, res.data, file.name);
+          }
+        })
+      }
     }
-    const onRemove = async(index) => { 
+    const options = reactive({
+      multiple: true,
+      onDrop,
+      accept: '.jpg, .csv, .txt, .pdf, .docx, .xlsx',
+    })
+    const onRemove = async(index) => {
       props.removeSupportDoc(props.batchIndex, props.index, index);
     }
 
-    const { getRootProps, getInputProps, ...rest } = useDropzone({ onDrop })
+    const { getRootProps, getInputProps, ...rest } = useDropzone(options)
 
     return {
       onRemove,

@@ -1,5 +1,5 @@
-// const primaryColors = require("@left4code/tw-starter/dist/js/colors");
-const primaryColors = require("./src/plugins/colors");
+// const primaryColors = require("@left4code/tw-starter/dist/js/colors")
+const primaryColors = require("./src/plugins/colors")
 module.exports = {
   purge: [
     "./src/**/*.php",
@@ -91,4 +91,4 @@ module.exports = {
       backgroundOpacity: ["last", "first", "odd", "responsive", "hover", "dark"]
     }
   }
-};
+}

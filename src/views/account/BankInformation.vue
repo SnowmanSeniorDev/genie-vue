@@ -1,5 +1,5 @@
 <template>
-	<div class="dark:border-dark-5">
+	<div class="">
 		<div class="font-medium text-2xl">Bank Information</div>
 		<div v-for="(item, index) in bankInfos" :key="index" class="intro-y grid grid-cols-2 gap-4 border-b border-gray-500 py-4">
 			<div class="">
@@ -48,35 +48,40 @@
 		<div class="intro-y col-span-12 flex items-center justify-center sm:justify-start mt-5">
 			<button class="btn btn-primary w-24 ml-2" @click="submitBanks">Save</button>
 		</div>
-		<div id="success-notification-content" class="toastify-content hidden flex">
-			<CheckCircleIcon class="text-theme-9" />
-			<div class="ml-4 mr-4">
-				<div class="font-medium">Successfly Added Bank Info</div>
+		<div id="success-notification-content" class="toastify-content hidden">
+			<div class="flex">
+				<CheckCircleIcon class="text-theme-9" />
+				<div class="ml-4 mr-4">
+					<div class="font-medium">Successfly Added Bank Info</div>
+				</div>
 			</div>
 		</div>
-		<div id="failed-notification-content" class="toastify-content hidden flex">
+		<div id="failed-notification-content" class="toastify-content hidden">
+			<div class="flex">
 				<XCircleIcon class="text-theme-6" />
 				<div class="ml-4 mr-4">
 					<div class="font-medium">Add Bank Info was failed!</div>
 					<div class="text-gray-600 mt-1">Please fillin correct value of the company profile.</div>
 				</div>
+			</div>
 		</div>
 	</div>
 </template>
 
 <script>
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
-import { ref, onMounted } from "vue";
-import { sysAxios, appAxios } from "@/plugins/axios";
-import Toastify from "toastify-js";
-import _ from "lodash";
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+import { ref, onMounted } from "vue"
+import { sysAxios, appAxios } from "@/plugins/axios"
+import Toastify from 'toastify-js'
+import _ from 'lodash'
+
 export default {
 	setup() {
-		const router = useRouter();
-    const store = useStore();
-		const banks = ref([]);
-		const currencies = ref([]);
+		const router = useRouter()
+    const store = useStore()
+		const banks = ref([])
+		const currencies = ref([])
 		const bankInfos = ref([
 			{
 				bankName: '',
@@ -86,20 +91,20 @@ export default {
 				swiftCode: '',
 				currency: '',
 			},
-		]);
-		const deletedBank = ref([]);
-		const originBankInfo = ref([]);
+		])
+		const deletedBank = ref([])
+		const originBankInfo = ref([])
 
 		onMounted(async () => {
-			const companyProfileSystemConfig = 'configuration/v1/Company Profile';
-			const getAccountBankInfo = `/company/v1/${store.state.account.company_uuid}/bankaccounts`;
+			const companyProfileSystemConfig = 'configuration/v1/Company Profile'
+			const getAccountBankInfo = `/company/v1/${store.state.account.company_uuid}/bankaccounts`
 			await sysAxios.get(companyProfileSystemConfig).then(res => {
-				banks.value = JSON.parse(_.find(res.data[0].configurations, {name: "banks"}).value);
-				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value);
+				banks.value = JSON.parse(_.find(res.data[0].configurations, {name: "banks"}).value)
+				currencies.value = JSON.parse(_.find(res.data[0].configurations, {name: "currencies"}).value)
 			})
 			await appAxios.get(getAccountBankInfo).then(res => {
 				if(res.data.length !== 0) {
-					bankInfos.value = [...res.data];
+					bankInfos.value = [...res.data]
 					res.data.forEach((item) => {
 						originBankInfo.value.push({...item})
 					})
@@ -119,7 +124,7 @@ export default {
 		}
 
 		const removeBank = (index, item) => {
-			if(item.bankAccountId) deletedBank.value.push(item.bankAccountId);
+			if(item.bankAccountId) deletedBank.value.push(item.bankAccountId)
 			_.pullAt(bankInfos.value, [index])
 		}
 
@@ -132,31 +137,31 @@ export default {
 				gravity: "top",
 				position: "right",
 				stopOnFocus: true
-			}).showToast();
+			}).showToast()
 		}
 		
 		const registerBankRequest = async (banks) => {
-			const registerBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount`;
-			const res = await appAxios.post(registerBankApiUrl, [...banks]);
-			if(res.status === 201) return {result: true};
-			return {result: false, response: res.data};
+			const registerBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount`
+			const res = await appAxios.post(registerBankApiUrl, [...banks])
+			if(res.status === 201) return {result: true}
+			return {result: false, response: res.data}
 		}
 
 		const updateBankRequest = async (bank) => {
 			console.log(bank)
-			const updateBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount/${bank.bankAccountId}`;
-			delete bank['bankAccountId'];
+			const updateBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount/${bank.bankAccountId}`
+			delete bank['bankAccountId']
 			console.log(bank)
-			const res = await appAxios.put(updateBankApiUrl, bank);
-			if(res.status === 200) return {result: true};
-			return {result: false, response: res.data};
+			const res = await appAxios.put(updateBankApiUrl, bank)
+			if(res.status === 200) return {result: true}
+			return {result: false, response: res.data}
 		}
 
 		const deleteBankRequest = async (bankId) => {
-			const deleteBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount/${bankId}`;
-			const res = await appAxios.delete(deleteBankApiUrl);
-			if(res.status === 200 || res.status === 204) return {result: true};
-			return {result: false, response: res.data};
+			const deleteBankApiUrl = `/company/v1/${store.state.account.company_uuid}/bankaccount/${bankId}`
+			const res = await appAxios.delete(deleteBankApiUrl)
+			if(res.status === 200 || res.status === 204) return {result: true}
+			return {result: false, response: res.data}
 		}
 
     const submitBanks = async () => {
@@ -164,59 +169,59 @@ export default {
 				const status = await registerBankRequest(bankInfos.value)
 				if(status.result) {
 					showNotification(true)
-					gotoNext();
+					gotoNext()
 				} else {
 					showNotification(false)
-					console.log(status.response);
+					console.log(status.response)
 				}
 			} else {
 				for (const bankId of deletedBank.value) {
 					console.log(bankId)
 					var deleteRes = await deleteBankRequest(bankId)
 					if(!deleteRes.result) {
-						showNotification(false);
-						return;
+						showNotification(false)
+						return
 					}
 				}
 				// await deletedBank.value.forEach(async bankId => {
 				// 	var res = await deleteBankRequest(bankId)
 				// 	console.log("delete bank", res)
 				// 	if(!res.result) {
-				// 		showNotification(false);
-				// 		return;
+				// 		showNotification(false)
+				// 		return
 				// 	}
-				// });
+				// })
 				
-				var res = await registerBankRequest(_.filter(bankInfos.value, (item) => {if(!item.bankAccountId) return item}));
+				var res = await registerBankRequest(_.filter(bankInfos.value, (item) => {if(!item.bankAccountId) return item}))
 				if(!res.result) {
-					showNotification(false);
-					return;
+					showNotification(false)
+					return
 				}
 				_.filter(bankInfos.value, async (item) => {
 					if(item.bankAccountId) {
 						if (JSON.stringify(_.find(originBankInfo.value, {bankAccountId: item.bankAccountId})) !== JSON.stringify(item)){
-							var res = await updateBankRequest(item);
+							var res = await updateBankRequest(item)
 							if(!res.result) {
-								showNotification(false);
-								return;
+								showNotification(false)
+								return
 							}
 						}
 					}
 				})
-				showNotification(true);
-				gotoNext();
+				showNotification(true)
+				gotoNext()
 			}
 			
     }
 
     const gotoBack = () => {
-      store.commit('account/SET_STEP', {step: "company-information"});
-      router.go(-1);
+      store.commit('account/SET_STEP', {step: "company-information"})
+      router.go(-1)
     }
 
 		const gotoNext = () => {
-			store.commit('account/SET_STEP', {step: "currency-settings"});
-			router.push({path: "/account/currency-settings"});
+			store.commit('account/SET_STEP', {step: "currency-settings"})
+			router.push({path: "/account/currency-settings"})
 		}
 
     return {
